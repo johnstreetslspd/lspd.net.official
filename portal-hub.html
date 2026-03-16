@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Los Santos Police Department - Portal Hub</title>
+    <script src="db.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-bright: #0088ff;
+            --primary-dark: #004a99;
+            --secondary: #00ff88;
+            --dark: #0a0e27;
+            --darkler: #050812;
+            --card-bg: rgba(15, 25, 50, 0.7);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b8d0;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff3333;
+            --info: #00ddff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darkler) 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        body {
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 136, 0.03) 2px, rgba(0, 255, 136, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 136, 0.03) 2px, rgba(0, 255, 136, 0.03) 4px);
+            animation: scanLines 8s linear infinite;
+        }
+
+        @keyframes scanLines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 10px; }
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(90deg, var(--dark) 0%, var(--primary-dark) 50%, var(--dark) 100%);
+            padding: 40px 32px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 0 30px rgba(0, 102, 204, 0.3);
+            animation: headerGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes headerGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(0, 102, 204, 0.3); }
+            50% { box-shadow: 0 0 50px rgba(0, 136, 255, 0.5); }
+        }
+
+        .logo {
+            font-size: 3em;
+            font-weight: 900;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .logo i {
+            font-size: 1em;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 32px;
+        }
+
+        .section-title {
+            font-size: 2em;
+            font-weight: 900;
+            margin-bottom: 40px;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--secondary);
+        }
+
+        /* PORTAL CARDS */
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .portal-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 102, 204, 0.3);
+            border-radius: 12px;
+            padding: 40px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+
+        .portal-card:hover {
+            border-color: rgba(0, 136, 255, 0.6);
+            transform: translateY(-8px);
+            box-shadow: 0 0 30px rgba(0, 102, 204, 0.3);
+        }
+
+        .portal-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .portal-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            display: block;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .portal-title {
+            font-size: 1.6em;
+            font-weight: 900;
+            margin-bottom: 12px;
+            color: var(--secondary);
+        }
+
+        .portal-description {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .portal-features {
+            background: rgba(0, 102, 204, 0.1);
+            border: 1px solid rgba(0, 102, 204, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .portal-features li {
+            margin-bottom: 8px;
+            margin-left: 20px;
+        }
+
+        .portal-features li:before {
+            content: '✓ ';
+            color: var(--secondary);
+            font-weight: 900;
+            margin-right: 8px;
+            margin-left: -20px;
+        }
+
+        .portal-links {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .portal-btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            border: none;
+            font-size: 0.95em;
+        }
+
+        .portal-btn:hover {
+            box-shadow: 0 0 20px rgba(0, 102, 204, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .portal-btn-secondary {
+            background: rgba(0, 136, 255, 0.2);
+            border: 1px solid var(--primary-bright);
+            color: var(--primary-bright);
+        }
+
+        .portal-btn-secondary:hover {
+            background: rgba(0, 136, 255, 0.3);
+            box-shadow: 0 0 20px rgba(0, 136, 255, 0.3);
+        }
+
+        /* QUICK LINKS */
+        .quick-links {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 102, 204, 0.3);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .quick-links h3 {
+            color: var(--secondary);
+            margin-bottom: 24px;
+            font-size: 1.3em;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .quick-link {
+            background: rgba(0, 102, 204, 0.1);
+            border: 1px solid rgba(0, 102, 204, 0.2);
+            padding: 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .quick-link:hover {
+            background: rgba(0, 102, 204, 0.2);
+            border-color: var(--primary-bright);
+            color: var(--primary-bright);
+            transform: translateX(4px);
+        }
+
+        .quick-link i {
+            font-size: 1.2em;
+        }
+
+        /* FOOTER */
+        footer {
+            background: rgba(5, 8, 18, 0.8);
+            border-top: 1px solid rgba(0, 102, 204, 0.2);
+            padding: 40px 32px 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .footer-section h4 {
+            color: var(--secondary);
+            margin-bottom: 16px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .contact-info {
+            font-size: 0.9em;
+        }
+
+        .contact-info p {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .contact-info i {
+            color: var(--warning);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(0, 102, 204, 0.2);
+            padding-top: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85em;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2em;
+            }
+
+            header h1 {
+                font-size: 1.3em;
+            }
+
+            .container {
+                padding: 40px 16px;
+            }
+
+            .portal-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .section-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i> LSPD
+        </div>
+        <h1>Los Santos Police Department</h1>
+        <p>Portal Hub - Mitarbeiter- und Bürgerdienste</p>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <!-- PORTAL CARDS -->
+        <div class="section-title">🌐 Verfügbare Portale</div>
+
+        <div class="portal-grid">
+            <!-- EMPLOYEES PORTAL -->
+            <div class="portal-card">
+                <i class="fas fa-users portal-icon"></i>
+                <div class="portal-title">👨‍💼 Mitarbeiter Portal</div>
+                <div class="portal-description">
+                    Zugang zum internen Mitarbeitersystem der LSPD mit umfangreicher Verwaltung.
+                </div>
+                <ul class="portal-features">
+                    <li>Dashboard mit Übersicht</li>
+                    <li>Mitarbeiter verwalten</li>
+                    <li>Bürgerdatenbank</li>
+                    <li>Beweismittel & Aktenzeichen</li>
+                    <li>Ausbildungszentrum</li>
+                    <li>Anfragenbearbeitung</li>
+                    <li>Interne Nachrichten</li>
+                </ul>
+                <div class="portal-links">
+                    <a href="mitarbeiter-portal.html" class="portal-btn">
+                        <i class="fas fa-sign-in-alt"></i> Zum Mitarbeiterportal
+                    </a>
+                    <span style="font-size: 0.8em; color: var(--text-secondary); text-align: center;">
+                        Login erforderlich (Arnold 41 / 238)
+                    </span>
+                </div>
+            </div>
+
+            <!-- CITIZENS PORTAL -->
+            <div class="portal-card">
+                <i class="fas fa-id-card portal-icon"></i>
+                <div class="portal-title">👤 Bürgerdienste Portal</div>
+                <div class="portal-description">
+                    Öffentliches Portal für Bürgeranfragen und Dienstleistungen der LSPD.
+                </div>
+                <ul class="portal-features">
+                    <li>Online Bewerbungen</li>
+                    <li>Bewerbungsstatus prüfen</li>
+                    <li>Anfragen stellen</li>
+                    <li>Formulare einreichen</li>
+                    <li>Aktuelle Nachrichten</li>
+                    <li>FAQ & Kontakt</li>
+                    <li>Keine Anmeldung nötig</li>
+                </ul>
+                <div class="portal-links">
+                    <a href="bürger-portal.html" class="portal-btn">
+                        <i class="fas fa-external-link-alt"></i> Zu den Bürgerdiensten
+                    </a>
+                    <span style="font-size: 0.8em; color: var(--text-secondary); text-align: center;">
+                        Kostenfrei & öffentlich zugänglich
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUICK LINKS -->
+        <div class="quick-links">
+            <h3>⚡ Schnellzugriff</h3>
+            <div class="links-grid">
+                <a href="bürger-portal.html" class="quick-link">
+                    <i class="fas fa-file-alt"></i> Bewerbung einreichen
+                </a>
+                <a href="bürger-portal.html" class="quick-link">
+                    <i class="fas fa-search"></i> Bewerbungsstatus prüfen
+                </a>
+                <a href="bürger-portal.html" class="quick-link">
+                    <i class="fas fa-envelope"></i> Anfrage stellen
+                </a>
+                <a href="bürger-portal.html" class="quick-link">
+                    <i class="fas fa-newspaper"></i> Aktuelle News
+                </a>
+                <a href="tel:110" class="quick-link">
+                    <i class="fas fa-phone"></i> Notruf: 110
+                </a>
+                <a href="mailto:info@lspd.ls" class="quick-link">
+                    <i class="fas fa-envelope-open"></i> Kontaktieren
+                </a>
+            </div>
+        </div>
+
+        <!-- INFORMATION SECTION -->
+        <div class="portal-card" style="margin-bottom: 40px;">
+            <div class="portal-title" style="margin-bottom: 20px;">ℹ️ Systemübersicht</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; color: var(--text-secondary);">
+                <div>
+                    <h4 style="color: var(--secondary); margin-bottom: 10px;">📊 Funktionen Mitarbeiter</h4>
+                    <ul style="font-size: 0.9em; line-height: 1.8;">
+                        <li>✓ Mitarbeiterverwaltung</li>
+                        <li>✓ Bürgerverwaltung</li>
+                        <li>✓ Beweisisverwaltung</li>
+                        <li>✓ Ausbildungssystem</li>
+                        <li>✓ Anfragenbearbeitung</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: var(--secondary); margin-bottom: 10px;">🔐 Sicherheit</h4>
+                    <ul style="font-size: 0.9em; line-height: 1.8;">
+                        <li>✓ Login-System</li>
+                        <li>✓ Daten-Verschlüsselung</li>
+                        <li>✓ Permission-System</li>
+                        <li>✓ Backup & Export</li>
+                        <li>✓ Vertraulichkeit</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: var(--secondary); margin-bottom: 10px;">💾 Datenmanagement</h4>
+                    <ul style="font-size: 0.9em; line-height: 1.8;">
+                        <li>✓ Automatische Speicherung</li>
+                        <li>✓ JSON Export</li>
+                        <li>✓ CSV Export</li>
+                        <li>✓ Lokale Speicherung</li>
+                        <li>✓ Datenintegrität</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>📍 Über LSPD</h4>
+                <ul>
+                    <li><a href="#">Über uns</a></li>
+                    <li><a href="#">Karriere</a></li>
+                    <li><a href="#">Kontakt</a></li>
+                    <li><a href="#">Statistiken</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>🔗 Portale</h4>
+                <ul>
+                    <li><a href="mitarbeiter-portal.html">Mitarbeiterportal</a></li>
+                    <li><a href="bürger-portal.html">Bürgerdienste</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>⚖️ Rechtliches</h4>
+                <ul>
+                    <li><a href="#">Datenschutz</a></li>
+                    <li><a href="#">Nutzungsbedingungen</a></li>
+                    <li><a href="#">Impressum</a></li>
+                    <li><a href="#">Beschwerdestelle</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>☎️ Kontakt</h4>
+                <div class="contact-info">
+                    <p><i class="fas fa-map-marker-alt"></i> Hauptstraße 123, Los Santos</p>
+                    <p><i class="fas fa-phone"></i> +1 (123) 456-7890</p>
+                    <p><i class="fas fa-phone"></i> <strong>Notruf: 110 (24/7)</strong></p>
+                    <p><i class="fas fa-envelope"></i> info@lspd.ls</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Los Santos Police Department. Alle Rechte vorbehalten. | Sicherheit • Vertrauen • Dienst</p>
+        </div>
+    </footer>
+</body>
+</html>

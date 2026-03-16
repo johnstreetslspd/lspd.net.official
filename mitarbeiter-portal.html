@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LSPD Mitarbeiterportal</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>:root{--primary:#0066cc;--primary-bright:#0088ff;--primary-dark:#004a99;--secondary:#00ff88;--dark:#0a0e27;--darkler:#050812;--card-bg:rgba(15,25,50,0.7);--text-primary:#fff;--text-secondary:#b0b8d0;--success:#00ff88;--warning:#ffaa00;--danger:#ff3333;--info:#00ddff}*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--dark) 0%,var(--darkler) 100%);color:var(--text-primary);overflow-x:hidden}body{background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.03) 2px,rgba(0,255,136,0.03) 4px),repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(0,255,136,0.03) 2px,rgba(0,255,136,0.03) 4px);animation:scanLines 8s linear infinite}@keyframes scanLines{0%{background-position:0 0}100%{background-position:0 10px}}@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}header{background:linear-gradient(90deg,var(--dark) 0%,var(--primary-dark) 50%,var(--dark) 100%);padding:20px 16px;text-align:center;border-bottom:2px solid var(--primary);box-shadow:0 0 30px rgba(0,102,204,0.3);animation:headerGlow 3s ease-in-out infinite;position:sticky;top:0;z-index:100}@keyframes headerGlow{0%,100%{box-shadow:0 0 30px rgba(0,102,204,0.3)}50%{box-shadow:0 0 50px rgba(0,136,255,0.5)}}.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px}.header-left{display:flex;gap:15px;align-items:center;flex-wrap:wrap}.logo{font-size:1.5em;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}.header-nav{display:flex;gap:8px;flex-wrap:wrap}.header-nav a{background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-secondary);padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.8em;cursor:pointer;transition:all 0.3s;white-space:nowrap}.header-nav a:hover{background:rgba(0,102,204,0.25);border-color:var(--secondary);color:var(--secondary)}.header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.user-info{text-align:right;font-size:0.9em}.user-role{font-size:0.8em;color:var(--text-secondary)}.logout-btn{background:var(--danger);color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;transition:all 0.3s;font-size:0.8em}.logout-btn:hover{transform:translateY(-2px);box-shadow:0 0 15px rgba(255,51,51,0.3)}header h1{font-size:1.3em;margin:10px 0 5px;color:var(--text-secondary)}header p{color:var(--text-secondary);font-size:0.75em}.login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}.login-box{background:var(--card-bg);backdrop-filter:blur(20px);border:1px solid rgba(0,102,204,0.3);border-radius:12px;padding:24px;max-width:400px;width:100%;animation:slideIn 0.6s}.login-logo{font-size:2.2em;font-weight:900;margin-bottom:16px;text-align:center;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}.form-group{margin-bottom:15px}.form-group label{display:block;margin-bottom:6px;color:var(--text-secondary);font-weight:600;font-size:0.85em}.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:6px;color:var(--text-primary);font-size:0.95em;font-family:inherit;transition:all 0.3s}.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:0;background:rgba(0,102,204,0.2);border-color:var(--primary-bright);box-shadow:0 0 10px rgba(0,102,204,0.3)}.form-group select{cursor:pointer}.form-group select option{background:var(--dark);color:var(--text-primary)}.form-group textarea{min-height:80px;resize:vertical}.login-btn{width:100%;padding:12px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;transition:all 0.3s;font-size:0.95em;margin-top:10px}.login-btn:hover{box-shadow:0 0 20px rgba(0,102,204,0.5);transform:translateY(-2px)}.login-error{background:rgba(255,51,51,0.2);color:var(--danger);padding:10px;border-radius:6px;margin-bottom:15px;display:none;font-size:0.9em}.container{max-width:1400px;margin:0 auto;padding:20px 16px;animation:fadeIn 0.6s}.section-title{font-size:1.5em;font-weight:900;margin:20px 0 15px;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:10px}.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px}.card{background:var(--card-bg);backdrop-filter:blur(20px);border:2px solid rgba(0,102,204,0.2);border-radius:12px;padding:16px;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden;animation:slideIn 0.6s ease-out;display:flex;flex-direction:column}.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--secondary));transform:scaleX(0);transform-origin:left;transition:transform 0.4s}.card:hover{border-color:rgba(0,136,255,0.6);transform:translateY(-6px);box-shadow:0 15px 35px rgba(0,102,204,0.2)}.card:hover::before{transform:scaleX(1)}.card.hidden{display:none}.card-icon{font-size:1.8em;margin-bottom:10px;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}.card-title{font-size:1em;font-weight:700;margin-bottom:8px;color:var(--secondary)}.card-count{font-size:1.6em;font-weight:900;color:var(--info);margin-bottom:6px}.card-subtitle{color:var(--text-secondary);font-size:0.8em;margin-bottom:12px;flex-grow:1}.card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}.btn{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.75em;transition:all 0.3s}.btn-primary{background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff}.btn-primary:hover{box-shadow:0 0 15px rgba(0,102,204,0.4);transform:translateY(-2px)}.btn-success{background:var(--success);color:var(--dark);font-weight:700}.btn-success:hover{box-shadow:0 0 12px rgba(0,255,136,0.3);transform:translateY(-2px)}.btn-small{padding:5px 10px;font-size:0.7em}.table-container{background:var(--card-bg);backdrop-filter:blur(20px);border:1px solid rgba(0,102,204,0.2);border-radius:12px;overflow:auto;margin-bottom:20px;animation:slideIn 0.6s ease-out}table{width:100%;border-collapse:collapse;font-size:0.85em}table th{background:rgba(0,102,204,0.25);padding:10px;text-align:left;font-weight:700;color:var(--secondary);border-bottom:2px solid rgba(0,102,204,0.3)}table td{padding:8px 10px;border-bottom:1px solid rgba(0,102,204,0.1);color:var(--text-secondary)}table tr:hover{background:rgba(0,102,204,0.1)}.badge{display:inline-block;padding:4px 8px;border-radius:20px;font-size:0.7em;font-weight:700}.badge-success{background:rgba(0,255,136,0.2);color:var(--success)}.badge-warning{background:rgba(255,170,0,0.2);color:var(--warning)}.badge-danger{background:rgba(255,51,51,0.2);color:var(--danger)}.badge-info{background:rgba(0,221,255,0.2);color:var(--info)}.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1500;opacity:0;visibility:hidden;transition:all 0.3s;overflow-y:auto}.modal.show{opacity:1;visibility:visible}.modal-content{background:rgba(15,25,50,0.95);backdrop-filter:blur(20px);border:1px solid rgba(0,102,204,0.3);border-radius:12px;padding:20px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;animation:slideIn 0.3s;margin:auto}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid rgba(0,102,204,0.2);padding-bottom:10px}.modal-header h2{font-size:1.1em;color:var(--secondary)}.modal-close{cursor:pointer;font-size:1.2em;color:var(--text-secondary);transition:all 0.3s;background:rgba(255,51,51,0.1);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center}.modal-close:hover{color:var(--danger);background:rgba(255,51,51,0.2);transform:scale(1.1)}.toast{position:fixed;bottom:20px;right:16px;background:var(--card-bg);border:2px solid;backdrop-filter:blur(20px);padding:12px 16px;border-radius:8px;box-shadow:0 0 30px rgba(0,0,0,0.5);animation:slideIn 0.3s;z-index:2000;max-width:280px;font-size:0.85em}.toast.success{border-color:var(--success);color:var(--success)}.toast.error{border-color:var(--danger);color:var(--danger)}.toast.info{border-color:var(--info);color:var(--info)}.hidden{display:none!important}@media (max-width:480px){.cards-grid{grid-template-columns:1fr;gap:12px}.header-top{flex-direction:column;gap:8px}.header-left,.header-right{width:100%;justify-content:center}.header-nav{width:100%;justify-content:center}.logo{font-size:1.2em}.card{padding:12px;min-height:auto}.card-icon{font-size:1.5em}.card-title{font-size:0.9em}.card-count{font-size:1.3em}.btn{padding:5px 10px;font-size:0.7em}.section-title{font-size:1.2em;margin:15px 0}.modal-content{padding:16px}.table{font-size:0.75em}table th,table td{padding:6px}}@media (min-width:481px) and (max-width:768px){.cards-grid{grid-template-columns:repeat(2,1fr);gap:12px}.section-title{font-size:1.3em}header h1{font-size:1.2em}}@media (min-width:769px){.cards-grid{grid-template-columns:repeat(3,1fr);gap:16px}header h1{font-size:1.4em}header{padding:24px 20px}}</style>
+<!--Firebase SDK v9 Compat (Browser-kompatibel)-->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="db.js"></script>
+</head>
+<body>
+<div id="loginScreen" class="login-container">
+<div class="login-box">
+<div class="login-logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+<h2 style="text-align:center;margin-bottom:15px;color:var(--secondary);font-size:1.1em">Mitarbeiterportal</h2>
+<div class="login-error" id="loginError"></div>
+<form onsubmit="handleLogin(event)">
+<div class="form-group"><label>Benutzername</label><input type="text" id="username" placeholder="Admin" required></div>
+<div class="form-group"><label>Passwort</label><input type="password" id="password" placeholder="Admin123!" required></div>
+<button type="submit" class="login-btn">Anmelden</button>
+<div style="margin-top:15px;text-align:center;color:var(--text-secondary);font-size:0.8em">
+<strong>Demo:</strong> Admin / Admin123!
+</div>
+</form>
+</div>
+</div>
+
+<div id="mainApp" class="hidden">
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+<nav class="header-nav">
+<a href="portal-hub.html"><i class="fas fa-home"></i></a>
+<a href="bürger-portal.html"><i class="fas fa-users"></i></a>
+</nav>
+</div>
+<div class="header-right">
+<div style="display:flex;align-items:center;gap:8px">
+<label style="font-size:0.75em;color:var(--text-secondary)">🔄 Test-Rolle:</label>
+<select id="roleSelector" onchange="switchRole(this.value)" style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:6px;border-radius:6px;font-size:0.85em;font-weight:600">
+<option value="Trainee">Trainee</option>
+<option value="Mitarbeiter">Mitarbeiter</option>
+<option value="Ausbilder">Ausbilder</option>
+<option value="Leitungseben">Leitungseben</option>
+<option value="Personalverwaltung">Personalverwaltung</option>
+<option value="Admin" selected>Admin</option>
+<option value="Commissioner">Commissioner</option>
+</select>
+</div>
+<div class="user-info">
+<div style="color:var(--secondary);font-weight:700;font-size:0.9em" id="currentUser">Admin</div>
+<div class="user-role" id="userRole">Admin</div>
+</div>
+<button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</div>
+<h1>Mitarbeiterportal Dashboard</h1>
+<p>Verwalten Sie alle LSPD Daten</p>
+</header>
+
+<div class="container">
+<div class="section-title"><i class="fas fa-chart-line"></i> Dashboard</div>
+<div class="cards-grid">
+<div class="card" data-role="Admin,Personalverwaltung">
+<i class="fas fa-users card-icon"></i>
+<div class="card-title">Nutzer</div>
+<div class="card-count" id="userCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addUser')" title="Nur für berechtigte Rollen"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('users')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Personalverwaltung,Leitungseben">
+<i class="fas fa-briefcase card-icon"></i>
+<div class="card-title">Ränge</div>
+<div class="card-count" id="rankCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addRank')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('ranks')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Personalverwaltung,Leitungseben,Ausbilder">
+<i class="fas fa-id-card card-icon"></i>
+<div class="card-title">Mitarbeiter</div>
+<div class="card-count" id="employeeCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung, Ausbilder</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addEmployee')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('employees')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
+<i class="fas fa-user-circle card-icon"></i>
+<div class="card-title">Bürger</div>
+<div class="card-count" id="citizenCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, Mitarbeiter</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addCitizen')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('citizens')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Leitungseben,Mitarbeiter,Ausbilder">
+<i class="fas fa-dna card-icon"></i>
+<div class="card-title">Beweise</div>
+<div class="card-count" id="evidenceCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, MA, Ausbilder</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addEvidence')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('evidence')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Ausbilder,Leitungseben">
+<i class="fas fa-book card-icon"></i>
+<div class="card-title">Schulung</div>
+<div class="card-count" id="trainingCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Ausbilder, Leitung</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addTraining')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('training')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Leitungseben,Personalverwaltung">
+<i class="fas fa-download card-icon"></i>
+<div class="card-title">Export</div>
+<div class="card-subtitle">Daten & Backup</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung</div>
+<div class="card-actions">
+<button class="btn btn-success btn-small" onclick="downloadJSON()"><i class="fas fa-file"></i></button>
+<button class="btn btn-success btn-small" onclick="downloadCSV()"><i class="fas fa-table"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin">
+<i class="fas fa-cog card-icon"></i>
+<div class="card-title">Admin</div>
+<div class="card-subtitle">Panel</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Nur Admin</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openAdminPanel()"><i class="fas fa-sliders-h"></i></button>
+</div>
+</div>
+</div>
+
+<div class="section-title"><i class="fas fa-users-cog"></i> Übersicht</div>
+<div id="usersSection" class="table-container hidden">
+<table><thead><tr><th>ID</th><th>Benutzer</th><th>Rolle</th><th>Rang</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="usersTableBody"></tbody></table>
+</div>
+
+<div id="ranksSection" class="table-container hidden">
+<table><thead><tr><th>Name</th><th>Farbe</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody id="ranksTableBody"></tbody></table>
+</div>
+
+<div id="employeesSection" class="table-container hidden">
+<table><thead><tr><th>Name</th><th>Rolle</th><th>Dept</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="employeesTableBody"></tbody></table>
+</div>
+
+<div id="citizensSection" class="table-container hidden">
+<table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citizensTableBody"></tbody></table>
+</div>
+
+<div id="evidenceSection" class="table-container hidden">
+<table><thead><tr><th>AZ</th><th>Beschreibung</th><th>Ort</th><th>Aktion</th></tr></thead><tbody id="evidenceTableBody"></tbody></table>
+</div>
+
+<div id="trainingSection" class="table-container hidden">
+<table><thead><tr><th>Titel</th><th>Dozent</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="trainingTableBody"></tbody></table>
+</div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div id="addUserModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Nutzer hinzufügen</h2><button class="modal-close" onclick="closeModal('addUser')">×</button></div>
+<form onsubmit="addUser(event)">
+<div class="form-group"><label>Benutzername</label><input type="text" id="newUsername" required></div>
+<div class="form-group"><label>Rolle</label><select id="newRole" required></select></div>
+<div class="form-group"><label>Rang</label><select id="newJobRank"></select></div>
+<div class="form-group"><label>Passwort</label><div style="display:flex;gap:8px"><input type="text" id="newPassword" readonly style="flex:1"><button type="button" class="btn btn-primary btn-small" onclick="generateNewPassword()">Generieren</button></div></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="addRankModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Rang hinzufügen</h2><button class="modal-close" onclick="closeModal('addRank')">×</button></div>
+<form onsubmit="addRank(event)">
+<div class="form-group"><label>Name</label><input type="text" id="rankName" required></div>
+<div class="form-group"><label>Farbe</label><input type="color" id="rankColor" value="#0066cc" required></div>
+<div class="form-group"><label>Beschreibung</label><textarea id="rankDesc"></textarea></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="addEmployeeModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Mitarbeiter hinzufügen</h2><button class="modal-close" onclick="closeModal('addEmployee')">×</button></div>
+<form onsubmit="addEmployee(event)">
+<div class="form-group"><label>Name</label><input type="text" id="empName" required></div>
+<div class="form-group"><label>Rolle</label><select id="empRole" required><option>Trainee</option><option>Mitarbeiter</option><option>Ausbilder</option></select></div>
+<div class="form-group"><label>Abteilung</label><input type="text" id="empDept" required></div>
+<div class="form-group"><label>Status</label><select id="empStatus"><option>Aktiv</option><option>Urlaub</option><option>Inaktiv</option></select></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="addCitizenModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Bürger hinzufügen</h2><button class="modal-close" onclick="closeModal('addCitizen')">×</button></div>
+<form onsubmit="addCitizen(event)">
+<div class="form-group"><label>Name</label><input type="text" id="ctName" required></div>
+<div class="form-group"><label>Telefon</label><input type="tel" id="ctPhone" required></div>
+<div class="form-group"><label>Adresse</label><input type="text" id="ctAddress" required></div>
+<div class="form-group"><label>Status</label><select id="ctStatus"><option>Aktiv</option><option>Inaktiv</option></select></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="addEvidenceModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Beweismittel hinzufügen</h2><button class="modal-close" onclick="closeModal('addEvidence')">×</button></div>
+<form onsubmit="addEvidence(event)">
+<div class="form-group"><label>Beschreibung</label><textarea id="evDesc" required></textarea></div>
+<div class="form-group"><label>Ort</label><input type="text" id="evLocation" required></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="addTrainingModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Schulung hinzufügen</h2><button class="modal-close" onclick="closeModal('addTraining')">×</button></div>
+<form onsubmit="addTraining(event)">
+<div class="form-group"><label>Titel</label><input type="text" id="trainTitle" required></div>
+<div class="form-group"><label>Dozent</label><input type="text" id="trainInstructor" required></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="usersViewModal" class="modal">
+<div class="modal-content" style="max-width:700px">
+<div class="modal-header"><h2>Benutzer</h2><button class="modal-close" onclick="closeViewModal('users')">×</button></div>
+<div class="table-container"><table><thead><tr><th>Benutzer</th><th>Rolle</th><th>Rang</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="usersViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="ranksViewModal" class="modal">
+<div class="modal-content" style="max-width:700px">
+<div class="modal-header"><h2>Ränge</h2><button class="modal-close" onclick="closeViewModal('ranks')">×</button></div>
+<div class="table-container"><table><thead><tr><th>Name</th><th>Farbe</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody id="ranksViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="employeesViewModal" class="modal">
+<div class="modal-content" style="max-width:700px">
+<div class="modal-header"><h2>Mitarbeiter</h2><button class="modal-close" onclick="closeViewModal('employees')">×</button></div>
+<div class="table-container"><table><thead><tr><th>Name</th><th>Rolle</th><th>Dept</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="employeesViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="citizensViewModal" class="modal">
+<div class="modal-content" style="max-width:700px">
+<div class="modal-header"><h2>Bürger</h2><button class="modal-close" onclick="closeViewModal('citizens')">×</button></div>
+<div class="table-container"><table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citizensViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="evidenceViewModal" class="modal">
+<div class="modal-content" style="max-width:700px">
+<div class="modal-header"><h2>Beweismittel</h2><button class="modal-close" onclick="closeViewModal('evidence')">×</button></div>
+<div class="table-container"><table><thead><tr><th>AZ</th><th>Beschreibung</th><th>Ort</th><th>Aktion</th></tr></thead><tbody id="evidenceViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="trainingViewModal" class="modal">
+<div class="modal-content" style="max-width:700px">
+<div class="modal-header"><h2>Schulungen</h2><button class="modal-close" onclick="closeViewModal('training')">×</button></div>
+<div class="table-container"><table><thead><tr><th>Titel</th><th>Dozent</th><th>Aktion</th></tr></thead><tbody id="trainingViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="adminPanelModal" class="modal">
+<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>Admin Panel - Rollen & Berechtigungen</h2><button class="modal-close" onclick="closeViewModal('admin')">×</button></div>
+<div style="padding:10px 0">
+<h3 style="color:var(--secondary);margin:15px 0 10px">🔐 Rollen-Berechtigungen bearbeiten</h3>
+<div id="roleEditorPanel" style="margin-bottom:20px;font-size:0.85em;background:rgba(0,102,204,0.1);padding:15px;border-radius:8px"></div>
+
+<h3 style="color:var(--secondary);margin:15px 0 10px">📊 Statistiken</h3>
+<div id="statsPanel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px"></div>
+
+<h3 style="color:var(--secondary);margin:15px 0 10px">⚡ Schnellaktionen</h3>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-primary" onclick="resetTestData()">🔄 Reset</button>
+<button class="btn btn-success" onclick="exportAdminData()">💾 Export</button>
+<button class="btn btn-primary" onclick="closeViewModal('admin')">✓ Fertig</button>
+</div>
+</div>
+</div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const DB_KEY='lspdData',ROLES=['Trainee','Mitarbeiter','Ausbilder','Leitungseben','Personalverwaltung','Admin','Commissioner'];
+const FEATURES=['users','ranks','employees','citizens','evidence','training','admin'];
+let database={users:[],jobRanks:[],employees:[],citizens:[],evidence:[],training:[],auditLog:[],rolePermissions:null},currentUser=null;
+let firebaseReady=false;
+let defaultRolePermissions={Admin:['users','ranks','employees','citizens','evidence','training','admin'],Commissioner:['users','employees','citizens','evidence','training'],Leitungseben:['employees','citizens','evidence','training','ranks'],Personalverwaltung:['users','ranks','employees'],Ausbilder:['training','employees','citizens','evidence'],Mitarbeiter:['citizens','evidence'],Trainee:['citizens']};
+
+function generatePassword(){let p='';for(let i=0;i<12;i++)p+=Math.random().toString(36).charAt(2);return p.toUpperCase()}
+function generateNewPassword(){document.getElementById('newPassword').value=generatePassword()}
+function loadDatabase(){let s=localStorage.getItem(DB_KEY);if(s)database=JSON.parse(s);else{database.users=[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}];database.jobRanks=[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}];database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));saveDatabase()};if(!database.rolePermissions)database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions))}
+function saveDatabase(){localStorage.setItem(DB_KEY,JSON.stringify(database));if(firebaseEnabled){saveToFirestore().catch(e=>console.warn('Firebase sync failed:',e))}}
+function showToast(t,m,ty){const d=document.createElement('div');d.className=`toast ${ty}`;d.innerHTML=`<strong>${t}</strong><br>${m}`;document.body.appendChild(d);setTimeout(()=>d.remove(),3000)}
+function getRolePermissions(){return database.rolePermissions||defaultRolePermissions}
+function canAccess(c){if(!currentUser)return!1;const perms=getRolePermissions()[currentUser.role]||[];return perms.includes(c)}
+function filterDashboardCards(){if(!currentUser)return;const c=document.querySelectorAll('.card[data-role]');c.forEach(cd=>{const r=cd.dataset.role.split(',');cd.classList.toggle('hidden',!r.includes(currentUser.role))})}
+function switchRole(role){if(!currentUser)return;currentUser.role=role;document.getElementById('roleSelector').value=role;document.getElementById('currentUser').textContent=role;document.getElementById('userRole').textContent=`(${role})`;filterDashboardCards();showToast('🔄 Rolle gewechselt',`Sie sind jetzt: ${role}`,'info')}
+function handleLogin(e){e.preventDefault();const u=document.getElementById('username').value,p=document.getElementById('password').value;const usr=database.users.find(x=>x.username===u&&x.password===p);if(usr){currentUser={username:u,role:usr.role};document.getElementById('roleSelector').value=usr.role;loginSuccess()}else document.getElementById('loginError').style.display='block',document.getElementById('loginError').textContent='Ungültig'}
+function loginSuccess(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('mainApp').classList.remove('hidden');document.getElementById('currentUser').textContent=currentUser.username;document.getElementById('userRole').textContent=`(${currentUser.role})`;document.getElementById('roleSelector').value=currentUser.role;filterDashboardCards();updateCounts();if(firebaseEnabled){loadFromFirestore().catch(e=>console.warn('Firestore load on login failed:',e));startAutoSync()}}
+function handleLogout(){currentUser=null;document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('mainApp').classList.add('hidden');document.getElementById('username').value='';document.getElementById('password').value=''}
+function openModal(t){const m={addUser:'addUserModal',addRank:'addRankModal',addEmployee:'addEmployeeModal',addCitizen:'addCitizenModal',addEvidence:'addEvidenceModal',addTraining:'addTrainingModal',users:'usersViewModal',ranks:'ranksViewModal',employees:'employeesViewModal',citizens:'citizensViewModal',evidence:'evidenceViewModal',training:'trainingViewModal'};const permMap={addUser:['users'],addRank:['ranks'],addEmployee:['employees'],addCitizen:['citizens'],addEvidence:['evidence'],addTraining:['training'],users:['users'],ranks:['ranks'],employees:['employees'],citizens:['citizens'],evidence:['evidence'],training:['training']};const reqPerms=permMap[t]||[];if(reqPerms.length>0&&!reqPerms.some(p=>canAccess(p))){showToast('🚫 Keine Berechtigung',`Diese Funktion benötigt: ${reqPerms.join(', ')}`,'error');return}if(t==='addUser')populateJobRankDropdown(),generateNewPassword();if(t==='users')renderUsersView();if(t==='ranks')renderRanksView();if(t==='employees')renderEmployeesView();if(t==='citizens')renderCitizensView();if(t==='evidence')renderEvidenceView();if(t==='training')renderTrainingView();const el=document.getElementById(m[t]);if(el)el.classList.add('show')}
+function closeModal(t){const m={addUser:'addUserModal',addRank:'addRankModal',addEmployee:'addEmployeeModal',addCitizen:'addCitizenModal',addEvidence:'addEvidenceModal',addTraining:'addTrainingModal'};const el=document.getElementById(m[t]);if(el)el.classList.remove('show')}
+function closeViewModal(t){const m={users:'usersViewModal',ranks:'ranksViewModal',employees:'employeesViewModal',citizens:'citizensViewModal',evidence:'evidenceViewModal',training:'trainingViewModal',admin:'adminPanelModal'};const el=document.getElementById(m[t]);if(el)el.classList.remove('show')}
+function populateJobRankDropdown(){const s=document.getElementById('newJobRank');s.innerHTML='';database.jobRanks.forEach(r=>{s.innerHTML+=`<option>${r.name}</option>`});const r=document.getElementById('newRole');r.innerHTML='';ROLES.forEach(rl=>{r.innerHTML+=`<option>${rl}</option>`})}
+function addUser(e){e.preventDefault();const u={id:Date.now(),username:document.getElementById('newUsername').value,password:document.getElementById('newPassword').value,role:document.getElementById('newRole').value,jobRank:document.getElementById('newJobRank').value,status:'Aktiv',created:new Date().toISOString()};database.users.push(u);saveDatabase();closeModal('addUser');document.getElementById('addUserModal').querySelector('form').reset();showToast('✅ Nutzer hinzugefügt',u.username,'success');updateCounts();renderUsersView()}
+function addRank(e){e.preventDefault();const r={id:Date.now(),name:document.getElementById('rankName').value,color:document.getElementById('rankColor').value,description:document.getElementById('rankDesc').value};database.jobRanks.push(r);saveDatabase();closeModal('addRank');document.getElementById('addRankModal').querySelector('form').reset();showToast('✅ Rang hinzugefügt',r.name,'success');updateCounts()}
+function addEmployee(e){e.preventDefault();const emp={id:Date.now(),name:document.getElementById('empName').value,role:document.getElementById('empRole').value,dept:document.getElementById('empDept').value,status:document.getElementById('empStatus').value};database.employees.push(emp);saveDatabase();closeModal('addEmployee');document.getElementById('addEmployeeModal').querySelector('form').reset();showToast('✅ Mitarbeiter hinzugefügt',emp.name,'success');updateCounts()}
+function addCitizen(e){e.preventDefault();const c={id:Date.now(),name:document.getElementById('ctName').value,phone:document.getElementById('ctPhone').value,address:document.getElementById('ctAddress').value,status:document.getElementById('ctStatus').value};database.citizens.push(c);saveDatabase();closeModal('addCitizen');document.getElementById('addCitizenModal').querySelector('form').reset();showToast('✅ Bürger hinzugefügt',c.name,'success');updateCounts()}
+function addEvidence(e){e.preventDefault();const ev={id:Date.now(),aktenzeichen:`AZ-${Date.now().toString().slice(-6)}`,description:document.getElementById('evDesc').value,location:document.getElementById('evLocation').value};database.evidence.push(ev);saveDatabase();closeModal('addEvidence');document.getElementById('addEvidenceModal').querySelector('form').reset();showToast('✅ Beweismittel hinzugefügt',ev.aktenzeichen,'success');updateCounts()}
+function addTraining(e){e.preventDefault();const t={id:Date.now(),title:document.getElementById('trainTitle').value,instructor:document.getElementById('trainInstructor').value};database.training.push(t);saveDatabase();closeModal('addTraining');document.getElementById('addTrainingModal').querySelector('form').reset();showToast('✅ Schulung hinzugefügt',t.title,'success');updateCounts()}
+function renderUsersView(){const b=document.getElementById('usersViewTableBody');b.innerHTML=database.users.map(u=>`<tr><td>${u.username}</td><td><span class="badge badge-info">${u.role}</span></td><td>${u.jobRank}</td><td><span class="badge badge-success">${u.status}</span></td><td><button class="btn btn-small" onclick="deleteUser(${u.id})">×</button></td></tr>`).join('')}
+function renderRanksView(){const b=document.getElementById('ranksViewTableBody');b.innerHTML=database.jobRanks.map(r=>`<tr><td>${r.name}</td><td><div style="width:20px;height:20px;background:${r.color};border-radius:2px"></div></td><td>${r.description}</td><td><button class="btn btn-small" onclick="deleteRank(${r.id})">×</button></td></tr>`).join('')}
+function renderEmployeesView(){const b=document.getElementById('employeesViewTableBody');b.innerHTML=database.employees.map(e=>`<tr><td>${e.name}</td><td>${e.role}</td><td>${e.dept}</td><td>${e.status}</td><td><button class="btn btn-small" onclick="deleteEmployee(${e.id})">×</button></td></tr>`).join('')}
+function renderCitizensView(){const b=document.getElementById('citizensViewTableBody');b.innerHTML=database.citizens.map(c=>`<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.address}</td><td>${c.status}</td><td><button class="btn btn-small" onclick="deleteCitizen(${c.id})">×</button></td></tr>`).join('')}
+function renderEvidenceView(){const b=document.getElementById('evidenceViewTableBody');b.innerHTML=database.evidence.map(e=>`<tr><td>${e.aktenzeichen}</td><td>${e.description}</td><td>${e.location}</td><td><button class="btn btn-small" onclick="deleteEvidence(${e.id})">×</button></td></tr>`).join('')}
+function renderTrainingView(){const b=document.getElementById('trainingViewTableBody');b.innerHTML=database.training.map(t=>`<tr><td>${t.title}</td><td>${t.instructor}</td><td><button class="btn btn-small" onclick="deleteTraining(${t.id})">×</button></td></tr>`).join('')}
+function deleteUser(id){if(confirm('Löschen?')){database.users=database.users.filter(u=>u.id!==id);saveDatabase();renderUsersView();updateCounts()}}
+function deleteRank(id){if(confirm('Löschen?')){database.jobRanks=database.jobRanks.filter(r=>r.id!==id);saveDatabase();renderRanksView();updateCounts()}}
+function deleteEmployee(id){if(confirm('Löschen?')){database.employees=database.employees.filter(e=>e.id!==id);saveDatabase();renderEmployeesView();updateCounts()}}
+function deleteCitizen(id){if(confirm('Löschen?')){database.citizens=database.citizens.filter(c=>c.id!==id);saveDatabase();renderCitizensView();updateCounts()}}
+function deleteEvidence(id){if(confirm('Löschen?')){database.evidence=database.evidence.filter(e=>e.id!==id);saveDatabase();renderEvidenceView();updateCounts()}}
+function deleteTraining(id){if(confirm('Löschen?')){database.training=database.training.filter(t=>t.id!==id);saveDatabase();renderTrainingView();updateCounts()}}
+function downloadJSON(){const d=JSON.stringify(database,null,2),b=new Blob([d],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`lspd-${new Date().toISOString().slice(0,10)}.json`;a.click();showToast('📥 Export','JSON exportiert','success')}
+function downloadCSV(){let c='Benutzer,Rolle,Status\n';database.users.forEach(u=>{c+=`${u.username},${u.role},${u.status}\n`});const b=new Blob([c],{type:'text/csv'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`lspd-${new Date().toISOString().slice(0,10)}.csv`;a.click();showToast('📥 Export','CSV exportiert','success')}
+function openAdminPanel(){if(!canAccess('admin')){showToast('🚫 Zugriff verweigert','Nur Admins dürfen das Admin Panel öffnen','error');return}document.getElementById('adminPanelModal').classList.add('show');renderRoleEditor();const s=document.getElementById('statsPanel');s.innerHTML=`<div style="background:rgba(0,255,136,0.1);padding:10px;border-radius:6px"><div style="color:var(--secondary)">Nutzer</div><div style="font-size:1.2em;font-weight:700">${database.users.length}</div></div>`+`<div style="background:rgba(0,255,136,0.1);padding:10px;border-radius:6px"><div style="color:var(--secondary)">Mitarbeiter</div><div style="font-size:1.2em;font-weight:700">${database.employees.length}</div></div>`}
+function renderRoleEditor(){const perms=getRolePermissions();let html='<div style="margin-bottom:15px"><h4 style="color:var(--secondary);margin:0 0 10px 0">📋 Berechtigungen verwalten</h4><p style="font-size:0.9em;margin:0;color:rgba(255,255,255,0.7)">Wähle aus, welche Funktionen jede Rolle verwenden kann:</p></div>';ROLES.forEach(role=>{html+=`<div style="border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-bottom:12px"><strong style="color:var(--secondary);font-size:1.1em;display:block;margin-bottom:8px">${role}</strong>`;FEATURES.forEach(feature=>{const isChecked=perms[role]&&perms[role].includes(feature);html+=`<label style="display:inline-flex;align-items:center;gap:8px;margin-right:15px;cursor:pointer;font-size:0.9em"><input type="checkbox" id="perm_${role}_${feature}" ${isChecked?'checked':''} onchange="toggleRolePermission('${role}','${feature}')" style="cursor:pointer"><span>${feature}</span></label>`});html+='</div>'});html+='<div style="border-top:1px solid rgba(0,255,136,0.2);padding-top:12px;margin-top:15px"><button onclick="resetPermissionsToDefault()" style="padding:8px 15px;background:rgba(255,107,107,0.2);border:1px solid #ff6b6b;color:#ff6b6b;border-radius:5px;cursor:pointer;font-size:0.9em;transition:all 0.3s">🔄 Auf Standard zurücksetzen</button></div>';document.getElementById('roleEditorPanel').innerHTML=html}function resetPermissionsToDefault(){if(!confirm('Alle Berechtigungen auf Standard zurücksetzen?'))return;database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));saveDatabase();renderRoleEditor();showToast('✅ Berechtigungen','Auf Standard zurückgesetzt','success');filterDashboardCards()}
+function toggleRolePermission(role,feature){const perms=getRolePermissions();if(!perms[role])perms[role]=[];const idx=perms[role].indexOf(feature);const checkbox=document.getElementById(`perm_${role}_${feature}`);if(checkbox.checked){if(idx<0)perms[role].push(feature)}else{if(idx>=0)perms[role].splice(idx,1)}database.rolePermissions=perms;saveDatabase();showToast('✅ Berechtigung aktualisiert',`${role} - ${feature}`,'success');filterDashboardCards()}
+function resetTestData(){if(!confirm('Alle Daten zurücksetzen?'))return;database={users:[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}],jobRanks:[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}],employees:[],citizens:[],evidence:[],training:[],auditLog:[],rolePermissions:JSON.parse(JSON.stringify(defaultRolePermissions))};saveDatabase();showToast('🔄 Reset','Daten & Berechtigungen zurückgesetzt','success');location.reload()}
+function exportAdminData(){const e={timestamp:new Date().toISOString(),data:database},j=JSON.stringify(e,null,2),b=new Blob([j],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`admin-export-${new Date().toISOString().slice(0,10)}.json`;a.click();showToast('💾 Admin-Export','Exportiert','success')}
+function updateCounts(){document.getElementById('userCount').textContent=database.users.length;document.getElementById('rankCount').textContent=database.jobRanks.length;document.getElementById('employeeCount').textContent=database.employees.length;document.getElementById('citizenCount').textContent=database.citizens.length;document.getElementById('evidenceCount').textContent=database.evidence.length;document.getElementById('trainingCount').textContent=database.training.length}
+window.onclick=e=>{if(e.target.classList.contains('modal'))e.target.classList.remove('show')};
+// Initialize on page load
+loadDatabase();populateJobRankDropdown();updateCounts();console.log('✅ Portal initialisiert');
+</script>
+</body>
+</html>
