@@ -63,7 +63,7 @@
 <div class="container">
 <div class="section-title"><i class="fas fa-chart-line"></i> Dashboard</div>
 <div class="cards-grid">
-<div class="card" data-role="Admin,Personalverwaltung">
+<div class="card" data-feature="users">
 <i class="fas fa-users card-icon"></i>
 <div class="card-title">Nutzer</div>
 <div class="card-count" id="userCount">0</div>
@@ -75,7 +75,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Personalverwaltung,Leitungseben">
+<div class="card" data-feature="ranks">
 <i class="fas fa-briefcase card-icon"></i>
 <div class="card-title">Ränge</div>
 <div class="card-count" id="rankCount">0</div>
@@ -87,7 +87,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Personalverwaltung,Leitungseben,Ausbilder">
+<div class="card" data-feature="employees">
 <i class="fas fa-id-card card-icon"></i>
 <div class="card-title">Mitarbeiter</div>
 <div class="card-count" id="employeeCount">0</div>
@@ -99,7 +99,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
+<div class="card" data-feature="citizens">
 <i class="fas fa-user-circle card-icon"></i>
 <div class="card-title">Bürger</div>
 <div class="card-count" id="citizenCount">0</div>
@@ -111,7 +111,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Mitarbeiter,Ausbilder">
+<div class="card" data-feature="evidence">
 <i class="fas fa-dna card-icon"></i>
 <div class="card-title">Beweise</div>
 <div class="card-count" id="evidenceCount">0</div>
@@ -123,7 +123,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Ausbilder,Leitungseben">
+<div class="card" data-feature="training">
 <i class="fas fa-book card-icon"></i>
 <div class="card-title">Schulung</div>
 <div class="card-count" id="trainingCount">0</div>
@@ -135,7 +135,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Personalverwaltung">
+<div class="card" data-feature="admin">
 <i class="fas fa-download card-icon"></i>
 <div class="card-title">Export</div>
 <div class="card-subtitle">Daten & Backup</div>
@@ -146,7 +146,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin">
+<div class="card" data-feature="admin">
 <i class="fas fa-cog card-icon"></i>
 <div class="card-title">Admin</div>
 <div class="card-subtitle">Panel</div>
@@ -336,7 +336,7 @@ function saveDatabase(){localStorage.setItem(DB_KEY,JSON.stringify(database));if
 function showToast(t,m,ty){const d=document.createElement('div');d.className=`toast ${ty}`;d.innerHTML=`<strong>${t}</strong><br>${m}`;document.body.appendChild(d);setTimeout(()=>d.remove(),3000)}
 function getRolePermissions(){return database.rolePermissions||defaultRolePermissions}
 function canAccess(c){if(!currentUser)return!1;const perms=getRolePermissions()[currentUser.role]||[];return perms.includes(c)}
-function filterDashboardCards(){if(!currentUser)return;const c=document.querySelectorAll('.card[data-role]');c.forEach(cd=>{const r=cd.dataset.role.split(',');cd.classList.toggle('hidden',!r.includes(currentUser.role))})}
+function filterDashboardCards(){if(!currentUser)return;const c=document.querySelectorAll('.card');c.forEach(cd=>{const feature=cd.dataset.feature||cd.dataset.role;if(feature){const hideCard=!canAccess(feature);cd.classList.toggle('hidden',hideCard)}})}
 function switchRole(role){if(!currentUser)return;currentUser.role=role;document.getElementById('roleSelector').value=role;document.getElementById('currentUser').textContent=role;document.getElementById('userRole').textContent=`(${role})`;filterDashboardCards();showToast('🔄 Rolle gewechselt',`Sie sind jetzt: ${role}`,'info')}
 function handleLogin(e){e.preventDefault();const u=document.getElementById('username').value,p=document.getElementById('password').value;const usr=database.users.find(x=>x.username===u&&x.password===p);if(usr){currentUser={username:u,role:usr.role};document.getElementById('roleSelector').value=usr.role;loginSuccess()}else document.getElementById('loginError').style.display='block',document.getElementById('loginError').textContent='Ungültig'}
 async function loginSuccess(){loadDatabase();if(firebaseEnabled){await loadFromFirestore().catch(e=>console.warn('Firestore sync failed:',e))};document.getElementById('loginScreen').classList.add('hidden');document.getElementById('mainApp').classList.remove('hidden');document.getElementById('currentUser').textContent=currentUser.username;document.getElementById('userRole').textContent=`(${currentUser.role})`;document.getElementById('roleSelector').value=currentUser.role;filterDashboardCards();updateCounts();if(firebaseEnabled){startAutoSync()}}
