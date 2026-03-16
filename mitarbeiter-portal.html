@@ -331,8 +331,29 @@ let defaultRolePermissions={Admin:['users','ranks','employees','citizens','evide
 
 function generatePassword(){let p='';for(let i=0;i<12;i++)p+=Math.random().toString(36).charAt(2);return p.toUpperCase()}
 function generateNewPassword(){document.getElementById('newPassword').value=generatePassword()}
-function saveDatabase(){if(firebaseEnabled){saveToFirestore().catch(e=>{console.error('❌ SAVE FAILED:',e);showToast('❌ Fehler','Speichern fehlgeschlagen',  'error')})}}
-function loadDatabase(){let s=localStorage.getItem(DB_KEY);if(s)database=JSON.parse(s);else{database.users=[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}];database.jobRanks=[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}];database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions))};if(!database.rolePermissions)database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions))}
+function saveDatabase(){
+  console.log('DEBUG: saveDatabase called - firebaseEnabled=' + firebaseEnabled);
+  saveToFirestore().catch(e=>{
+    console.error('Firestore save error:', e);
+    showToast('Error', 'Save failed', 'error');
+  });
+}
+function loadDatabase(){
+  console.log('loadDatabase called');
+  let s=localStorage.getItem(DB_KEY);
+  if(s){
+    database=JSON.parse(s);
+    console.log('Loaded from LocalStorage: ' + database.users.length + ' users');
+  } else {
+    console.log('No LocalStorage data, using defaults');
+    database.users=[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}];
+    database.jobRanks=[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}];
+    database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));
+  };
+  if(!database.rolePermissions){
+    database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));
+  }
+}
 function showToast(t,m,ty){const d=document.createElement('div');d.className=`toast ${ty}`;d.innerHTML=`<strong>${t}</strong><br>${m}`;document.body.appendChild(d);setTimeout(()=>d.remove(),3000)}
 function getRolePermissions(){return database.rolePermissions||defaultRolePermissions}
 function canAccess(c){if(!currentUser)return!1;const perms=getRolePermissions()[currentUser.role]||[];return perms.includes(c)}

@@ -31,32 +31,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // SAVE TO FIRESTORE
 async function saveToFirestore() {
+    console.log('saveToFirestore called');
+    console.log('firebaseEnabled=' + firebaseEnabled + ', fsDB=' + (fsDB ? 'YES' : 'NO'));
+    
     if (!firebaseEnabled || !fsDB) {
-        console.warn('Firestore inactive');
+        console.warn('Firestore not active');
+        return false;
+    }
+    
+    // Always use window.database to ensure we have the right object
+    const db = window.database;
+    if (!db) {
+        console.error('ERROR: window.database not found!');
         return false;
     }
 
     try {
-        console.log('Saving: ' + database.users.length + ' users, ' + database.citizens.length + ' citizens');
+        console.log('SAVING: ' + db.users.length + ' users, ' + db.citizens.length + ' citizens');
         
         await fsDB.collection('lspdDatabase').doc('shared').set({
-            users: database.users,
-            jobRanks: database.jobRanks,
-            employees: database.employees,
-            citizens: database.citizens,
-            evidence: database.evidence,
-            training: database.training,
-            auditLog: database.auditLog,
-            rolePermissions: database.rolePermissions,
+            users: db.users,
+            jobRanks: db.jobRanks,
+            employees: db.employees,
+            citizens: db.citizens,
+            evidence: db.evidence,
+            training: db.training,
+            auditLog: db.auditLog,
+            rolePermissions: db.rolePermissions,
             lastUpdated: new Date().toISOString()
         });
         
-        console.log('Saved to Firestore!');
+        console.log('SUCCESS: Data saved!');
         return true;
     } catch (error) {
-        console.error('FIRESTORE SAVE ERROR:', error.message);
+        console.error('SAVE ERROR:', error.message);
         if (error.code === 'permission-denied') {
-            console.error('PERMISSION DENIED! Fix Firestore Rules!');
+            console.error('PERMISSION DENIED - Check Firestore Rules!');
         }
         return false;
     }
@@ -64,33 +74,45 @@ async function saveToFirestore() {
 
 // LOAD FROM FIRESTORE
 async function loadFromFirestore() {
+    const db = window.database;
+    
+    console.log('loadFromFirestore called, firebaseEnabled=' + firebaseEnabled);
+    
     if (!firebaseEnabled || !fsDB) {
-        console.warn('Firestore inactive');
+        console.warn('Firestore not active');
+        return false;
+    }
+    
+    if (!db) {
+        console.error('window.database not found!');
         return false;
     }
 
     try {
+        console.log('Loading from Firestore...');
         const doc = await fsDB.collection('lspdDatabase').doc('shared').get();
         
         if (doc.exists) {
             const data = doc.data();
-            database.users = data.users || database.users || [];
-            database.jobRanks = data.jobRanks || database.jobRanks || [];
-            database.employees = data.employees || database.employees || [];
-            database.citizens = data.citizens || database.citizens || [];
-            database.evidence = data.evidence || database.evidence || [];
-            database.training = data.training || database.training || [];
-            database.auditLog = data.auditLog || database.auditLog || [];
-            database.rolePermissions = data.rolePermissions || database.rolePermissions;
+            console.log('Got data from Firestore', data);
             
-            console.log('Loaded from Firestore: ' + database.users.length + ' users');
+            db.users = data.users || db.users || [];
+            db.jobRanks = data.jobRanks || db.jobRanks || [];
+            db.employees = data.employees || db.employees || [];
+            db.citizens = data.citizens || db.citizens || [];
+            db.evidence = data.evidence || db.evidence || [];
+            db.training = data.training || db.training || [];
+            db.auditLog = data.auditLog || db.auditLog || [];
+            db.rolePermissions = data.rolePermissions || db.rolePermissions;
+            
+            console.log('LOADED: ' + db.users.length + ' users, ' + db.citizens.length + ' citizens');
             return true;
         } else {
             console.log('No Firestore data yet');
             return false;
         }
     } catch (error) {
-        console.error('FIRESTORE LOAD ERROR:', error.message);
+        console.error('LOAD ERROR:', error.message);
         return false;
     }
 }
