@@ -79,7 +79,9 @@ async function loadFromFirestore() {
             database.evidence = data.evidence || [];
             database.training = data.training || [];
             database.auditLog = data.auditLog || [];
-            database.rolePermissions = data.rolePermissions || database.rolePermissions;
+            database.rolePermissions = data.rolePermissions 
+               ? { ...defaultRolePermissions, ...data.rolePermissions }
+               : defaultRolePermissions;
             
             console.log('✅ Daten von Firestore geladen');
             return true;
