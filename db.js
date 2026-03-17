@@ -1,136 +1,40 @@
-// db.js - Firestore Only (No LocalStorage!)
-// Focus on Firestore as SOURCE OF TRUTH
+// db.js – Firebase Firestore Only für LSPD Portal
+// Alle Daten werden über Firebase synchronisiert
 
 let fsDB = null;
 let firebaseEnabled = false;
 
+// 🔥 Firebase Firestore initialisieren
 function initFirestoreDB() {
     try {
         if (window.firebase && window.firebase.firestore) {
             fsDB = window.firebase.firestore();
             firebaseEnabled = true;
-            console.log('Firestore Ready');
+            console.log('✅ Firestore db.js initialized (Firebase-Only)');
             return true;
         } else {
-            console.warn('Firebase not available');
+            console.error('❌ Firebase Firestore not available - required for operation');
             firebaseEnabled = false;
             return false;
         }
     } catch (error) {
-        console.error('Firestore Init Error:', error);
+        console.error('❌ Firestore Init Error:', error);
         firebaseEnabled = false;
         return false;
     }
 }
 
+// Firestore muss initialisiert werden sobald Firebase verfügbar ist
 document.addEventListener('DOMContentLoaded', () => {
     if (window.firebase) {
         initFirestoreDB();
     }
 });
 
-// SAVE TO FIRESTORE
-async function saveToFirestore() {
-    console.log('saveToFirestore called');
-    console.log('firebaseEnabled=' + firebaseEnabled + ', fsDB=' + (fsDB ? 'YES' : 'NO'));
-    
-    if (!firebaseEnabled || !fsDB) {
-        console.warn('Firestore not active');
-        return false;
-    }
-    
-    // Always use window.database to ensure we have the right object
-    const db = window.database;
-    if (!db) {
-        console.error('ERROR: window.database not found!');
-        return false;
-    }
-
-    try {
-        console.log('SAVING: ' + db.users.length + ' users, ' + db.citizens.length + ' citizens');
-        
-        await fsDB.collection('lspdDatabase').doc('shared').set({
-            users: db.users,
-            jobRanks: db.jobRanks,
-            employees: db.employees,
-            citizens: db.citizens,
-            evidence: db.evidence,
-            training: db.training,
-            auditLog: db.auditLog,
-            rolePermissions: db.rolePermissions,
-            lastUpdated: new Date().toISOString()
-        });
-        
-        console.log('SUCCESS: Data saved!');
-        return true;
-    } catch (error) {
-        console.error('SAVE ERROR:', error.message);
-        if (error.code === 'permission-denied') {
-            console.error('PERMISSION DENIED - Check Firestore Rules!');
-        }
-        return false;
-    }
-}
-
-// LOAD FROM FIRESTORE
-async function loadFromFirestore() {
-    const db = window.database;
-    
-    console.log('loadFromFirestore called, firebaseEnabled=' + firebaseEnabled);
-    
-    if (!firebaseEnabled || !fsDB) {
-        console.warn('Firestore not active');
-        return false;
-    }
-    
-    if (!db) {
-        console.error('window.database not found!');
-        return false;
-    }
-
-    try {
-        console.log('Loading from Firestore...');
-        const doc = await fsDB.collection('lspdDatabase').doc('shared').get();
-        
-        if (doc.exists) {
-            const data = doc.data();
-            console.log('Got data from Firestore', data);
-            
-            db.users = data.users || db.users || [];
-            db.jobRanks = data.jobRanks || db.jobRanks || [];
-            db.employees = data.employees || db.employees || [];
-            db.citizens = data.citizens || db.citizens || [];
-            db.evidence = data.evidence || db.evidence || [];
-            db.training = data.training || db.training || [];
-            db.auditLog = data.auditLog || db.auditLog || [];
-            db.rolePermissions = data.rolePermissions || db.rolePermissions;
-            
-            console.log('LOADED: ' + db.users.length + ' users, ' + db.citizens.length + ' citizens');
-            return true;
-        } else {
-            console.log('No Firestore data yet');
-            return false;
-        }
-    } catch (error) {
-        console.error('LOAD ERROR:', error.message);
-        return false;
-    }
-}
-
-function startAutoSync() {
-    setInterval(() => {
-        if (firebaseEnabled && currentUser) {
-            saveToFirestore().catch(e => console.warn('Auto-sync failed:', e));
-        }
-    }, 30000);
-}
-
-console.log('db.js loaded');
-
-// � Speichere Daten in Firestore + LocalStorage
+// 💾 Speichere Daten in Firestore (Einzige Datenquelle)
 async function saveToFirestore() {
     if (!firebaseEnabled || !fsDB) {
-        console.warn('⚠️ Firestore nicht aktiv - nur LocalStorage');
+        console.error('❌ Firestore not available - cannot save data');
         return false;
     }
 
@@ -156,10 +60,10 @@ async function saveToFirestore() {
     }
 }
 
-// 📖 Lade Daten von Firestore
+// 📖 Lade Daten von Firestore (Einzige Datenquelle)
 async function loadFromFirestore() {
     if (!firebaseEnabled || !fsDB) {
-        console.warn('⚠️ Firestore nicht aktiv');
+        console.error('❌ Firestore not available - cannot load data');
         return false;
     }
 
@@ -182,7 +86,7 @@ async function loadFromFirestore() {
             console.log('✅ Daten von Firestore geladen');
             return true;
         } else {
-            console.log('ℹ️ Keine Daten in Firestore - verwende LocalStorage');
+            console.log('ℹ️ Keine Daten in Firestore vorhanden - neue Datenbank wird erstellt');
             return false;
         }
     } catch (error) {
@@ -191,13 +95,13 @@ async function loadFromFirestore() {
     }
 }
 
-// 🔄 Periodisches Sync (alle 30 Sekunden)
+// 🔄 Periodisches Sync (alle 5 Sekunden) - Live Updates
 function startAutoSync() {
     setInterval(() => {
         if (firebaseEnabled && currentUser) {
-            saveToFirestore().catch(e => console.warn('Auto-sync failed:', e));
+            loadFromFirestore().catch(e => console.warn('Auto-load failed:', e));
         }
-    }, 30000);
+    }, 5000);
 }
 
-console.log('✅ db.js geladen und initialisiert');
+console.log('✅ db.js geladen und initialisiert (Firebase-Only Mode)');

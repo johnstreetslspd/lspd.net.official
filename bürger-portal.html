@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSPD Bürgerdienste</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-bright: #0088ff;
+            --primary-dark: #004a99;
+            --secondary: #00ff88;
+            --dark: #0a0e27;
+            --darkler: #050812;
+            --card-bg: rgba(15, 25, 50, 0.7);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b8d0;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff3333;
+            --info: #00ddff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darkler) 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        body {
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 136, 0.03) 2px, rgba(0, 255, 136, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 136, 0.03) 2px, rgba(0, 255, 136, 0.03) 4px);
+            animation: scanLines 8s linear infinite;
+        }
+
+        @keyframes scanLines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 10px; }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(90deg, var(--dark) 0%, var(--primary-dark) 50%, var(--dark) 100%);
+            padding: 40px 32px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 0 30px rgba(0, 102, 204, 0.3);
+            animation: headerGlow 3s ease-in-out infinite;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        @keyframes headerGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(0, 102, 204, 0.3); }
+            50% { box-shadow: 0 0 50px rgba(0, 136, 255, 0.5); }
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 16px;
+        }
+
+        .header-nav a {
+            background: rgba(0, 102, 204, 0.1);
+            border: 1px solid rgba(0, 102, 204, 0.3);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .header-nav a:hover {
+            background: rgba(0, 102, 204, 0.25);
+            border-color: var(--secondary);
+            color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        header h1 {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* CONTAINER */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 32px;
+            animation: fadeIn 0.6s;
+        }
+
+        .section-title {
+            font-size: 2.2em;
+            font-weight: 900;
+            margin-bottom: 40px;
+            text-align: center;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* CARDS GRID */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 28px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 102, 204, 0.2);
+            border-radius: 12px;
+            padding: 28px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 136, 255, 0.6);
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(0, 102, 204, 0.3);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-icon {
+            font-size: 2.5em;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--secondary);
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(0, 102, 204, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.8em;
+        }
+
+        /* TABLE */
+        .table-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 102, 204, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 40px;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th {
+            background: rgba(0, 102, 204, 0.25);
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--secondary);
+            border-bottom: 2px solid rgba(0, 102, 204, 0.3);
+        }
+
+        table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(0, 102, 204, 0.1);
+            color: var(--text-secondary);
+        }
+
+        table tr:hover {
+            background: rgba(0, 102, 204, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success);
+        }
+
+        .badge-pending {
+            background: rgba(255, 170, 0, 0.2);
+            color: var(--warning);
+        }
+
+        /* MODAL */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(15, 25, 50, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 102, 204, 0.3);
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid rgba(0, 102, 204, 0.2);
+            padding-bottom: 16px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5em;
+            color: var(--secondary);
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 1.5em;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 102, 204, 0.1);
+            border: 1px solid rgba(0, 102, 204, 0.3);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            background: rgba(0, 102, 204, 0.2);
+            border-color: var(--primary-bright);
+            box-shadow: 0 0 10px rgba(0, 102, 204, 0.3);
+        }
+
+        .code-display {
+            background: rgba(0, 255, 136, 0.15);
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            font-size: 1.3em;
+            text-align: center;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background: var(--card-bg);
+            border: 2px solid;
+            backdrop-filter: blur(20px);
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.3s;
+            z-index: 2000;
+            max-width: 400px;
+        }
+
+        .toast.success { border-color: var(--success); color: var(--success); }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+        .toast.info { border-color: var(--info); color: var(--info); }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 20px 16px;
+            }
+
+            .container {
+                padding: 32px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-top">
+            <div class="header-left">
+                <div class="logo"><i class="fas fa-shield"></i> LSPD BÜRGERDIENSTE</div>
+                <div class="header-nav">
+                    <a href="portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+                    <a href="mitarbeiter-portal.html" style="color: var(--warning);"><i class="fas fa-lock"></i> Mitarbeiter</a>
+                </div>
+            </div>
+        </div>
+        <h1>Bürgerdienste Portal</h1>
+        <p>Öffentliche Dienste & Informationen der LSPD</p>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- DASHBOARD SERVICES -->
+        <div class="section-title">🌐 Unsere Dienstleistungen</div>
+        <div class="cards-grid">
+            <!-- Applications Card -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="card-title">📝 Online Bewerbungen</div>
+                <div class="card-subtitle">Bewerben Sie sich einfach online bei der LSPD</div>
+                <div class="card-actions">
+                    <button class="btn btn-success btn-small" onclick="openModal('application')">➕ Neue Bewerbung</button>
+                </div>
+            </div>
+
+            <!-- Status Card -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-search"></i></div>
+                <div class="card-title">🔍 Bewerbungsstatus</div>
+                <div class="card-subtitle">Überprüfen Sie Ihren Bewerbungsstatus</div>
+                <div class="card-actions">
+                    <button class="btn btn-primary btn-small" onclick="openModal('checkStatus')">📊 Status prüfen</button>
+                </div>
+            </div>
+
+            <!-- Requests Card -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-envelope"></i></div>
+                <div class="card-title">📧 Anfragen & Beschwerden</div>
+                <div class="card-subtitle">Stellen Sie Ihre Anfrage an die LSPD</div>
+                <div class="card-actions">
+                    <button class="btn btn-success btn-small" onclick="openModal('request')">➕ Neue Anfrage</button>
+                </div>
+            </div>
+
+            <!-- News Card -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-newspaper"></i></div>
+                <div class="card-title">📰 News & Nachrichten</div>
+                <div class="card-count" id="newsCount">0</div>
+                <div class="card-subtitle">Aktuelle Meldungen der LSPD</div>
+                <div class="card-actions">
+                    <button class="btn btn-primary btn-small" onclick="openModal('news')">📖 Lesen</button>
+                </div>
+            </div>
+
+            <!-- FAQ Card -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-question-circle"></i></div>
+                <div class="card-title">❓ FAQ & Hilfe</div>
+                <div class="card-subtitle">Häufig gestellte Fragen</div>
+                <div class="card-actions">
+                    <button class="btn btn-primary btn-small" onclick="openModal('faq')">🆘 Hilfe</button>
+                </div>
+            </div>
+
+            <!-- Contact Card -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-phone"></i></div>
+                <div class="card-title">☎️ Kontakt & Notfall</div>
+                <div class="card-subtitle">Kontaktinformationen der LSPD</div>
+                <div class="card-actions">
+                    <button class="btn btn-primary btn-small" onclick="openModal('contact')">📞 Kontakt</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- APPLICATIONS TABLE -->
+        <div id="applicationsSection" class="hidden">
+            <div class="section-title">📝 Ihre Bewerbungen</div>
+            <div class="table-container">
+                <table id="applicationsTable">
+                    <thead>
+                        <tr>
+                            <th>Application Code</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Eingereicht</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationsTableBody">
+                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Laden...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- REQUESTS TABLE -->
+        <div id="requestsSection" class="hidden">
+            <div class="section-title">📧 Ihre Anfragen</div>
+            <div class="table-container">
+                <table id="requestsTable">
+                    <thead>
+                        <tr>
+                            <th>Anfrage ID</th>
+                            <th>Betreff</th>
+                            <th>Status</th>
+                            <th>Datum</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="requestsTableBody">
+                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Laden...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Application Modal -->
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📝 Online Bewerbung</h2>
+                <span class="modal-close" onclick="closeModal('application')">&times;</span>
+            </div>
+            <form onsubmit="submitApplication(event)">
+                <div class="form-group">
+                    <label>Vollständiger Name</label>
+                    <input type="text" id="appName" required>
+                </div>
+                <div class="form-group">
+                    <label>E-Mail Adresse</label>
+                    <input type="email" id="appEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Telefonnummer</label>
+                    <input type="tel" id="appPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>Bildungsgrad</label>
+                    <input type="text" id="appEducation" placeholder="z.B. Abitur, Bachelor" required>
+                </div>
+                <div class="form-group">
+                    <label>Erfahrung</label>
+                    <textarea id="appExperience" placeholder="Ihre bisherige Erfahrung..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">✅ Absenden</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Check Status Modal -->
+    <div id="checkStatusModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔍 Status überprüfen</h2>
+                <span class="modal-close" onclick="closeModal('checkStatus')">&times;</span>
+            </div>
+            <form onsubmit="checkStatus(event)">
+                <div class="form-group">
+                    <label>Ihren Bewerbungscode eingeben:</label>
+                    <input type="text" id="statusCode" placeholder="APP-..." required>
+                </div>
+                <button type="submit" class="btn btn-primary">🔎 Suchen</button>
+            </form>
+            <div id="statusResult" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <!-- Request Modal -->
+    <div id="requestModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📧 Neue Anfrage</h2>
+                <span class="modal-close" onclick="closeModal('request')">&times;</span>
+            </div>
+            <form onsubmit="submitRequest(event)">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="reqName" required>
+                </div>
+                <div class="form-group">
+                    <label>E-Mail</label>
+                    <input type="email" id="reqEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Betreff</label>
+                    <input type="text" id="reqSubject" required>
+                </div>
+                <div class="form-group">
+                    <label>Nachricht</label>
+                    <textarea id="reqMessage" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">✅ Absenden</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- News Modal -->
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📰 Aktuelle News</h2>
+                <span class="modal-close" onclick="closeModal('news')">&times;</span>
+            </div>
+            <div id="newsContent"></div>
+        </div>
+    </div>
+
+    <!-- FAQ Modal -->
+    <div id="faqModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>❓ Häufig gestellte Fragen</h2>
+                <span class="modal-close" onclick="closeModal('faq')">&times;</span>
+            </div>
+            <div style="color: var(--text-secondary);">
+                <h3 style="color: var(--secondary); margin: 20px 0 10px;">Wie bewerbe ich mich?</h3>
+                <p>Nutzen Sie das "Online Bewerbungen" Formular. Sie erhalten einen eindeutigen Code zur Verfolgung.</p>
+                
+                <h3 style="color: var(--secondary); margin: 20px 0 10px;">Wie lange dauert die Bearbeitung?</h3>
+                <p>Die Bearbeitung dauert normalerweise 2-4 Wochen.</p>
+                
+                <h3 style="color: var(--secondary); margin: 20px 0 10px;">Welche Anforderungen gelten?</h3>
+                <p>Mindestens 18 Jahre alt, gültiger Ausweis, Schulabschluss erforderlich.</p>
+                
+                <h3 style="color: var(--secondary); margin: 20px 0 10px;">Kann ich meine Bewerbung ändern?</h3>
+                <p>Nach der Einreichung können Änderungen nur schriftlich eingereicht werden.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>☎️ Kontakt & Notfall</h2>
+                <span class="modal-close" onclick="closeModal('contact')">&times;</span>
+            </div>
+            <div style="color: var(--text-secondary); line-height: 2;">
+                <h3 style="color: var(--secondary); margin-bottom: 16px;">📍 Kontaktinformationen:</h3>
+                <p><strong>Adresse:</strong> Hauptstraße 123, Los Santos</p>
+                <p><strong>Telefon:</strong> +1 (123) 456-7890</p>
+                <p><strong>E-Mail:</strong> info@lspd.ls</p>
+                
+                <h3 style="color: var(--secondary); margin: 24px 0 16px;">🚨 Notfall:</h3>
+                <p style="font-size: 1.2em; color: var(--danger);"><strong>NOTRUF: 110 (24/7 erreichbar)</strong></p>
+                
+                <h3 style="color: var(--secondary); margin: 24px 0 16px;">⏰ Öffnungszeiten:</h3>
+                <p>Montag - Freitag: 08:00 - 17:00 Uhr</p>
+                <p>Samstag - Sonntag: 10:00 - 14:00 Uhr</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = 'lspdCitizensData';
+        let database = {
+            applications: [],
+            requests: [],
+            news: []
+        };
+
+        // Initialize database with sample news
+        function initDatabase() {
+            database = {
+                applications: [],
+                requests: [],
+                news: [
+                    {
+                        id: 1,
+                        title: 'Willkommen im LSPD Portal',
+                        content: 'Wir heißen Sie herzlich willkommen im öffentlichen Bürgerdiensteportal der LSPD!',
+                        date: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        title: 'Neue Bewerbungsphase offen',
+                        content: 'Die nächste Bewerbungsphase für neue Beamte hat begonnen. Jetzt bewerben!',
+                        date: new Date().toISOString()
+                    }
+                ],
+                citations: [],
+                charges: []
+            };
+            saveDatabase();
+        }
+
+        function loadDatabase() {
+            // Initialisierung mit Standarddaten - Firebase-only
+            initDatabase();
+            updateNewsCount();
+        }
+
+        function saveDatabase() {
+            // Nur Firebase - keine localStorage
+            if (firebaseEnabled) {
+                saveToFirestore().catch(e => console.error('Firebase sync failed:', e));
+            } else {
+                console.warn('⚠️ Firebase nicht verfügbar - Daten werden nicht gespeichert');
+            }
+        }
+
+        // UPDATE COUNTERS
+        function updateNewsCount() {
+            document.getElementById('newsCount').textContent = database.news.length;
+        }
+
+        // APPLICATIONS
+        function submitApplication(e) {
+            e.preventDefault();
+            const code = 'APP-' + new Date().toISOString().split('T')[0].replace(/-/g, '') + '-' + 
+                         Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            const app = {
+                id: Date.now(),
+                code: code,
+                name: document.getElementById('appName').value,
+                email: document.getElementById('appEmail').value,
+                phone: document.getElementById('appPhone').value,
+                education: document.getElementById('appEducation').value,
+                experience: document.getElementById('appExperience').value,
+                status: 'Eingereicht',
+                date: new Date().toISOString()
+            };
+            
+            database.applications.push(app);
+            saveDatabase();
+            closeModal('application');
+            showToast('✅ Erfolg!', `Bewerbung eingereicht. Code: ${code}`, 'success');
+            e.target.reset();
+        }
+
+        function checkStatus(e) {
+            e.preventDefault();
+            const code = document.getElementById('statusCode').value;
+            const app = database.applications.find(a => a.code === code);
+            const resultDiv = document.getElementById('statusResult');
+            
+            if (app) {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(0, 255, 136, 0.15); border: 2px solid var(--secondary); padding: 20px; border-radius: 8px; color: var(--secondary);">
+                        <h3>✅ Bewerbung gefunden!</h3>
+                        <p><strong>Name:</strong> ${app.name}</p>
+                        <p><strong>Status:</strong> <span class="badge badge-success">${app.status}</span></p>
+                        <p><strong>Eingereicht:</strong> ${new Date(app.date).toLocaleDateString('de-DE')}</p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(255, 51, 51, 0.15); border: 2px solid var(--danger); padding: 20px; border-radius: 8px; color: var(--danger);">
+                        <h3>❌ Bewerbung nicht gefunden</h3>
+                        <p>Der eingegebene Code ist ungültig. Überprüfen Sie Ihre Eingabe.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // REQUESTS
+        function submitRequest(e) {
+            e.preventDefault();
+            const id = 'REQ-' + Date.now().toString().slice(-6);
+            
+            const req = {
+                id: req,
+                name: document.getElementById('reqName').value,
+                email: document.getElementById('reqEmail').value,
+                subject: document.getElementById('reqSubject').value,
+                message: document.getElementById('reqMessage').value,
+                status: 'Eingereicht',
+                date: new Date().toISOString()
+            };
+            
+            database.requests.push(req);
+            saveDatabase();
+            closeModal('request');
+            showToast('✅ Erfolg!', 'Anfrage eingereicht. Sie erhalten in Kürze eine Antwort.', 'success');
+            e.target.reset();
+        }
+
+        // NEWS
+        function displayNews() {
+            const newsDiv = document.getElementById('newsContent');
+            if (database.news.length === 0) {
+                newsDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Keine News vorhanden</p>';
+                return;
+            }
+            
+            newsDiv.innerHTML = database.news.map(news => `
+                <div style="background: rgba(0, 102, 204, 0.1); border: 1px solid rgba(0, 102, 204, 0.3); padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+                    <h3 style="color: var(--secondary); margin-bottom: 10px;">${news.title}</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px;">${news.content}</p>
+                    <p style="font-size: 0.85em; color: rgba(255, 255, 255, 0.5);">${new Date(news.date).toLocaleDateString('de-DE')}</p>
+                </div>
+            `).join('');
+        }
+
+        // UI FUNCTIONS
+        function openModal(type) {
+            const modalMap = {
+                'application': 'applicationModal',
+                'checkStatus': 'checkStatusModal',
+                'request': 'requestModal',
+                'news': 'newsModal',
+                'faq': 'faqModal',
+                'contact': 'contactModal'
+            };
+            
+            if (type === 'news') {
+                displayNews();
+            }
+            
+            const modalId = modalMap[type];
+            if (modalId) {
+                document.getElementById(modalId).classList.add('show');
+            }
+        }
+
+        function closeModal(type) {
+            const modalMap = {
+                'application': 'applicationModal',
+                'checkStatus': 'checkStatusModal',
+                'request': 'requestModal',
+                'news': 'newsModal',
+                'faq': 'faqModal',
+                'contact': 'contactModal'
+            };
+            
+            const modalId = modalMap[type];
+            if (modalId) {
+                document.getElementById(modalId).classList.remove('show');
+            }
+        }
+
+        function showToast(title, message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        // Close modal on click outside
+        window.onclick = function(e) {
+            const modals = document.querySelectorAll('.modal.show');
+            modals.forEach(modal => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        };
+
+        // Initialize
+        loadDatabase();
+        if (firebaseEnabled) {
+            loadFromFirestore().catch(e => console.warn('Load failed:', e));
+            startAutoSync();
+        }
+    </script>
+</body>
+</html>

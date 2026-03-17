@@ -2,10 +2,336 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=portal-hub.html">
-  <title>Weiterleitung – LSPD Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LSPD Portal - Los Santos Police Department</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #0066cc;
+      --primary-bright: #0088ff;
+      --primary-dark: #004a99;
+      --secondary: #00ff88;
+      --dark: #0a0e27;
+      --darkler: #050812;
+      --card-bg: rgba(15, 25, 50, 0.7);
+      --text-primary: #ffffff;
+      --text-secondary: #b0b8d0;
+      --success: #00ff88;
+      --danger: #ff3333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--dark) 0%, var(--darkler) 100%);
+      color: var(--text-primary);
+      overflow-x: hidden;
+    }
+
+    body {
+      background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 136, 0.03) 2px, rgba(0, 255, 136, 0.03) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 255, 136, 0.03) 2px, rgba(0, 255, 136, 0.03) 4px);
+      animation: scanLines 8s linear infinite;
+    }
+
+    @keyframes scanLines {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 10px; }
+    }
+
+    @keyframes slideInDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    header {
+      background: linear-gradient(90deg, var(--dark) 0%, var(--primary-dark) 50%, var(--dark) 100%);
+      padding: 60px 32px;
+      text-align: center;
+      border-bottom: 2px solid var(--primary);
+      box-shadow: 0 0 30px rgba(0, 102, 204, 0.3);
+      animation: slideInDown 0.8s ease-out;
+    }
+
+    .logo {
+      font-size: 4em;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .logo i {
+      font-size: 1em;
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    header p {
+      color: var(--text-secondary);
+      font-size: 1.1em;
+      margin-bottom: 30px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 32px;
+    }
+
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+
+    .portal-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(0, 102, 204, 0.3);
+      border-radius: 12px;
+      padding: 40px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      animation: slideInUp 0.8s ease-out;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .portal-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .portal-card:hover {
+      border-color: rgba(0, 136, 255, 0.6);
+      transform: translateY(-8px);
+      box-shadow: 0 0 30px rgba(0, 102, 204, 0.3);
+    }
+
+    .portal-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .portal-icon {
+      font-size: 3.5em;
+      margin-bottom: 20px;
+      display: block;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .portal-title {
+      font-size: 1.8em;
+      font-weight: 900;
+      margin-bottom: 12px;
+      color: var(--secondary);
+    }
+
+    .portal-description {
+      color: var(--text-secondary);
+      font-size: 1em;
+      margin-bottom: 20px;
+      line-height: 1.6;
+      flex-grow: 1;
+    }
+
+    .portal-features {
+      background: rgba(0, 102, 204, 0.1);
+      border: 1px solid rgba(0, 102, 204, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 0.9em;
+      color: var(--text-secondary);
+    }
+
+    .portal-features li {
+      margin-bottom: 8px;
+      margin-left: 20px;
+    }
+
+    .portal-features li:before {
+      content: '✓ ';
+      color: var(--secondary);
+      font-weight: 900;
+      margin-right: 8px;
+      margin-left: -20px;
+    }
+
+    .portal-btn {
+      display: inline-block;
+      padding: 14px 28px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      border: none;
+      font-size: 1em;
+    }
+
+    .portal-btn:hover {
+      box-shadow: 0 0 20px rgba(0, 102, 204, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-size: 2.2em;
+      font-weight: 900;
+      margin-bottom: 40px;
+      text-align: center;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+      padding-bottom: 20px;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: var(--secondary);
+    }
+
+    footer {
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(0, 102, 204, 0.2);
+      padding: 30px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 768px) {
+      .logo { font-size: 2.5em; }
+      header h1 { font-size: 1.8em; }
+      .section-title { font-size: 1.5em; }
+      .portal-grid { grid-template-columns: 1fr; gap: 20px; }
+      .container { padding: 30px 16px; }
+    }
+  </style>
 </head>
 <body>
-  <p>Wird weitergeleitet zu <a href="portal-hub.html">Portal Hub</a> ...</p>
+  <header>
+    <div class="logo">
+      <i class="fas fa-shield-alt"></i> LSPD
+    </div>
+    <h1>Los Santos Police Department</h1>
+    <p>Willkommen im Portal der Behörde</p>
+  </header>
+
+  <div class="container">
+    <div class="section-title"><i class="fas fa-door-open"></i> Wähle dein Portal</div>
+    
+    <div class="portal-grid">
+      <a href="portal-hub.html" class="portal-card">
+        <i class="fas fa-building portal-icon"></i>
+        <div class="portal-title">Portal Hub</div>
+        <div class="portal-description">
+          Zentraler Zugang zu allen LSPD-Systemen und Verwaltungsportalen.
+        </div>
+        <ul class="portal-features">
+          <li>Schneller Überblick</li>
+          <li>Alle Portale</li>
+          <li>Infos & News</li>
+        </ul>
+        <button class="portal-btn">Zum Portal Hub</button>
+      </a>
+
+      <a href="mitarbeiter-portal.html" class="portal-card">
+        <i class="fas fa-briefcase portal-icon"></i>
+        <div class="portal-title">Mitarbeiterportal</div>
+        <div class="portal-description">
+          Verwaltungsoberfläche für LSPD-Mitarbeiter und Beamte. Admin-Access benötigt.
+        </div>
+        <ul class="portal-features">
+          <li>Benutzerverwaltung</li>
+          <li>Akten & Anzeigen</li>
+          <li>Team Management</li>
+        </ul>
+        <button class="portal-btn">Zum Mitarbeiterportal</button>
+      </a>
+
+      <a href="bürger-portal.html" class="portal-card">
+        <i class="fas fa-users portal-icon"></i>
+        <div class="portal-title">Bürgerdienste</div>
+        <div class="portal-description">
+          Öffentliche Dienste für Los Santos Bürger. Bewerbungen, Anfragen und Informationen.
+        </div>
+        <ul class="portal-features">
+          <li>Online Bewerbungen</li>
+          <li>Anfragen einreichen</li>
+          <li>Status prüfen</li>
+        </ul>
+        <button class="portal-btn">Zu den Bürgerdiensten</button>
+      </a>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Los Santos Police Department. Alle Rechte vorbehalten.</p>
+    <p style="margin-top: 10px; font-size: 0.85em;">Service-Nr: +1 (123) 456-7890 | Emergency: 110</p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.portal-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-8px)';
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+      });
+    });
+  </script>
 </body>
 </html>

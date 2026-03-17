@@ -63,7 +63,7 @@
 <div class="container">
 <div class="section-title"><i class="fas fa-chart-line"></i> Dashboard</div>
 <div class="cards-grid">
-<div class="card" data-feature="users">
+<div class="card" data-role="Admin,Personalverwaltung">
 <i class="fas fa-users card-icon"></i>
 <div class="card-title">Nutzer</div>
 <div class="card-count" id="userCount">0</div>
@@ -75,7 +75,7 @@
 </div>
 </div>
 
-<div class="card" data-feature="ranks">
+<div class="card" data-role="Admin,Personalverwaltung,Leitungseben">
 <i class="fas fa-briefcase card-icon"></i>
 <div class="card-title">Ränge</div>
 <div class="card-count" id="rankCount">0</div>
@@ -87,7 +87,7 @@
 </div>
 </div>
 
-<div class="card" data-feature="employees">
+<div class="card" data-role="Admin,Personalverwaltung,Leitungseben,Ausbilder">
 <i class="fas fa-id-card card-icon"></i>
 <div class="card-title">Mitarbeiter</div>
 <div class="card-count" id="employeeCount">0</div>
@@ -99,7 +99,7 @@
 </div>
 </div>
 
-<div class="card" data-feature="citizens">
+<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
 <i class="fas fa-user-circle card-icon"></i>
 <div class="card-title">Bürger</div>
 <div class="card-count" id="citizenCount">0</div>
@@ -111,7 +111,7 @@
 </div>
 </div>
 
-<div class="card" data-feature="evidence">
+<div class="card" data-role="Admin,Leitungseben,Mitarbeiter,Ausbilder">
 <i class="fas fa-dna card-icon"></i>
 <div class="card-title">Beweise</div>
 <div class="card-count" id="evidenceCount">0</div>
@@ -123,7 +123,7 @@
 </div>
 </div>
 
-<div class="card" data-feature="training">
+<div class="card" data-role="Admin,Ausbilder,Leitungseben">
 <i class="fas fa-book card-icon"></i>
 <div class="card-title">Schulung</div>
 <div class="card-count" id="trainingCount">0</div>
@@ -135,7 +135,42 @@
 </div>
 </div>
 
-<div class="card" data-feature="admin">
+<div class="card" data-role="Admin,Personalverwaltung,Leitungseben">
+<i class="fas fa-file-alt card-icon"></i>
+<div class="card-title">Bewerbungen</div>
+<div class="card-count" id="applicationsCount">0</div>
+<div class="card-subtitle">Bearbeiten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('applications')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
+<i class="fas fa-gavel card-icon"></i>
+<div class="card-title">Strafakten</div>
+<div class="card-count" id="citationsCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, Mitarbeiter</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addCitation')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('citations')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
+<i class="fas fa-exclamation-triangle card-icon"></i>
+<div class="card-title">Anzeigen</div>
+<div class="card-count" id="chargesCount">0</div>
+<div class="card-subtitle">Verwalten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, Mitarbeiter</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addCharge')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('charges')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Leitungseben,Personalverwaltung">
 <i class="fas fa-download card-icon"></i>
 <div class="card-title">Export</div>
 <div class="card-subtitle">Daten & Backup</div>
@@ -146,7 +181,19 @@
 </div>
 </div>
 
-<div class="card" data-feature="admin">
+<div class="card" data-role="Admin,Leitungseben,Personalverwaltung,Ausbilder,Mitarbeiter">
+<i class="fas fa-newspaper card-icon"></i>
+<div class="card-title">Presseabteilung</div>
+<div class="card-count" id="pressCount">0</div>
+<div class="card-subtitle">Nachrichten</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Ab Mitarbeiter</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('addPress')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('press')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin">
 <i class="fas fa-cog card-icon"></i>
 <div class="card-title">Admin</div>
 <div class="card-subtitle">Panel</div>
@@ -171,6 +218,7 @@
 </div>
 
 <div id="citizensSection" class="table-container hidden">
+<div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citizensSearch" placeholder="Nach Name oder Telefon suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCitizens()"></div>
 <table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citizensTableBody"></tbody></table>
 </div>
 
@@ -181,7 +229,19 @@
 <div id="trainingSection" class="table-container hidden">
 <table><thead><tr><th>Titel</th><th>Dozent</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="trainingTableBody"></tbody></table>
 </div>
+<div id="applicationsSection" class="table-container hidden">
+<table><thead><tr><th>Name</th><th>Code</th><th>Email</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsViewTableBody"></tbody></table>
 </div>
+
+<div id="citationsSection" class="table-container hidden">
+<div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citationSearch" placeholder="Nach Name oder AZ suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCitations()"></div>
+<table><thead><tr><th>Aktenzeichen</th><th>Bürger</th><th>Art</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citationsViewTableBody"></tbody></table>
+</div>
+
+<div id="chargesSection" class="table-container hidden">
+<div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesSearch" placeholder="Nach Name oder Vorwurf suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCharges()"></div>
+<table><thead><tr><th>Anzeige-Nr</th><th>Bürger</th><th>Vorwurf</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="chargesViewTableBody"></tbody></table>
+</div></div>
 </div>
 
 <!-- MODALS -->
@@ -300,6 +360,74 @@
 </div>
 </div>
 
+<div id="applicationsViewModal" class="modal">
+<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>Bewerbungen</h2><button class="modal-close" onclick="closeViewModal('applications')">×</button></div>
+<div class="table-container"><table><thead><tr><th>Name</th><th>Code</th><th>Email</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="addCitationModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Strafakte erstellen</h2><button class="modal-close" onclick="closeModal('addCitation')">×</button></div>
+<form onsubmit="addCitation(event)">
+<div class="form-group"><label>Bürger Name</label><input type="text" id="citName" required></div>
+<div class="form-group"><label>Strafart</label><select id="citType" required><option>Verwarnung</option><option>Ordnungswidrigkeit</option><option>Vergehen</option><option>Verbrechen</option></select></div>
+<div class="form-group"><label>Beschreibung</label><textarea id="citDesc" required></textarea></div>
+<div class="form-group"><label>Beamte(r)</label><input type="text" id="citOfficer" required></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="citationsViewModal" class="modal">
+<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>Strafakten</h2><button class="modal-close" onclick="closeViewModal('citations')">×</button></div>
+<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Art</th><th>Beamte</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="citationsViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="addChargeModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Anzeige erstellen</h2><button class="modal-close" onclick="closeModal('addCharge')">×</button></div>
+<form onsubmit="addCharge(event)">
+<div class="form-group"><label>Bürger Name</label><input type="text" id="chargeName" required></div>
+<div class="form-group"><label>Vorwurf/Verbrechen</label><select id="chargeType" required><option>Raub</option><option>Diebstahl</option><option>Körperverletzung</option><option>Mord</option><option>Betrug</option><option>Drogenhandel</option><option>Sonstiges</option></select></div>
+<div class="form-group"><label>Beschreibung</label><textarea id="chargeDesc" required></textarea></div>
+<div class="form-group"><label>Beamte(r)</label><input type="text" id="chargeOfficer" required></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="chargesViewModal" class="modal">
+<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>Anzeigen</h2><button class="modal-close" onclick="closeViewModal('charges')">×</button></div>
+<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Vorwurf</th><th>Beamte</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="chargesViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="addPressModal" class="modal">
+<div class="modal-content" style="max-width:700px">
+<div class="modal-header"><h2>Nachricht erstellen</h2><button class="modal-close" onclick="closeModal('addPress')">×</button></div>
+<form onsubmit="addPressArticle(event)">
+<div class="form-group"><label>Titel (Headline)</label><input type="text" id="pressTitle" required></div>
+<div class="form-group"><label>Untertitel</label><input type="text" id="pressSubtitle" placeholder="z.B. Polizei meldet..."></div>
+<div class="form-group"><label>Inhalt</label><textarea id="pressContent" required style="min-height:120px"></textarea></div>
+<div class="form-group"><label>Bild-URL (Discord/Web)</label><input type="url" id="pressImage" placeholder="https://..." ></div>
+<div class="form-group"><label>Autor</label><input type="text" id="pressAuthor" required placeholder="Name des Beamten"></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Veröffentlichen</button>
+</form>
+</div>
+</div>
+
+<div id="pressViewModal" class="modal">
+<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>Presseabteilung - Nachrichten</h2><button class="modal-close" onclick="closeViewModal('press')">×</button></div>
+<div id="pressArticlesContainer" style="display:grid;gap:20px;padding:10px"></div>
+</div>
+</div>
+
 <div id="adminPanelModal" class="modal">
 <div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
 <div class="modal-header"><h2>Admin Panel - Rollen & Berechtigungen</h2><button class="modal-close" onclick="closeViewModal('admin')">×</button></div>
@@ -324,47 +452,26 @@
 
 <script>
 const DB_KEY='lspdData',ROLES=['Trainee','Mitarbeiter','Ausbilder','Leitungseben','Personalverwaltung','Admin','Commissioner'];
-const FEATURES=['users','ranks','employees','citizens','evidence','training','admin'];
-let database={users:[],jobRanks:[],employees:[],citizens:[],evidence:[],training:[],auditLog:[],rolePermissions:null},currentUser=null;
+const FEATURES=['users','ranks','employees','citizens','evidence','training','applications','citations','charges','press','admin'];
+let database={users:[],jobRanks:[],employees:[],citizens:[],evidence:[],training:[],applications:[],citations:[],charges:[],press:[],auditLog:[],rolePermissions:null},currentUser=null;
 let firebaseReady=false;
-let defaultRolePermissions={Admin:['users','ranks','employees','citizens','evidence','training','admin'],Commissioner:['users','employees','citizens','evidence','training'],Leitungseben:['employees','citizens','evidence','training','ranks'],Personalverwaltung:['users','ranks','employees'],Ausbilder:['training','employees','citizens','evidence'],Mitarbeiter:['citizens','evidence'],Trainee:['citizens']};
+let defaultRolePermissions={Admin:['users','ranks','employees','citizens','evidence','training','applications','citations','charges','press','admin'],Commissioner:['users','employees','citizens','evidence','training','applications','press'],Leitungseben:['employees','citizens','evidence','training','ranks','applications','citations','charges','press'],Personalverwaltung:['users','ranks','employees','applications','press'],Ausbilder:['training','employees','citizens','evidence','applications','charges','press'],Mitarbeiter:['citizens','evidence','applications','press'],Trainee:['citizens']};
 
 function generatePassword(){let p='';for(let i=0;i<12;i++)p+=Math.random().toString(36).charAt(2);return p.toUpperCase()}
 function generateNewPassword(){document.getElementById('newPassword').value=generatePassword()}
-function saveDatabase(){
-  console.log('DEBUG: saveDatabase called - firebaseEnabled=' + firebaseEnabled);
-  saveToFirestore().catch(e=>{
-    console.error('Firestore save error:', e);
-    showToast('Error', 'Save failed', 'error');
-  });
-}
-function loadDatabase(){
-  console.log('loadDatabase called');
-  let s=localStorage.getItem(DB_KEY);
-  if(s){
-    database=JSON.parse(s);
-    console.log('Loaded from LocalStorage: ' + database.users.length + ' users');
-  } else {
-    console.log('No LocalStorage data, using defaults');
-    database.users=[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}];
-    database.jobRanks=[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}];
-    database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));
-  };
-  if(!database.rolePermissions){
-    database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));
-  }
-}
+function loadDatabase(){database.users=[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}];database.jobRanks=[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}];database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));if(!database.rolePermissions)database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions))}
+function saveDatabase(){if(firebaseEnabled){saveToFirestore().catch(e=>console.error('Firebase sync failed:',e))}else console.warn('⚠️ Firebase nicht verfügbar - Daten werden nicht gespeichert')}
 function showToast(t,m,ty){const d=document.createElement('div');d.className=`toast ${ty}`;d.innerHTML=`<strong>${t}</strong><br>${m}`;document.body.appendChild(d);setTimeout(()=>d.remove(),3000)}
 function getRolePermissions(){return database.rolePermissions||defaultRolePermissions}
 function canAccess(c){if(!currentUser)return!1;const perms=getRolePermissions()[currentUser.role]||[];return perms.includes(c)}
-function filterDashboardCards(){if(!currentUser)return;const c=document.querySelectorAll('.card');c.forEach(cd=>{const feature=cd.dataset.feature||cd.dataset.role;if(feature){const hideCard=!canAccess(feature);cd.classList.toggle('hidden',hideCard)}})}
+function filterDashboardCards(){if(!currentUser)return;const c=document.querySelectorAll('.card[data-role]');c.forEach(cd=>{const r=cd.dataset.role.split(',');cd.classList.toggle('hidden',!r.includes(currentUser.role))})}
 function switchRole(role){if(!currentUser)return;currentUser.role=role;document.getElementById('roleSelector').value=role;document.getElementById('currentUser').textContent=role;document.getElementById('userRole').textContent=`(${role})`;filterDashboardCards();showToast('🔄 Rolle gewechselt',`Sie sind jetzt: ${role}`,'info')}
 function handleLogin(e){e.preventDefault();const u=document.getElementById('username').value,p=document.getElementById('password').value;const usr=database.users.find(x=>x.username===u&&x.password===p);if(usr){currentUser={username:u,role:usr.role};document.getElementById('roleSelector').value=usr.role;loginSuccess()}else document.getElementById('loginError').style.display='block',document.getElementById('loginError').textContent='Ungültig'}
-async function loginSuccess(){loadDatabase();if(firebaseEnabled){await loadFromFirestore().catch(e=>console.warn('Firestore sync failed:',e))};document.getElementById('loginScreen').classList.add('hidden');document.getElementById('mainApp').classList.remove('hidden');document.getElementById('currentUser').textContent=currentUser.username;document.getElementById('userRole').textContent=`(${currentUser.role})`;document.getElementById('roleSelector').value=currentUser.role;filterDashboardCards();updateCounts();if(firebaseEnabled){startAutoSync()}}
+function loginSuccess(){document.getElementById('loginScreen').classList.add('hidden');document.getElementById('mainApp').classList.remove('hidden');document.getElementById('currentUser').textContent=currentUser.username;document.getElementById('userRole').textContent=`(${currentUser.role})`;document.getElementById('roleSelector').value=currentUser.role;filterDashboardCards();updateCounts();if(firebaseEnabled){loadFromFirestore().catch(e=>console.warn('Firestore load on login failed:',e));startAutoSync()}}
 function handleLogout(){currentUser=null;document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('mainApp').classList.add('hidden');document.getElementById('username').value='';document.getElementById('password').value=''}
-function openModal(t){const m={addUser:'addUserModal',addRank:'addRankModal',addEmployee:'addEmployeeModal',addCitizen:'addCitizenModal',addEvidence:'addEvidenceModal',addTraining:'addTrainingModal',users:'usersViewModal',ranks:'ranksViewModal',employees:'employeesViewModal',citizens:'citizensViewModal',evidence:'evidenceViewModal',training:'trainingViewModal'};const permMap={addUser:['users'],addRank:['ranks'],addEmployee:['employees'],addCitizen:['citizens'],addEvidence:['evidence'],addTraining:['training'],users:['users'],ranks:['ranks'],employees:['employees'],citizens:['citizens'],evidence:['evidence'],training:['training']};const reqPerms=permMap[t]||[];if(reqPerms.length>0&&!reqPerms.some(p=>canAccess(p))){showToast('🚫 Keine Berechtigung',`Diese Funktion benötigt: ${reqPerms.join(', ')}`,'error');return}if(t==='addUser')populateJobRankDropdown(),generateNewPassword();if(t==='users')renderUsersView();if(t==='ranks')renderRanksView();if(t==='employees')renderEmployeesView();if(t==='citizens')renderCitizensView();if(t==='evidence')renderEvidenceView();if(t==='training')renderTrainingView();const el=document.getElementById(m[t]);if(el)el.classList.add('show')}
-function closeModal(t){const m={addUser:'addUserModal',addRank:'addRankModal',addEmployee:'addEmployeeModal',addCitizen:'addCitizenModal',addEvidence:'addEvidenceModal',addTraining:'addTrainingModal'};const el=document.getElementById(m[t]);if(el)el.classList.remove('show')}
-function closeViewModal(t){const m={users:'usersViewModal',ranks:'ranksViewModal',employees:'employeesViewModal',citizens:'citizensViewModal',evidence:'evidenceViewModal',training:'trainingViewModal',admin:'adminPanelModal'};const el=document.getElementById(m[t]);if(el)el.classList.remove('show')}
+function openModal(t){const m={addUser:'addUserModal',addRank:'addRankModal',addEmployee:'addEmployeeModal',addCitizen:'addCitizenModal',addEvidence:'addEvidenceModal',addTraining:'addTrainingModal',addCitation:'addCitationModal',addCharge:'addChargeModal',addPress:'addPressModal',users:'usersViewModal',ranks:'ranksViewModal',employees:'employeesViewModal',citizens:'citizensViewModal',evidence:'evidenceViewModal',training:'trainingViewModal',applications:'applicationsViewModal',citations:'citationsViewModal',charges:'chargesViewModal',press:'pressViewModal'};const permMap={addUser:['users'],addRank:['ranks'],addEmployee:['employees'],addCitizen:['citizens'],addEvidence:['evidence'],addTraining:['training'],addCitation:['citations'],addCharge:['charges'],addPress:['press'],users:['users'],ranks:['ranks'],employees:['employees'],citizens:['citizens'],evidence:['evidence'],training:['training'],applications:['applications'],citations:['citations'],charges:['charges'],press:['press']};const reqPerms=permMap[t]||[];if(reqPerms.length>0&&!reqPerms.some(p=>canAccess(p))){showToast('🚫 Keine Berechtigung',`Diese Funktion benötigt: ${reqPerms.join(', ')}`,'error');return}if(t==='addUser')populateJobRankDropdown(),generateNewPassword();if(t==='users')renderUsersView();if(t==='ranks')renderRanksView();if(t==='employees')renderEmployeesView();if(t==='citizens')renderCitizensView();if(t==='evidence')renderEvidenceView();if(t==='training')renderTrainingView();if(t==='applications')renderApplicationsView();if(t==='citations')renderCitationsView();if(t==='charges')renderChargesView();if(t==='press')renderPressArticles();const el=document.getElementById(m[t]);if(el)el.classList.add('show')}
+function closeModal(t){const m={addUser:'addUserModal',addRank:'addRankModal',addEmployee:'addEmployeeModal',addCitizen:'addCitizenModal',addEvidence:'addEvidenceModal',addTraining:'addTrainingModal',addCitation:'addCitationModal',addCharge:'addChargeModal',addPress:'addPressModal'};const el=document.getElementById(m[t]);if(el)el.classList.remove('show')}
+function closeViewModal(t){const m={users:'usersViewModal',ranks:'ranksViewModal',employees:'employeesViewModal',citizens:'citizensViewModal',evidence:'evidenceViewModal',training:'trainingViewModal',applications:'applicationsViewModal',citations:'citationsViewModal',charges:'chargesViewModal',press:'pressViewModal',admin:'adminPanelModal'};const el=document.getElementById(m[t]);if(el)el.classList.remove('show')}
 function populateJobRankDropdown(){const s=document.getElementById('newJobRank');s.innerHTML='';database.jobRanks.forEach(r=>{s.innerHTML+=`<option>${r.name}</option>`});const r=document.getElementById('newRole');r.innerHTML='';ROLES.forEach(rl=>{r.innerHTML+=`<option>${rl}</option>`})}
 function addUser(e){e.preventDefault();const u={id:Date.now(),username:document.getElementById('newUsername').value,password:document.getElementById('newPassword').value,role:document.getElementById('newRole').value,jobRank:document.getElementById('newJobRank').value,status:'Aktiv',created:new Date().toISOString()};database.users.push(u);saveDatabase();closeModal('addUser');document.getElementById('addUserModal').querySelector('form').reset();showToast('✅ Nutzer hinzugefügt',u.username,'success');updateCounts();renderUsersView()}
 function addRank(e){e.preventDefault();const r={id:Date.now(),name:document.getElementById('rankName').value,color:document.getElementById('rankColor').value,description:document.getElementById('rankDesc').value};database.jobRanks.push(r);saveDatabase();closeModal('addRank');document.getElementById('addRankModal').querySelector('form').reset();showToast('✅ Rang hinzugefügt',r.name,'success');updateCounts()}
@@ -389,9 +496,27 @@ function downloadCSV(){let c='Benutzer,Rolle,Status\n';database.users.forEach(u=
 function openAdminPanel(){if(!canAccess('admin')){showToast('🚫 Zugriff verweigert','Nur Admins dürfen das Admin Panel öffnen','error');return}document.getElementById('adminPanelModal').classList.add('show');renderRoleEditor();const s=document.getElementById('statsPanel');s.innerHTML=`<div style="background:rgba(0,255,136,0.1);padding:10px;border-radius:6px"><div style="color:var(--secondary)">Nutzer</div><div style="font-size:1.2em;font-weight:700">${database.users.length}</div></div>`+`<div style="background:rgba(0,255,136,0.1);padding:10px;border-radius:6px"><div style="color:var(--secondary)">Mitarbeiter</div><div style="font-size:1.2em;font-weight:700">${database.employees.length}</div></div>`}
 function renderRoleEditor(){const perms=getRolePermissions();let html='<div style="margin-bottom:15px"><h4 style="color:var(--secondary);margin:0 0 10px 0">📋 Berechtigungen verwalten</h4><p style="font-size:0.9em;margin:0;color:rgba(255,255,255,0.7)">Wähle aus, welche Funktionen jede Rolle verwenden kann:</p></div>';ROLES.forEach(role=>{html+=`<div style="border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-bottom:12px"><strong style="color:var(--secondary);font-size:1.1em;display:block;margin-bottom:8px">${role}</strong>`;FEATURES.forEach(feature=>{const isChecked=perms[role]&&perms[role].includes(feature);html+=`<label style="display:inline-flex;align-items:center;gap:8px;margin-right:15px;cursor:pointer;font-size:0.9em"><input type="checkbox" id="perm_${role}_${feature}" ${isChecked?'checked':''} onchange="toggleRolePermission('${role}','${feature}')" style="cursor:pointer"><span>${feature}</span></label>`});html+='</div>'});html+='<div style="border-top:1px solid rgba(0,255,136,0.2);padding-top:12px;margin-top:15px"><button onclick="resetPermissionsToDefault()" style="padding:8px 15px;background:rgba(255,107,107,0.2);border:1px solid #ff6b6b;color:#ff6b6b;border-radius:5px;cursor:pointer;font-size:0.9em;transition:all 0.3s">🔄 Auf Standard zurücksetzen</button></div>';document.getElementById('roleEditorPanel').innerHTML=html}function resetPermissionsToDefault(){if(!confirm('Alle Berechtigungen auf Standard zurücksetzen?'))return;database.rolePermissions=JSON.parse(JSON.stringify(defaultRolePermissions));saveDatabase();renderRoleEditor();showToast('✅ Berechtigungen','Auf Standard zurückgesetzt','success');filterDashboardCards()}
 function toggleRolePermission(role,feature){const perms=getRolePermissions();if(!perms[role])perms[role]=[];const idx=perms[role].indexOf(feature);const checkbox=document.getElementById(`perm_${role}_${feature}`);if(checkbox.checked){if(idx<0)perms[role].push(feature)}else{if(idx>=0)perms[role].splice(idx,1)}database.rolePermissions=perms;saveDatabase();showToast('✅ Berechtigung aktualisiert',`${role} - ${feature}`,'success');filterDashboardCards()}
-function resetTestData(){if(!confirm('Alle Daten zurücksetzen?'))return;database={users:[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}],jobRanks:[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}],employees:[],citizens:[],evidence:[],training:[],auditLog:[],rolePermissions:JSON.parse(JSON.stringify(defaultRolePermissions))};saveDatabase();showToast('🔄 Reset','Daten & Berechtigungen zurückgesetzt','success');location.reload()}
+function resetTestData(){if(!confirm('Alle Daten zurücksetzen?'))return;database={users:[{id:1,username:'Admin',password:'Admin123!',role:'Admin',jobRank:'Admin',status:'Aktiv',created:new Date().toISOString()}],jobRanks:[{id:1,name:'Admin',color:'#ff0000'},{id:2,name:'Chief',color:'#0066cc'},{id:3,name:'Officer',color:'#00ff88'}],employees:[],citizens:[],evidence:[],training:[],applications:[],citations:[],charges:[],press:[],auditLog:[],rolePermissions:JSON.parse(JSON.stringify(defaultRolePermissions))};saveDatabase();showToast('🔄 Reset','Daten & Berechtigungen zurückgesetzt','success');location.reload()}
 function exportAdminData(){const e={timestamp:new Date().toISOString(),data:database},j=JSON.stringify(e,null,2),b=new Blob([j],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=`admin-export-${new Date().toISOString().slice(0,10)}.json`;a.click();showToast('💾 Admin-Export','Exportiert','success')}
-function updateCounts(){document.getElementById('userCount').textContent=database.users.length;document.getElementById('rankCount').textContent=database.jobRanks.length;document.getElementById('employeeCount').textContent=database.employees.length;document.getElementById('citizenCount').textContent=database.citizens.length;document.getElementById('evidenceCount').textContent=database.evidence.length;document.getElementById('trainingCount').textContent=database.training.length}
+function renderApplicationsView(){const b=document.getElementById('applicationsViewTableBody');b.innerHTML=database.applications.map(a=>`<tr><td>${a.name}</td><td>${a.code}</td><td>${a.email}</td><td><span class="badge ${a.status==='Akzeptiert'?'badge-success':a.status==='Abgelehnt'?'badge-danger':'badge-warning'}">${a.status}</span></td><td><button class="btn btn-small" ${a.status==='Eingereicht'?'':'disabled'} onclick="acceptApplication(${a.id})">✓</button><button class="btn btn-small" ${a.status==='Eingereicht'?'':'disabled'} onclick="rejectApplication(${a.id})">✗</button></td></tr>`).join('')}
+function acceptApplication(id){const a=database.applications.find(x=>x.id===id);if(a&&a.status==='Eingereicht'){a.status='Akzeptiert';saveDatabase();renderApplicationsView();updateCounts();showToast('✅ Bewerbung akzeptiert',a.name,'success')}}
+function rejectApplication(id){const a=database.applications.find(x=>x.id===id);if(a&&a.status==='Eingereicht'){if(!confirm('Bewerbung wirklich ablehnen?'))return;a.status='Abgelehnt';saveDatabase();renderApplicationsView();updateCounts();showToast('❌ Bewerbung abgelehnt',a.name,'error')}}
+function renderCitationsView(){const b=document.getElementById('citationsViewTableBody');b.innerHTML=database.citations.map(c=>{const canEdit=Date.now()<c.editUntil;const timeLeft=Math.max(0,Math.ceil((c.editUntil-Date.now())/60000));return`<tr><td>${c.aktenzeichen}</td><td>${c.name}</td><td><span class="badge badge-info">${c.type}</span></td><td>${c.officer}</td><td>${new Date(c.date).toLocaleDateString('de-DE')}</td><td>${canEdit?`<button class="btn btn-small" onclick="editCitation(${c.id})" title="Noch ${timeLeft} Min">✎</button>`:'<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>'}<button class="btn btn-small" ${canEdit?'':'disabled'} onclick="deleteCitation(${c.id})">×</button></td></tr>`}).join('')}
+function addCitation(e){e.preventDefault();const c={id:Date.now(),aktenzeichen:`CA-${Date.now().toString().slice(-6)}`,name:document.getElementById('citName').value,type:document.getElementById('citType').value,description:document.getElementById('citDesc').value,officer:document.getElementById('citOfficer').value,date:new Date().toISOString(),editUntil:Date.now()+30*60000};database.citations.push(c);saveDatabase();closeModal('addCitation');document.getElementById('addCitationModal').querySelector('form').reset();showToast('✅ Strafakte erstellt',c.aktenzeichen,'success');updateCounts();renderCitationsView()}
+function deleteCitation(id){if(confirm('Strafakte löschen?')){const c=database.citations.find(x=>x.id===id);if(c&&Date.now()>=c.editUntil){showToast('🔒 Zu spät','Diese Strafakte kann nicht mehr gelöscht werden','error');return}database.citations=database.citations.filter(c=>c.id!==id);saveDatabase();renderCitationsView();updateCounts();showToast('✅ Gelöscht','Strafakte gelöscht','success')}}
+function editCitation(id){const c=database.citations.find(x=>x.id===id);if(!c||Date.now()>=c.editUntil){showToast('🔒 Zu spät','Diese Strafakte kann nicht mehr bearbeitet werden','error');return}document.getElementById('citName').value=c.name;document.getElementById('citType').value=c.type;document.getElementById('citDesc').value=c.description;document.getElementById('citOfficer').value=c.officer;const oldId=c.id;document.getElementById('addCitationModal').querySelector('form').onsubmit=((e)=>{e.preventDefault();c.name=document.getElementById('citName').value;c.type=document.getElementById('citType').value;c.description=document.getElementById('citDesc').value;c.officer=document.getElementById('citOfficer').value;saveDatabase();closeModal('addCitation');document.getElementById('addCitationModal').querySelector('form').reset();document.getElementById('addCitationModal').querySelector('form').onsubmit=null;showToast('✅ Aktualisiert','Strafakte aktualisiert','success');renderCitationsView()});openModal('addCitation')}
+function renderChargesView(){const b=document.getElementById('chargesViewTableBody');b.innerHTML=database.charges.map(c=>{const canEdit=Date.now()<c.editUntil;const timeLeft=Math.max(0,Math.ceil((c.editUntil-Date.now())/60000));return`<tr><td>${c.chargeNumber}</td><td>${c.name}</td><td><span class="badge badge-danger">${c.type}</span></td><td>${c.officer}</td><td><span class="badge ${c.status==='Aktiv'?'badge-danger':'badge-success'}">${c.status}</span></td><td>${new Date(c.date).toLocaleDateString('de-DE')}</td><td>${canEdit?`<button class="btn btn-small" onclick="editCharge(${c.id})" title="Noch ${timeLeft} Min">✎</button>`:'<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>'}<button class="btn btn-small" ${canEdit?'':'disabled'} onclick="deleteCharge(${c.id})">×</button></td></tr>`}).join('')}
+function addCharge(e){e.preventDefault();const c={id:Date.now(),chargeNumber:`AZ-${Date.now().toString().slice(-6)}`,name:document.getElementById('chargeName').value,type:document.getElementById('chargeType').value,description:document.getElementById('chargeDesc').value,officer:document.getElementById('chargeOfficer').value,status:'Aktiv',date:new Date().toISOString(),editUntil:Date.now()+30*60000};database.charges.push(c);saveDatabase();closeModal('addCharge');document.getElementById('addChargeModal').querySelector('form').reset();showToast('✅ Anzeige erstellt',c.chargeNumber,'success');updateCounts();renderChargesView()}
+function deleteCharge(id){if(confirm('Anzeige löschen?')){const c=database.charges.find(x=>x.id===id);if(c&&Date.now()>=c.editUntil){showToast('🔒 Zu spät','Diese Anzeige kann nicht mehr gelöscht werden','error');return}database.charges=database.charges.filter(c=>c.id!==id);saveDatabase();renderChargesView();updateCounts();showToast('✅ Gelöscht','Anzeige gelöscht','success')}}
+function editCharge(id){const c=database.charges.find(x=>x.id===id);if(!c||Date.now()>=c.editUntil){showToast('🔒 Zu spät','Diese Anzeige kann nicht mehr bearbeitet werden','error');return}document.getElementById('chargeName').value=c.name;document.getElementById('chargeType').value=c.type;document.getElementById('chargeDesc').value=c.description;document.getElementById('chargeOfficer').value=c.officer;const oldId=c.id;document.getElementById('addChargeModal').querySelector('form').onsubmit=((e)=>{e.preventDefault();c.name=document.getElementById('chargeName').value;c.type=document.getElementById('chargeType').value;c.description=document.getElementById('chargeDesc').value;c.officer=document.getElementById('chargeOfficer').value;saveDatabase();closeModal('addCharge');document.getElementById('addChargeModal').querySelector('form').reset();document.getElementById('addChargeModal').querySelector('form').onsubmit=null;showToast('✅ Aktualisiert','Anzeige aktualisiert','success');renderChargesView()});openModal('addCharge')}
+function filterCitizens(){const query=document.getElementById('citizensSearch').value.toLowerCase();const rows=document.querySelectorAll('#citizensTableBody tr');rows.forEach(row=>{const name=row.cells[0]?.textContent.toLowerCase();const phone=row.cells[1]?.textContent.toLowerCase();const match=name?.includes(query)||phone?.includes(query);row.style.display=match?'':'none'})}
+function filterCitations(){const query=document.getElementById('citationSearch').value.toLowerCase();const rows=document.querySelectorAll('#citationsViewTableBody tr');rows.forEach(row=>{const az=row.cells[0]?.textContent.toLowerCase();const name=row.cells[1]?.textContent.toLowerCase();const match=az?.includes(query)||name?.includes(query);row.style.display=match?'':'none'})}
+function filterCharges(){const query=document.getElementById('chargesSearch').value.toLowerCase();const rows=document.querySelectorAll('#chargesViewTableBody tr');rows.forEach(row=>{const az=row.cells[0]?.textContent.toLowerCase();const name=row.cells[1]?.textContent.toLowerCase();const match=az?.includes(query)||name?.includes(query);row.style.display=match?'':'none'})}
+function addPressArticle(e){e.preventDefault();const canEdit=true;const p={id:Date.now(),title:document.getElementById('pressTitle').value,subtitle:document.getElementById('pressSubtitle').value,content:document.getElementById('pressContent').value,image:document.getElementById('pressImage').value,author:document.getElementById('pressAuthor').value,date:new Date().toISOString(),canEdit:canEdit,editUntil:new Date(Date.now()+30*60000).getTime()};database.press.push(p);saveDatabase();closeModal('addPress');document.getElementById('addPressModal').querySelector('form').reset();showToast('✅ Nachricht veröffentlicht',p.title,'success');updateCounts();renderPressArticles()}
+function renderPressArticles(){const c=document.getElementById('pressArticlesContainer');if(database.press.length===0){c.innerHTML='<p style="color:var(--text-secondary);text-align:center;padding:40px">Keine Nachrichten vorhanden</p>';return}c.innerHTML=database.press.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>{const canEdit=Date.now()<p.editUntil;const editBtn=canEdit?`<button class="btn btn-primary btn-small" onclick="editPressArticle(${p.id})">✎ Bearbeiten</button>`:'';const delBtn=canEdit?`<button class="btn btn-small" style="background:rgba(255,51,51,0.2);border:1px solid #ff6b6b;color:#ff6b6b" onclick="deletePressArticle(${p.id})">×</button>`:'';return`<div style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.2);border-radius:8px;overflow:hidden"><div style="display:grid;grid-template-columns:200px 1fr;gap:15px;padding:20px">${p.image?`<img src="${p.image}" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid rgba(0,102,204,0.3)">`:''}<div><h3 style="color:var(--secondary);margin-bottom:6px;font-size:1.2em">${p.title}</h3><p style="color:rgba(255,255,255,0.7);margin-bottom:10px;font-size:0.9em">${p.subtitle}</p><p style="color:var(--text-secondary);line-height:1.6;margin-bottom:12px">${p.content.substring(0,200)}...</p><div style="display:flex;gap:8px;align-items:center;font-size:0.85em;color:rgba(255,255,255,0.6);margin-bottom:12px"><i class="fas fa-user-circle"></i> <span>${p.author}</span> <i class="fas fa-calendar" style="margin-left:12px"></i> <span>${new Date(p.date).toLocaleDateString('de-DE')}</span></div><div style="display:flex;gap:8px">${editBtn}${delBtn}</div></div></div></div>`}).join('')}
+function editPressArticle(id){const p=database.press.find(x=>x.id===id);if(!p)return;document.getElementById('pressTitle').value=p.title;document.getElementById('pressSubtitle').value=p.subtitle;document.getElementById('pressContent').value=p.content;document.getElementById('pressImage').value=p.image;document.getElementById('pressAuthor').value=p.author;const oldId=p.id;document.getElementById('addPressModal').querySelector('form').onsubmit=((e)=>{e.preventDefault();p.title=document.getElementById('pressTitle').value;p.subtitle=document.getElementById('pressSubtitle').value;p.content=document.getElementById('pressContent').value;p.image=document.getElementById('pressImage').value;p.author=document.getElementById('pressAuthor').value;saveDatabase();closeModal('addPress');document.getElementById('addPressModal').querySelector('form').reset();document.getElementById('addPressModal').querySelector('form').onsubmit=null;showToast('✅ Nachricht aktualisiert',p.title,'success');renderPressArticles()});openModal('addPress')}
+function deletePressArticle(id){if(confirm('Nachricht wirklich löschen?')){database.press=database.press.filter(p=>p.id!==id);saveDatabase();renderPressArticles();updateCounts();showToast('🗑️ Nachricht gelöscht','','success')}}
+function updateCounts(){document.getElementById('userCount').textContent=database.users.length;document.getElementById('rankCount').textContent=database.jobRanks.length;document.getElementById('employeeCount').textContent=database.employees.length;document.getElementById('citizenCount').textContent=database.citizens.length;document.getElementById('evidenceCount').textContent=database.evidence.length;document.getElementById('trainingCount').textContent=database.training.length;document.getElementById('applicationsCount').textContent=database.applications.length;document.getElementById('citationsCount').textContent=database.citations.length;document.getElementById('chargesCount').textContent=database.charges.length;document.getElementById('pressCount').textContent=database.press.length}
 window.onclick=e=>{if(e.target.classList.contains('modal'))e.target.classList.remove('show')};
 // Initialize on page load
 loadDatabase();populateJobRankDropdown();updateCounts();console.log('✅ Portal initialisiert');
