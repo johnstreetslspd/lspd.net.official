@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LSPD Bürgerdienste</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Firebase SDK v9 Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="db.js"></script>
     <style>
         :root {
             --primary: #0066cc;
@@ -738,58 +743,7 @@
     </div>
 
     <script>
-        const DB_KEY = 'lspdCitizensData';
-        let database = {
-            applications: [],
-            requests: [],
-            news: []
-        };
-
-        // Initialize database with sample news
-        function initDatabase() {
-            database = {
-                applications: [],
-                requests: [],
-                news: [
-                    {
-                        id: 1,
-                        title: 'Willkommen im LSPD Portal',
-                        content: 'Wir heißen Sie herzlich willkommen im öffentlichen Bürgerdiensteportal der LSPD!',
-                        date: new Date().toISOString()
-                    },
-                    {
-                        id: 2,
-                        title: 'Neue Bewerbungsphase offen',
-                        content: 'Die nächste Bewerbungsphase für neue Beamte hat begonnen. Jetzt bewerben!',
-                        date: new Date().toISOString()
-                    }
-                ],
-                citations: [],
-                charges: []
-            };
-            saveDatabase();
-        }
-
-        function loadDatabase() {
-            // Initialisierung mit Standarddaten - Firebase-only
-            initDatabase();
-            updateNewsCount();
-        }
-
-        function saveDatabase() {
-            // Nur Firebase - keine localStorage
-            if (firebaseEnabled) {
-                saveToFirestore().catch(e => console.error('Firebase sync failed:', e));
-            } else {
-                console.warn('⚠️ Firebase nicht verfügbar - Daten werden nicht gespeichert');
-            }
-        }
-
-        // UPDATE COUNTERS
-        function updateNewsCount() {
-            document.getElementById('newsCount').textContent = database.news.length;
-        }
-
+        // 🔄 Nutze globales database Objekt aus db.js
         // APPLICATIONS
         function submitApplication(e) {
             e.preventDefault();
@@ -846,7 +800,7 @@
             const id = 'REQ-' + Date.now().toString().slice(-6);
             
             const req = {
-                id: req,
+                id: id,
                 name: document.getElementById('reqName').value,
                 email: document.getElementById('reqEmail').value,
                 subject: document.getElementById('reqSubject').value,
@@ -862,19 +816,44 @@
             e.target.reset();
         }
 
-        // NEWS
+        // UPDATE COUNTERS - Zähle News und Pressenachrichten
+        function updateNewsCount() {
+            const newsCount = (database.news ? database.news.length : 0) + 
+                             (database.press ? database.press.length : 0);
+            document.getElementById('newsCount').textContent = newsCount;
+        }
+
+        // NEWS - Zeige News und Pressenachrichten
         function displayNews() {
             const newsDiv = document.getElementById('newsContent');
-            if (database.news.length === 0) {
+            
+            // Kombiniere database.news und database.press (Presseabteilung)
+            let allNews = [];
+            if (database.news && database.news.length > 0) {
+                allNews = allNews.concat(database.news);
+            }
+            if (database.press && database.press.length > 0) {
+                allNews = allNews.concat(database.press);
+            }
+            
+            // Sortiere nach neueste zuerst
+            allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (allNews.length === 0) {
                 newsDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Keine News vorhanden</p>';
                 return;
             }
             
-            newsDiv.innerHTML = database.news.map(news => `
+            newsDiv.innerHTML = allNews.map(news => `
                 <div style="background: rgba(0, 102, 204, 0.1); border: 1px solid rgba(0, 102, 204, 0.3); padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+                    ${news.image ? `<img src="${news.image}" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: 6px; margin-bottom: 12px;">` : ''}
                     <h3 style="color: var(--secondary); margin-bottom: 10px;">${news.title}</h3>
+                    ${news.subtitle ? `<p style="color: var(--warning); font-size: 0.9em; margin-bottom: 10px;"><i class="fas fa-newspaper"></i> ${news.subtitle}</p>` : ''}
                     <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px;">${news.content}</p>
-                    <p style="font-size: 0.85em; color: rgba(255, 255, 255, 0.5);">${new Date(news.date).toLocaleDateString('de-DE')}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85em; color: rgba(255, 255, 255, 0.5);">
+                        <span>${news.author ? `<i class="fas fa-user-circle"></i> ${news.author}` : ''}</span>
+                        <span>${new Date(news.date).toLocaleDateString('de-DE')}</span>
+                    </div>
                 </div>
             `).join('');
         }
@@ -936,12 +915,21 @@
             });
         };
 
-        // Initialize
-        loadDatabase();
-        if (firebaseEnabled) {
-            loadFromFirestore().catch(e => console.warn('Load failed:', e));
-            startAutoSync();
-        }
+        // 🔄 Initialize - Nutze globale Funktionen aus db.js
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                // Lade Daten von Firebase (oder lokal)
+                if (firebaseEnabled) {
+                    loadFromFirestore().catch(e => console.warn('Load failed:', e));
+                    startAutoSync();
+                } else {
+                    console.warn('⚠️ Firebase nicht verfügbar');
+                }
+                
+                // Update UI
+                updateNewsCount();
+            }, 500);
+        });
     </script>
 </body>
 </html>
