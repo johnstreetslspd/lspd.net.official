@@ -4,7 +4,7 @@
 // ============================================
 
 const DEFAULT_ROLES = ['Trainee', 'Mitarbeiter', 'Ausbilder', 'Leitungseben', 'Personalverwaltung', 'Admin', 'Commissioner'];
-const FEATURES = ['users', 'ranks', 'employees', 'citizens', 'evidence', 'training', 'applications', 'citations', 'charges', 'press', 'admin'];
+const FEATURES = ['users', 'ranks', 'employees', 'citizens', 'evidence', 'training', 'applications', 'citations', 'charges', 'press', 'requests', 'admin'];
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -122,7 +122,8 @@ function openModal(t) {
         addCitation: 'addCitationModal', addCharge: 'addChargeModal', addPress: 'addPressModal',
         users: 'usersViewModal', ranks: 'ranksViewModal', employees: 'employeesViewModal',
         citizens: 'citizensViewModal', evidence: 'evidenceViewModal', training: 'trainingViewModal',
-        applications: 'applicationsViewModal', citations: 'citationsViewModal', charges: 'chargesViewModal', press: 'pressViewModal'
+        applications: 'applicationsViewModal', citations: 'citationsViewModal', charges: 'chargesViewModal', press: 'pressViewModal',
+        requests: 'requestsViewModal'
     };
 
     const permMap = {
@@ -131,7 +132,7 @@ function openModal(t) {
         addCharge: ['charges'], addPress: ['press'], users: ['users'], ranks: ['ranks'],
         employees: ['employees'], citizens: ['citizens'], evidence: ['evidence'],
         training: ['training'], applications: ['applications'], citations: ['citations'],
-        charges: ['charges'], press: ['press']
+        charges: ['charges'], press: ['press'], requests: ['requests']
     };
 
     const reqPerms = permMap[t] || [];
@@ -153,6 +154,7 @@ function openModal(t) {
     if (t === 'citations') renderCitationsView();
     if (t === 'charges') renderChargesView();
     if (t === 'press') renderPressArticles();
+    if (t === 'requests') renderRequestsView();
 
     const el = document.getElementById(m[t]);
     if (el) el.classList.add('show');
@@ -173,7 +175,8 @@ function closeViewModal(t) {
         users: 'usersViewModal', ranks: 'ranksViewModal', employees: 'employeesViewModal',
         citizens: 'citizensViewModal', evidence: 'evidenceViewModal', training: 'trainingViewModal',
         applications: 'applicationsViewModal', citations: 'citationsViewModal', charges: 'chargesViewModal',
-        press: 'pressViewModal', admin: 'adminPanelModal', userPermissions: 'userPermissionsModal'
+        press: 'pressViewModal', admin: 'adminPanelModal', userPermissions: 'userPermissionsModal',
+        requests: 'requestsViewModal'
     };
     const el = document.getElementById(m[t]);
     if (el) el.classList.remove('show');
@@ -1160,6 +1163,110 @@ function saveUserPermission(userId, feature, checked) {
     showToast('✅ Berechtigung gespeichert', `${feature} für ${user.username}`, 'success');
 }
 
+// ========== REQUESTS (Anfragen & Beschwerden) ==========
+function renderRequestsView() {
+    const b = document.getElementById('requestsViewTableBody');
+    const requests = database.requests || [];
+    const pending = requests.filter(r => r.status === 'Eingereicht').length;
+    const badge = document.getElementById('pendingRequestsBadge');
+    if (badge) badge.textContent = pending > 0 ? `${pending} ausstehend` : '';
+
+    const filterText = (document.getElementById('requestsSearch')?.value || '').toLowerCase();
+    const filterStatus = document.getElementById('requestsFilter')?.value || '';
+
+    const filtered = requests.filter(r => {
+        const matchText = !filterText ||
+            (r.name || '').toLowerCase().includes(filterText) ||
+            (r.subject || '').toLowerCase().includes(filterText) ||
+            (r.email || '').toLowerCase().includes(filterText);
+        const matchStatus = !filterStatus || r.status === filterStatus;
+        return matchText && matchStatus;
+    });
+
+    if (filtered.length === 0) {
+        b.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Anfragen gefunden</td></tr>`;
+        return;
+    }
+
+    b.innerHTML = filtered.sort((x, y) => {
+        if (x.status === 'Eingereicht' && y.status !== 'Eingereicht') return -1;
+        if (x.status !== 'Eingereicht' && y.status === 'Eingereicht') return 1;
+        return new Date(y.date) - new Date(x.date);
+    }).map(r => {
+        const badgeCls = r.status === 'Abgeschlossen' ? 'badge-success' : r.status === 'In Bearbeitung' ? 'badge-info' : 'badge-warning';
+        const dateStr = r.date ? new Date(r.date).toLocaleDateString('de-DE') : '—';
+        return `<tr>
+            <td style="font-size:0.8em;font-family:monospace">${escapeHtml(r.id)}</td>
+            <td><strong>${escapeHtml(r.name)}</strong></td>
+            <td>${escapeHtml(r.email || '—')}</td>
+            <td>${escapeHtml(r.subject || '—')}</td>
+            <td><span class="badge ${badgeCls}">${r.status}</span></td>
+            <td style="font-size:0.85em">${dateStr}</td>
+            <td style="white-space:nowrap">
+                <button class="btn btn-small btn-primary" onclick="viewRequest('${r.id}')" title="Details anzeigen"><i class="fas fa-eye"></i></button>
+                ${r.status === 'Eingereicht' ? `<button class="btn btn-small" onclick="updateRequestStatus('${r.id}','In Bearbeitung')" title="In Bearbeitung" style="margin-left:4px;background:rgba(0,221,255,0.2);color:var(--info);border:1px solid rgba(0,221,255,0.4)">⏳</button>` : ''}
+                ${r.status !== 'Abgeschlossen' ? `<button class="btn btn-small btn-success" onclick="updateRequestStatus('${r.id}','Abgeschlossen')" title="Abschließen" style="margin-left:4px">✓</button>` : ''}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filterRequestsModal() {
+    renderRequestsView();
+}
+
+function viewRequest(id) {
+    const r = (database.requests || []).find(x => x.id === id);
+    if (!r) return;
+    const badgeCls = r.status === 'Abgeschlossen' ? 'badge-success' : r.status === 'In Bearbeitung' ? 'badge-info' : 'badge-warning';
+    const dateStr = r.date ? new Date(r.date).toLocaleString('de-DE') : '—';
+    const content = document.getElementById('requestDetailContent');
+    content.innerHTML = `
+        <div style="display:grid;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(0,102,204,0.1);border-radius:8px;border:1px solid rgba(0,102,204,0.2)">
+                <i class="fas fa-envelope" style="font-size:2em;color:var(--primary-bright)"></i>
+                <div>
+                    <div style="font-size:1.1em;font-weight:700;color:var(--secondary)">${escapeHtml(r.subject || '(kein Betreff)')}</div>
+                    <div style="font-size:0.85em;color:var(--text-secondary);font-family:monospace">${escapeHtml(r.id)}</div>
+                    <span class="badge ${badgeCls}" style="margin-top:4px">${r.status}</span>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-user"></i> Name</div>
+                    <div style="font-weight:600">${escapeHtml(r.name || '—')}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-envelope"></i> E-Mail</div>
+                    <div style="font-weight:600">${escapeHtml(r.email || '—')}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px;grid-column:1/-1">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-calendar-alt"></i> Eingereicht am</div>
+                    <div>${dateStr}</div>
+                </div>
+            </div>
+            <div style="background:rgba(0,102,204,0.07);padding:12px;border-radius:6px">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:6px"><i class="fas fa-comment"></i> Nachricht</div>
+                <div style="line-height:1.6;white-space:pre-wrap">${escapeHtml(r.message || '—')}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+                ${r.status === 'Eingereicht' ? `<button class="btn btn-small" onclick="updateRequestStatus('${r.id}','In Bearbeitung');document.getElementById('requestDetailModal').classList.remove('show')" style="background:rgba(0,221,255,0.2);color:var(--info);border:1px solid rgba(0,221,255,0.4)">⏳ In Bearbeitung</button>` : ''}
+                ${r.status !== 'Abgeschlossen' ? `<button class="btn btn-small btn-success" onclick="updateRequestStatus('${r.id}','Abgeschlossen');document.getElementById('requestDetailModal').classList.remove('show')">✓ Abschließen</button>` : ''}
+            </div>
+        </div>`;
+    document.getElementById('requestDetailModal').classList.add('show');
+}
+
+function updateRequestStatus(id, newStatus) {
+    const r = (database.requests || []).find(x => x.id === id);
+    if (!r) return;
+    r.status = newStatus;
+    saveDatabase();
+    renderRequestsView();
+    updateCounts();
+    showToast('✅ Status aktualisiert', `Anfrage ${id}: ${newStatus}`, 'success');
+}
+
 // ========== SEARCH FILTERS ==========
 function makeSearchFilter(inputId, tbodyId, columns) {
     const query = (document.getElementById(inputId)?.value || '').toLowerCase();
@@ -1223,6 +1330,7 @@ function updateCounts() {
     document.getElementById('citationsCount').textContent = database.citations.length;
     document.getElementById('chargesCount').textContent = database.charges.length;
     document.getElementById('pressCount').textContent = database.press.length;
+    document.getElementById('requestsCount').textContent = (database.requests || []).length;
 }
 
 // ========== LIVE UI REFRESH (called by auto-sync every 5 s) ==========
@@ -1241,6 +1349,7 @@ function refreshUI() {
         { id: 'citationsViewModal',    render: renderCitationsView,    filter: filterCitationsModal },
         { id: 'chargesViewModal',      render: renderChargesView,      filter: filterChargesModal },
         { id: 'pressViewModal',        render: renderPressArticles,    filter: filterPressModal },
+        { id: 'requestsViewModal',     render: renderRequestsView,     filter: filterRequestsModal },
     ];
     viewModals.forEach(({ id, render, filter }) => {
         const el = document.getElementById(id);
