@@ -3,8 +3,12 @@
 // Nutzt die globalen Variablen aus db.js
 // ============================================
 
-const ROLES = ['Trainee', 'Mitarbeiter', 'Ausbilder', 'Leitungseben', 'Personalverwaltung', 'Admin', 'Commissioner'];
+const DEFAULT_ROLES = ['Trainee', 'Mitarbeiter', 'Ausbilder', 'Leitungseben', 'Personalverwaltung', 'Admin', 'Commissioner'];
 const FEATURES = ['users', 'ranks', 'employees', 'citizens', 'evidence', 'training', 'applications', 'citations', 'charges', 'press', 'admin'];
+
+function getAllRoles() {
+    return [...DEFAULT_ROLES, ...(database.customRoles || [])];
+}
 
 // ========== PASSWORD & GENERATION ==========
 function generatePassword() {
@@ -51,7 +55,9 @@ function getRolePermissions() {
 function canAccess(capability) {
     if (!currentUser) return false;
     const perms = getRolePermissions()[currentUser.role] || [];
-    return perms.includes(capability);
+    const userObj = database.users.find(u => u.username === currentUser.username);
+    const extra = userObj?.extraPermissions || [];
+    return perms.includes(capability) || extra.includes(capability);
 }
 
 function filterDashboardCards() {
@@ -159,7 +165,7 @@ function closeViewModal(t) {
         users: 'usersViewModal', ranks: 'ranksViewModal', employees: 'employeesViewModal',
         citizens: 'citizensViewModal', evidence: 'evidenceViewModal', training: 'trainingViewModal',
         applications: 'applicationsViewModal', citations: 'citationsViewModal', charges: 'chargesViewModal',
-        press: 'pressViewModal', admin: 'adminPanelModal'
+        press: 'pressViewModal', admin: 'adminPanelModal', userPermissions: 'userPermissionsModal'
     };
     const el = document.getElementById(m[t]);
     if (el) el.classList.remove('show');
@@ -174,7 +180,7 @@ function populateJobRankDropdown() {
     });
     const r = document.getElementById('newRole');
     r.innerHTML = '';
-    ROLES.forEach(rl => {
+    getAllRoles().forEach(rl => {
         r.innerHTML += `<option>${rl}</option>`;
     });
 }
@@ -202,9 +208,11 @@ function addUser(e) {
 
 function renderUsersView() {
     const b = document.getElementById('usersViewTableBody');
-    b.innerHTML = database.users.map(u => 
-        `<tr><td>${u.username}</td><td><span class="badge badge-info">${u.role}</span></td><td>${u.jobRank}</td><td><span class="badge badge-success">${u.status}</span></td><td><button class="btn btn-small" onclick="deleteUser(${u.id})">×</button></td></tr>`
-    ).join('');
+    b.innerHTML = database.users.map(u => {
+        const extra = u.extraPermissions || [];
+        const extraBadge = extra.length > 0 ? ` <span style="color:var(--warning);font-size:0.8em">+${extra.length}</span>` : '';
+        return `<tr><td>${u.username}</td><td><span class="badge badge-info">${u.role}</span></td><td>${u.jobRank}</td><td><span class="badge badge-success">${u.status}</span></td><td><button class="btn btn-small btn-primary" onclick="openUserPermissionsModal(${u.id})" title="Individuelle Berechtigungen">🔑${extraBadge}</button><button class="btn btn-small" onclick="deleteUser(${u.id})">×</button></td></tr>`;
+    }).join('');
 }
 
 function deleteUser(id) {
@@ -680,15 +688,18 @@ function openAdminPanel() {
 
 function renderRoleEditor() {
     const perms = getRolePermissions();
+    const allRoles = getAllRoles();
     let html = '<div style="margin-bottom:15px"><h4 style="color:var(--secondary);margin:0 0 10px 0">📋 Berechtigungen verwalten</h4><p style="font-size:0.9em;margin:0;color:rgba(255,255,255,0.7)">Wähle aus, welche Funktionen jede Rolle verwenden kann:</p></div>';
-    ROLES.forEach(role => {
-        html += `<div style="border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-bottom:12px"><strong style="color:var(--secondary);font-size:1.1em;display:block;margin-bottom:8px">${role}</strong>`;
+    allRoles.forEach(role => {
+        const isCustom = (database.customRoles || []).includes(role);
+        html += `<div style="border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="color:var(--secondary);font-size:1.1em">${role}${isCustom ? ' <span style="font-size:0.7em;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:1px 5px">Custom</span>' : ''}</strong>${isCustom ? `<button onclick="deleteCustomRole('${role}')" style="background:rgba(255,51,51,0.2);border:1px solid #ff6b6b;color:#ff6b6b;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:0.8em">Löschen</button>` : ''}</div>`;
         FEATURES.forEach(feature => {
             const isChecked = perms[role] && perms[role].includes(feature);
             html += `<label style="display:inline-flex;align-items:center;gap:8px;margin-right:15px;cursor:pointer;font-size:0.9em"><input type="checkbox" id="perm_${role}_${feature}" ${isChecked ? 'checked' : ''} onchange="toggleRolePermission('${role}','${feature}')" style="cursor:pointer"><span>${feature}</span></label>`;
         });
         html += '</div>';
     });
+    html += `<div style="border:2px dashed rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-top:15px"><h4 style="color:var(--secondary);margin-bottom:10px">➕ Neue Rolle erstellen</h4><div style="display:flex;gap:8px;align-items:center"><input type="text" id="newRoleName" placeholder="Rollenname..." style="flex:1;padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em"><button onclick="createCustomRole()" style="padding:8px 15px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.9em">Erstellen</button></div><p style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-top:6px">Berechtigungen können nach der Erstellung vergeben werden.</p></div>`;
     html += '<div style="border-top:1px solid rgba(0,255,136,0.2);padding-top:12px;margin-top:15px"><button onclick="resetPermissionsToDefault()" style="padding:8px 15px;background:rgba(255,107,107,0.2);border:1px solid #ff6b6b;color:#ff6b6b;border-radius:5px;cursor:pointer;font-size:0.9em;transition:all 0.3s">🔄 Auf Standard zurücksetzen</button></div>';
     document.getElementById('roleEditorPanel').innerHTML = html;
 }
@@ -728,6 +739,90 @@ function exportAdminData() {
     a.download = `admin-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     showToast('💾 Admin-Export', 'Exportiert', 'success');
+}
+
+// ========== CUSTOM ROLES ==========
+function createCustomRole() {
+    const nameInput = document.getElementById('newRoleName');
+    const name = nameInput.value.trim();
+    if (!name) { showToast('⚠️ Fehler', 'Bitte einen Rollennamen eingeben', 'error'); return; }
+    if (getAllRoles().includes(name)) { showToast('⚠️ Fehler', `Rolle "${name}" existiert bereits`, 'error'); return; }
+    if (!database.customRoles) database.customRoles = [];
+    database.customRoles.push(name);
+    if (!database.rolePermissions) database.rolePermissions = {};
+    database.rolePermissions[name] = [];
+    saveDatabase();
+    nameInput.value = '';
+    renderRoleEditor();
+    showToast('✅ Rolle erstellt', name, 'success');
+}
+
+function deleteCustomRole(roleName) {
+    if (!confirm(`Rolle "${roleName}" wirklich löschen?`)) return;
+    database.customRoles = (database.customRoles || []).filter(r => r !== roleName);
+    if (database.rolePermissions) delete database.rolePermissions[roleName];
+    saveDatabase();
+    renderRoleEditor();
+    showToast('✅ Rolle gelöscht', roleName, 'success');
+}
+
+// ========== USER PERMISSIONS ==========
+function openUserPermissionsModal(userId) {
+    const user = database.users.find(u => u.id === userId);
+    if (!user) return;
+    if (!canAccess('admin')) { showToast('🚫 Zugriff verweigert', 'Nur Admins dürfen Berechtigungen vergeben', 'error'); return; }
+    const extra = user.extraPermissions || [];
+    const rolePerms = getRolePermissions()[user.role] || [];
+    document.getElementById('userPermissionsTitle').textContent = `🔑 Berechtigungen: ${user.username} (${user.role})`;
+    let html = '<p style="color:var(--text-secondary);font-size:0.85em;margin-bottom:12px">Aktivierte Features zusätzlich zur Rollen-Berechtigung:</p>';
+    FEATURES.forEach(f => {
+        const fromRole = rolePerms.includes(f);
+        const fromExtra = extra.includes(f);
+        const labelColor = fromRole ? 'rgba(0,102,204,0.2)' : fromExtra ? 'rgba(0,255,136,0.1)' : 'rgba(0,0,0,0.1)';
+        html += `<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:${labelColor};margin-bottom:6px;cursor:${fromRole ? 'default' : 'pointer'}">
+            <input type="checkbox" ${(fromRole || fromExtra) ? 'checked' : ''} ${fromRole ? 'disabled' : `onchange="saveUserPermission(${userId}, '${f}', this.checked)"`} style="cursor:${fromRole ? 'default' : 'pointer'}">
+            <span style="flex:1;font-weight:600">${f}</span>
+            ${fromRole ? '<span style="font-size:0.75em;color:var(--info);border:1px solid var(--info);border-radius:4px;padding:1px 5px">Rolle</span>' : fromExtra ? '<span style="font-size:0.75em;color:var(--success);border:1px solid var(--success);border-radius:4px;padding:1px 5px">Individuell</span>' : ''}
+        </label>`;
+    });
+    document.getElementById('userPermissionsBody').innerHTML = html;
+    document.getElementById('userPermissionsModal').classList.add('show');
+}
+
+function saveUserPermission(userId, feature, checked) {
+    const user = database.users.find(u => u.id === userId);
+    if (!user) return;
+    if (!user.extraPermissions) user.extraPermissions = [];
+    const idx = user.extraPermissions.indexOf(feature);
+    if (checked && idx < 0) user.extraPermissions.push(feature);
+    else if (!checked && idx >= 0) user.extraPermissions.splice(idx, 1);
+    saveDatabase();
+    showToast('✅ Berechtigung gespeichert', `${feature} für ${user.username}`, 'success');
+}
+
+// ========== SEARCH FILTERS ==========
+function makeSearchFilter(inputId, tbodyId, columns) {
+    const query = (document.getElementById(inputId)?.value || '').toLowerCase();
+    document.querySelectorAll(`#${tbodyId} tr`).forEach(row => {
+        const match = columns.some(col => row.cells[col]?.textContent.toLowerCase().includes(query));
+        row.style.display = match ? '' : 'none';
+    });
+}
+
+function filterUsersModal() { makeSearchFilter('usersModalSearch', 'usersViewTableBody', [0, 1, 2]); }
+function filterRanksModal() { makeSearchFilter('ranksModalSearch', 'ranksViewTableBody', [0, 2]); }
+function filterEmployeesModal() { makeSearchFilter('employeesModalSearch', 'employeesViewTableBody', [0, 1, 2]); }
+function filterCitizensModal() { makeSearchFilter('citizensModalSearch', 'citizensViewTableBody', [0, 1, 2]); }
+function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'evidenceViewTableBody', [0, 1, 2]); }
+function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'trainingViewTableBody', [0, 1]); }
+function filterApplicationsModal() { makeSearchFilter('applicationsModalSearch', 'applicationsViewTableBody', [0, 1, 2]); }
+function filterCitationsModal() { makeSearchFilter('citationsModalSearch', 'citationsViewTableBody', [0, 1]); }
+function filterChargesModal() { makeSearchFilter('chargesModalSearch', 'chargesViewTableBody', [0, 1, 2]); }
+function filterPressModal() {
+    const query = (document.getElementById('pressModalSearch')?.value || '').toLowerCase();
+    document.querySelectorAll('#pressArticlesContainer > div').forEach(el => {
+        el.style.display = el.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
 }
 
 //  ========== EXPORT FUNCTIONS ==========
