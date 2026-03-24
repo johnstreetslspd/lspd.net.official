@@ -746,7 +746,8 @@
         let database = {
             applications: [],
             requests: [],
-            news: []
+            news: [],
+            press: []
         };
 
         // Firebase Firestore Variablen
@@ -801,6 +802,7 @@
                     database.applications = data.applications || database.applications;
                     database.requests = data.requests || database.requests;
                     database.news = data.news || database.news;
+                    database.press = data.press || database.press;
                     console.log('✅ Daten von Firestore geladen (Bürger-Portal)');
                     return true;
                 } else {
@@ -889,7 +891,7 @@
 
         // UPDATE COUNTERS
         function updateNewsCount() {
-            document.getElementById('newsCount').textContent = database.news.length;
+            document.getElementById('newsCount').textContent = database.press.length;
         }
 
         // APPLICATIONS
@@ -974,18 +976,35 @@
         }
 
         // NEWS
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function displayNews() {
             const newsDiv = document.getElementById('newsContent');
-            if (database.news.length === 0) {
+            const articles = [...database.press].sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (articles.length === 0) {
                 newsDiv.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Keine News vorhanden</p>';
                 return;
             }
-            
-            newsDiv.innerHTML = database.news.map(news => `
-                <div style="background: rgba(0, 102, 204, 0.1); border: 1px solid rgba(0, 102, 204, 0.3); padding: 20px; border-radius: 8px; margin-bottom: 16px;">
-                    <h3 style="color: var(--secondary); margin-bottom: 10px;">${news.title}</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 10px;">${news.content}</p>
-                    <p style="font-size: 0.85em; color: rgba(255, 255, 255, 0.5);">${new Date(news.date).toLocaleDateString('de-DE')}</p>
+
+            newsDiv.innerHTML = articles.map(p => `
+                <div style="background: rgba(0, 102, 204, 0.1); border: 1px solid rgba(0, 102, 204, 0.3); border-radius: 8px; margin-bottom: 16px; overflow: hidden;">
+                    ${p.image ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.title)}" style="width:100%;max-height:240px;object-fit:cover;display:block;">` : ''}
+                    <div style="padding: 20px;">
+                        <h3 style="color: var(--secondary); margin-bottom: 6px;">${escapeHtml(p.title)}</h3>
+                        ${p.subtitle ? `<p style="color: rgba(255,255,255,0.7); font-size: 0.9em; margin-bottom: 10px;">${escapeHtml(p.subtitle)}</p>` : ''}
+                        <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px;">${escapeHtml(p.content)}</p>
+                        <p style="font-size: 0.85em; color: rgba(255, 255, 255, 0.5);">
+                            ${p.author ? `<i class="fas fa-user-circle"></i> ${escapeHtml(p.author)} &nbsp;` : ''}
+                            <i class="fas fa-calendar"></i> ${new Date(p.date).toLocaleDateString('de-DE')}
+                        </p>
+                    </div>
                 </div>
             `).join('');
         }
