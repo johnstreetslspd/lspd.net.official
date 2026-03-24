@@ -92,9 +92,10 @@ function loginSuccess() {
     document.getElementById('userRole').textContent = `(${currentUser.role})`;
     filterDashboardCards();
     updateCounts();
-    
+
     if (firebaseEnabled) {
-        loadFromFirestore().catch(e => console.warn('Firestore load on login failed:', e));
+        // Load fresh data after login and update counters once loaded
+        loadFromFirestore().then(() => updateCounts()).catch(e => console.warn('Firestore load on login failed:', e));
         startAutoSync();
     }
 }
@@ -325,17 +326,6 @@ function deleteCitizen(id) {
     }
 }
 
-function filterCitizens() {
-    const query = document.getElementById('citizensSearch').value.toLowerCase();
-    const rows = document.querySelectorAll('#citizensTableBody tr');
-    rows.forEach(row => {
-        const name = row.cells[0]?.textContent.toLowerCase();
-        const phone = row.cells[1]?.textContent.toLowerCase();
-        const match = name?.includes(query) || phone?.includes(query);
-        row.style.display = match ? '' : 'none';
-    });
-}
-
 // ========== EVIDENCE ==========
 function addEvidence(e) {
     e.preventDefault();
@@ -505,17 +495,6 @@ function editCitation(id) {
     openModal('addCitation');
 }
 
-function filterCitations() {
-    const query = document.getElementById('citationSearch').value.toLowerCase();
-    const rows = document.querySelectorAll('#citationsViewTableBody tr');
-    rows.forEach(row => {
-        const az = row.cells[0]?.textContent.toLowerCase();
-        const name = row.cells[1]?.textContent.toLowerCase();
-        const match = az?.includes(query) || name?.includes(query);
-        row.style.display = match ? '' : 'none';
-    });
-}
-
 // ========== CHARGES (Anzeigen) ==========
 function addCharge(e) {
     e.preventDefault();
@@ -588,17 +567,6 @@ function editCharge(id) {
         renderChargesView();
     });
     openModal('addCharge');
-}
-
-function filterCharges() {
-    const query = document.getElementById('chargesSearch').value.toLowerCase();
-    const rows = document.querySelectorAll('#chargesViewTableBody tr');
-    rows.forEach(row => {
-        const az = row.cells[0]?.textContent.toLowerCase();
-        const name = row.cells[1]?.textContent.toLowerCase();
-        const match = az?.includes(query) || name?.includes(query);
-        row.style.display = match ? '' : 'none';
-    });
 }
 
 // ========== PRESS ARTICLES ==========
@@ -870,20 +838,20 @@ function refreshUI() {
     if (!currentUser) return;
     updateCounts();
     const viewModals = [
-        { id: 'usersViewModal',        render: renderUsersView },
-        { id: 'ranksViewModal',        render: renderRanksView },
-        { id: 'employeesViewModal',    render: renderEmployeesView },
-        { id: 'citizensViewModal',     render: renderCitizensView },
-        { id: 'evidenceViewModal',     render: renderEvidenceView },
-        { id: 'trainingViewModal',     render: renderTrainingView },
-        { id: 'applicationsViewModal', render: renderApplicationsView },
-        { id: 'citationsViewModal',    render: renderCitationsView },
-        { id: 'chargesViewModal',      render: renderChargesView },
-        { id: 'pressViewModal',        render: renderPressArticles },
+        { id: 'usersViewModal',        render: renderUsersView,        filter: filterUsersModal },
+        { id: 'ranksViewModal',        render: renderRanksView,        filter: filterRanksModal },
+        { id: 'employeesViewModal',    render: renderEmployeesView,    filter: filterEmployeesModal },
+        { id: 'citizensViewModal',     render: renderCitizensView,     filter: filterCitizensModal },
+        { id: 'evidenceViewModal',     render: renderEvidenceView,     filter: filterEvidenceModal },
+        { id: 'trainingViewModal',     render: renderTrainingView,     filter: filterTrainingModal },
+        { id: 'applicationsViewModal', render: renderApplicationsView, filter: filterApplicationsModal },
+        { id: 'citationsViewModal',    render: renderCitationsView,    filter: filterCitationsModal },
+        { id: 'chargesViewModal',      render: renderChargesView,      filter: filterChargesModal },
+        { id: 'pressViewModal',        render: renderPressArticles,    filter: filterPressModal },
     ];
-    viewModals.forEach(({ id, render }) => {
+    viewModals.forEach(({ id, render, filter }) => {
         const el = document.getElementById(id);
-        if (el && el.classList.contains('show')) render();
+        if (el && el.classList.contains('show')) { render(); filter(); }
     });
 }
 
