@@ -6,6 +6,8 @@
 const DEFAULT_ROLES = ['Trainee', 'Mitarbeiter', 'Ausbilder', 'Leitungseben', 'Personalverwaltung', 'Admin', 'Commissioner'];
 const FEATURES = ['users', 'ranks', 'employees', 'citizens', 'evidence', 'training', 'applications', 'citations', 'charges', 'press', 'admin'];
 
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
 function getAllRoles() {
     return [...DEFAULT_ROLES, ...(database.customRoles || [])];
 }
@@ -95,7 +97,10 @@ function loginSuccess() {
 
     if (firebaseEnabled) {
         // Load fresh data after login and update counters once loaded
-        loadFromFirestore().then(() => updateCounts()).catch(e => console.warn('Firestore load on login failed:', e));
+        loadFromFirestore().then(() => {
+            updateCounts();
+            cleanupOldApplications();
+        }).catch(e => console.warn('Firestore load on login failed:', e));
         startAutoSync();
     }
 }
@@ -424,6 +429,13 @@ function renderApplicationsView() {
         const isPending = a.status === 'Eingereicht';
         const badgeCls = a.status === 'Akzeptiert' ? 'badge-success' : a.status === 'Abgelehnt' ? 'badge-danger' : 'badge-warning';
         const dateStr = a.date ? new Date(a.date).toLocaleDateString('de-DE') : '—';
+        const isAdmin = canAccess('admin');
+        const deleteBtn = isAdmin ? `<button class="btn btn-small" onclick="deleteApplication(${a.id})" title="Löschen" style="margin-left:4px;background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.4)">🗑</button>` : '';
+        let autoDeleteInfo = '';
+        if (!isPending && a.resolvedDate) {
+            const daysLeft = Math.ceil((new Date(a.resolvedDate).getTime() + ONE_WEEK_MS - Date.now()) / (24 * 60 * 60 * 1000));
+            if (daysLeft > 0) autoDeleteInfo = `<div style="font-size:0.7em;color:var(--text-secondary);margin-top:2px">Löscht in ${daysLeft} ${daysLeft !== 1 ? 'Tage' : 'Tag'}</div>`;
+        }
         return `<tr>
             <td><strong>${escapeHtml(a.name)}</strong></td>
             <td style="font-size:0.8em;font-family:monospace">${escapeHtml(a.code)}</td>
@@ -434,6 +446,8 @@ function renderApplicationsView() {
             <td style="white-space:nowrap">
                 <button class="btn btn-small btn-primary" onclick="viewApplication(${a.id})" title="Details anzeigen"><i class="fas fa-eye"></i></button>
                 ${isPending ? `<button class="btn btn-small btn-success" onclick="acceptApplication(${a.id})" title="Annehmen" style="margin-left:4px">✓</button><button class="btn btn-small" onclick="rejectApplication(${a.id})" title="Ablehnen" style="margin-left:4px;background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.4)">✗</button>` : ''}
+                ${deleteBtn}
+                ${autoDeleteInfo}
             </td>
         </tr>`;
     }).join('');
@@ -492,6 +506,7 @@ function viewApplication(id) {
         </div>`;
 
     const actions = document.getElementById('applicationDetailActions');
+    const adminDeleteBtn = canAccess('admin') ? `<button class="btn" onclick="deleteApplication(${a.id});document.getElementById('applicationDetailModal').classList.remove('show')" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.4)"><i class="fas fa-trash"></i> Löschen</button>` : '';
     if (isPending) {
         actions.innerHTML = `
             <button class="btn btn-success" onclick="acceptApplication(${a.id});document.getElementById('applicationDetailModal').classList.remove('show')">
@@ -499,9 +514,10 @@ function viewApplication(id) {
             </button>
             <button class="btn" onclick="rejectApplication(${a.id});document.getElementById('applicationDetailModal').classList.remove('show')" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.4)">
                 <i class="fas fa-times"></i> Ablehnen
-            </button>`;
+            </button>
+            ${adminDeleteBtn}`;
     } else {
-        actions.innerHTML = `<span style="color:var(--text-secondary);font-size:0.9em">Diese Bewerbung wurde bereits bearbeitet.</span>`;
+        actions.innerHTML = `<span style="color:var(--text-secondary);font-size:0.9em">Diese Bewerbung wurde bereits bearbeitet.</span> ${adminDeleteBtn}`;
     }
 
     document.getElementById('applicationDetailModal').classList.add('show');
@@ -511,6 +527,7 @@ function acceptApplication(id) {
     const a = database.applications.find(x => x.id === id);
     if (a && a.status === 'Eingereicht') {
         a.status = 'Akzeptiert';
+        a.resolvedDate = new Date().toISOString();
         saveDatabase();
         renderApplicationsView();
         updateCounts();
@@ -523,10 +540,40 @@ function rejectApplication(id) {
     if (a && a.status === 'Eingereicht') {
         if (!confirm('Bewerbung wirklich ablehnen?')) return;
         a.status = 'Abgelehnt';
+        a.resolvedDate = new Date().toISOString();
         saveDatabase();
         renderApplicationsView();
         updateCounts();
         showToast('❌ Bewerbung abgelehnt', a.name, 'error');
+    }
+}
+
+function deleteApplication(id) {
+    if (!canAccess('admin')) {
+        showToast('🚫 Keine Berechtigung', 'Nur Admins können Bewerbungen löschen', 'error');
+        return;
+    }
+    if (!confirm('Bewerbung wirklich löschen?')) return;
+    database.applications = database.applications.filter(a => a.id !== id);
+    saveDatabase();
+    renderApplicationsView();
+    updateCounts();
+    showToast('🗑️ Bewerbung gelöscht', '', 'success');
+}
+
+function cleanupOldApplications() {
+    const oneWeekAgo = Date.now() - ONE_WEEK_MS;
+    const before = database.applications.length;
+    database.applications = database.applications.filter(a => {
+        if (a.status === 'Eingereicht') return true;
+        const resolvedTs = a.resolvedDate ? new Date(a.resolvedDate).getTime() : null;
+        if (!resolvedTs) return true;
+        return resolvedTs > oneWeekAgo;
+    });
+    if (database.applications.length < before) {
+        saveDatabase();
+        updateCounts();
+        console.log(`🗑️ ${before - database.applications.length} alte Bewerbung(en) automatisch gelöscht`);
     }
 }
 
@@ -751,6 +798,26 @@ function deletePressArticle(id) {
 }
 
 // ========== ADMIN PANEL ==========
+function renderAdminStats() {
+    const s = document.getElementById('statsPanel');
+    if (!s) return;
+    const stats = [
+        { label: 'Nutzer', value: database.users.length, icon: '👤' },
+        { label: 'Ränge', value: database.jobRanks.length, icon: '🏅' },
+        { label: 'Mitarbeiter', value: database.employees.length, icon: '👮' },
+        { label: 'Bürger', value: database.citizens.length, icon: '🧑' },
+        { label: 'Beweise', value: database.evidence.length, icon: '🔍' },
+        { label: 'Schulungen', value: database.training.length, icon: '📚' },
+        { label: 'Bewerbungen', value: database.applications.length, icon: '📋' },
+        { label: 'Strafakten', value: database.citations.length, icon: '📄' },
+        { label: 'Anzeigen', value: database.charges.length, icon: '⚠️' },
+        { label: 'Nachrichten', value: database.press.length, icon: '📰' },
+    ];
+    s.innerHTML = stats.map(stat =>
+        `<div style="background:rgba(0,255,136,0.1);padding:10px;border-radius:6px;text-align:center"><div style="font-size:1.2em">${stat.icon}</div><div style="color:var(--secondary);font-size:0.8em">${stat.label}</div><div style="font-size:1.4em;font-weight:700">${stat.value}</div></div>`
+    ).join('');
+}
+
 function openAdminPanel() {
     if (!canAccess('admin')) {
         showToast('🚫 Zugriff verweigert', 'Nur Admins dürfen das Admin Panel öffnen', 'error');
@@ -758,8 +825,7 @@ function openAdminPanel() {
     }
     document.getElementById('adminPanelModal').classList.add('show');
     renderRoleEditor();
-    const s = document.getElementById('statsPanel');
-    s.innerHTML = `<div style="background:rgba(0,255,136,0.1);padding:10px;border-radius:6px"><div style="color:var(--secondary)">Nutzer</div><div style="font-size:1.2em;font-weight:700">${database.users.length}</div></div><div style="background:rgba(0,255,136,0.1);padding:10px;border-radius:6px"><div style="color:var(--secondary)">Mitarbeiter</div><div style="font-size:1.2em;font-weight:700">${database.employees.length}</div></div>`;
+    renderAdminStats();
 }
 
 function renderRoleEditor() {
@@ -944,6 +1010,7 @@ function updateCounts() {
 // ========== LIVE UI REFRESH (called by auto-sync every 5 s) ==========
 function refreshUI() {
     if (!currentUser) return;
+    cleanupOldApplications();
     updateCounts();
     const viewModals = [
         { id: 'usersViewModal',        render: renderUsersView,        filter: filterUsersModal },
@@ -952,7 +1019,7 @@ function refreshUI() {
         { id: 'citizensViewModal',     render: renderCitizensView,     filter: filterCitizensModal },
         { id: 'evidenceViewModal',     render: renderEvidenceView,     filter: filterEvidenceModal },
         { id: 'trainingViewModal',     render: renderTrainingView,     filter: filterTrainingModal },
-        { id: 'applicationsViewModal', render: renderApplicationsView, filter: filterApplicationsModal },
+        { id: 'applicationsViewModal', render: renderApplicationsView, filter: filterApplications },
         { id: 'citationsViewModal',    render: renderCitationsView,    filter: filterCitationsModal },
         { id: 'chargesViewModal',      render: renderChargesView,      filter: filterChargesModal },
         { id: 'pressViewModal',        render: renderPressArticles,    filter: filterPressModal },
@@ -961,6 +1028,10 @@ function refreshUI() {
         const el = document.getElementById(id);
         if (el && el.classList.contains('show')) { render(); filter(); }
     });
+    const adminPanel = document.getElementById('adminPanelModal');
+    if (adminPanel && adminPanel.classList.contains('show')) {
+        renderAdminStats();
+    }
 }
 
 // ========== MODAL CLICK OUTSIDE ==========
