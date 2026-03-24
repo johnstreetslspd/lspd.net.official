@@ -23,6 +23,7 @@ let database = {
     press: [],
     auditLog: [],
     rolePermissions: null,
+    customRoles: [],
     requests: [],
     news: [
         { id: 1, title: 'Willkommen im LSPD Portal', content: 'Wir heißen Sie herzlich willkommen im öffentlichen Bürgerdiensteportal der LSPD!', date: new Date().toISOString() },
@@ -110,6 +111,7 @@ async function saveToFirestore() {
             press: database.press,
             auditLog: database.auditLog,
             rolePermissions: database.rolePermissions,
+            customRoles: database.customRoles,
             requests: database.requests,
             news: database.news,
             lastUpdated: new Date().toISOString()
@@ -148,6 +150,7 @@ async function loadFromFirestore() {
             database.auditLog = data.auditLog || database.auditLog;
             database.requests = data.requests || database.requests;
             database.news = data.news || database.news;
+            database.customRoles = data.customRoles || [];
             database.rolePermissions = data.rolePermissions 
                ? { ...defaultRolePermissions, ...data.rolePermissions }
                : defaultRolePermissions;
@@ -157,6 +160,7 @@ async function loadFromFirestore() {
         } else {
             console.log('ℹ️ Keine Daten in Firestore - nutze Standard');
             database.rolePermissions = { ...defaultRolePermissions };
+            database.customRoles = [];
             return false;
         }
     } catch (error) {
@@ -176,7 +180,9 @@ function startAutoSync() {
     
     autoSyncInterval = setInterval(() => {
         if (firebaseEnabled) {
-            loadFromFirestore().catch(e => console.warn('Auto-load failed:', e));
+            loadFromFirestore().then(() => {
+                if (typeof refreshUI === 'function') refreshUI();
+            }).catch(e => console.warn('Auto-sync from Firestore failed:', e));
         }
     }, 5000);
 }

@@ -17,12 +17,9 @@
 <h2 style="text-align:center;margin-bottom:15px;color:var(--secondary);font-size:1.1em">Mitarbeiterportal</h2>
 <div class="login-error" id="loginError"></div>
 <form onsubmit="handleLogin(event)">
-<div class="form-group"><label>Benutzername</label><input type="text" id="username" placeholder="Admin" required></div>
-<div class="form-group"><label>Passwort</label><input type="password" id="password" placeholder="Admin123!" required></div>
+<div class="form-group"><label>Benutzername</label><input type="text" id="username" placeholder="Benutzername" required></div>
+<div class="form-group"><label>Passwort</label><input type="password" id="password" placeholder="Passwort" required></div>
 <button type="submit" class="login-btn">Anmelden</button>
-<div style="margin-top:15px;text-align:center;color:var(--text-secondary);font-size:0.8em">
-<strong>Demo:</strong> Admin / Admin123!
-</div>
 </form>
 </div>
 </div>
@@ -38,18 +35,6 @@
 </nav>
 </div>
 <div class="header-right">
-<div style="display:flex;align-items:center;gap:8px">
-<label style="font-size:0.75em;color:var(--text-secondary)">🔄 Test-Rolle:</label>
-<select id="roleSelector" onchange="switchRole(this.value)" style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:6px;border-radius:6px;font-size:0.85em;font-weight:600">
-<option value="Trainee">Trainee</option>
-<option value="Mitarbeiter">Mitarbeiter</option>
-<option value="Ausbilder">Ausbilder</option>
-<option value="Leitungseben">Leitungseben</option>
-<option value="Personalverwaltung">Personalverwaltung</option>
-<option value="Admin" selected>Admin</option>
-<option value="Commissioner">Commissioner</option>
-</select>
-</div>
 <div class="user-info">
 <div style="color:var(--secondary);font-weight:700;font-size:0.9em" id="currentUser">Admin</div>
 <div class="user-role" id="userRole">Admin</div>
@@ -243,7 +228,6 @@
 <div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesSearch" placeholder="Nach Name oder Vorwurf suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCharges()"></div>
 <table><thead><tr><th>Anzeige-Nr</th><th>Bürger</th><th>Vorwurf</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="chargesInlineTableBody"></tbody></table>
 </div></div>
-</div>
 
 <!-- MODALS -->
 <div id="addUserModal" class="modal">
@@ -322,6 +306,7 @@
 <div id="usersViewModal" class="modal">
 <div class="modal-content" style="max-width:700px">
 <div class="modal-header"><h2>Benutzer</h2><button class="modal-close" onclick="closeViewModal('users')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="usersModalSearch" placeholder="Nach Benutzer, Rolle oder Rang suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterUsersModal()"></div>
 <div class="table-container"><table><thead><tr><th>Benutzer</th><th>Rolle</th><th>Rang</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="usersViewTableBody"></tbody></table></div>
 </div>
 </div>
@@ -329,6 +314,7 @@
 <div id="ranksViewModal" class="modal">
 <div class="modal-content" style="max-width:700px">
 <div class="modal-header"><h2>Ränge</h2><button class="modal-close" onclick="closeViewModal('ranks')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="ranksModalSearch" placeholder="Nach Name oder Beschreibung suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterRanksModal()"></div>
 <div class="table-container"><table><thead><tr><th>Name</th><th>Farbe</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody id="ranksViewTableBody"></tbody></table></div>
 </div>
 </div>
@@ -336,6 +322,7 @@
 <div id="employeesViewModal" class="modal">
 <div class="modal-content" style="max-width:700px">
 <div class="modal-header"><h2>Mitarbeiter</h2><button class="modal-close" onclick="closeViewModal('employees')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="employeesModalSearch" placeholder="Nach Name, Rolle oder Abteilung suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterEmployeesModal()"></div>
 <div class="table-container"><table><thead><tr><th>Name</th><th>Rolle</th><th>Dept</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="employeesViewTableBody"></tbody></table></div>
 </div>
 </div>
@@ -343,6 +330,7 @@
 <div id="citizensViewModal" class="modal">
 <div class="modal-content" style="max-width:700px">
 <div class="modal-header"><h2>Bürger</h2><button class="modal-close" onclick="closeViewModal('citizens')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citizensModalSearch" placeholder="Nach Name, Telefon oder Adresse suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterCitizensModal()"></div>
 <div class="table-container"><table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citizensViewTableBody"></tbody></table></div>
 </div>
 </div>
@@ -350,6 +338,7 @@
 <div id="evidenceViewModal" class="modal">
 <div class="modal-content" style="max-width:700px">
 <div class="modal-header"><h2>Beweismittel</h2><button class="modal-close" onclick="closeViewModal('evidence')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="evidenceModalSearch" placeholder="Nach AZ, Beschreibung oder Ort suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterEvidenceModal()"></div>
 <div class="table-container"><table><thead><tr><th>AZ</th><th>Beschreibung</th><th>Ort</th><th>Aktion</th></tr></thead><tbody id="evidenceViewTableBody"></tbody></table></div>
 </div>
 </div>
@@ -357,11 +346,18 @@
 <div id="trainingViewModal" class="modal">
 <div class="modal-content" style="max-width:700px">
 <div class="modal-header"><h2>Schulungen</h2><button class="modal-close" onclick="closeViewModal('training')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="trainingModalSearch" placeholder="Nach Titel oder Dozent suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterTrainingModal()"></div>
 <div class="table-container"><table><thead><tr><th>Titel</th><th>Dozent</th><th>Aktion</th></tr></thead><tbody id="trainingViewTableBody"></tbody></table></div>
 </div>
 </div>
 
 <div id="applicationsViewModal" class="modal">
+ copilot/remove-development-functions
+<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>Bewerbungen</h2><button class="modal-close" onclick="closeViewModal('applications')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="applicationsModalSearch" placeholder="Nach Name, Code oder Email suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterApplicationsModal()"></div>
+<div class="table-container"><table><thead><tr><th>Name</th><th>Code</th><th>Email</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsViewTableBody"></tbody></table></div>
+
 <div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
 <div class="modal-header"><h2><i class="fas fa-file-alt"></i> Bewerbungen <span id="pendingAppsBadge" style="font-size:0.75em;background:rgba(255,170,0,0.25);color:var(--warning);padding:3px 10px;border-radius:12px;margin-left:8px"></span></h2><button class="modal-close" onclick="closeViewModal('applications')">×</button></div>
 <div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -374,6 +370,7 @@
 </select>
 </div>
 <div class="table-container" style="margin:0"><table><thead><tr><th>Name</th><th>Code</th><th>E-Mail</th><th>Telefon</th><th>Datum</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsViewTableBody"></tbody></table></div>
+ main
 </div>
 </div>
 
@@ -393,6 +390,7 @@
 <div id="citationsViewModal" class="modal">
 <div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
 <div class="modal-header"><h2>Strafakten</h2><button class="modal-close" onclick="closeViewModal('citations')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citationsModalSearch" placeholder="Nach AZ oder Bürger suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterCitationsModal()"></div>
 <div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Art</th><th>Beamte</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="citationsViewTableBody"></tbody></table></div>
 </div>
 </div>
@@ -413,6 +411,7 @@
 <div id="chargesViewModal" class="modal">
 <div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
 <div class="modal-header"><h2>Anzeigen</h2><button class="modal-close" onclick="closeViewModal('charges')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesModalSearch" placeholder="Nach AZ, Bürger oder Vorwurf suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterChargesModal()"></div>
 <div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Vorwurf</th><th>Beamte</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="chargesViewTableBody"></tbody></table></div>
 </div>
 </div>
@@ -434,7 +433,15 @@
 <div id="pressViewModal" class="modal">
 <div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
 <div class="modal-header"><h2>Presseabteilung - Nachrichten</h2><button class="modal-close" onclick="closeViewModal('press')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="pressModalSearch" placeholder="Nach Titel, Inhalt oder Autor suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterPressModal()"></div>
 <div id="pressArticlesContainer" style="display:grid;gap:20px;padding:10px"></div>
+</div>
+</div>
+
+<div id="userPermissionsModal" class="modal">
+<div class="modal-content" style="max-width:500px">
+<div class="modal-header"><h2 id="userPermissionsTitle">🔑 Berechtigungen</h2><button class="modal-close" onclick="closeViewModal('userPermissions')">×</button></div>
+<div id="userPermissionsBody" style="padding:8px 0"></div>
 </div>
 </div>
 
@@ -450,7 +457,6 @@
 
 <h3 style="color:var(--secondary);margin:15px 0 10px">⚡ Schnellaktionen</h3>
 <div style="display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn btn-primary" onclick="resetTestData()">🔄 Reset</button>
 <button class="btn btn-success" onclick="exportAdminData()">💾 Export</button>
 <button class="btn btn-primary" onclick="closeViewModal('admin')">✓ Fertig</button>
 </div>
