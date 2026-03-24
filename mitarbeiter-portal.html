@@ -49,12 +49,12 @@
 <div class="container">
 <div class="section-title"><i class="fas fa-chart-line"></i> Dashboard</div>
 <div class="cards-grid">
-<div class="card" data-role="Admin,Personalverwaltung">
+<div class="card" data-role="Admin,Commissioner,Personalverwaltung">
 <i class="fas fa-users card-icon"></i>
 <div class="card-title">Nutzer</div>
 <div class="card-count" id="userCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Personal</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addUser')" title="Nur für berechtigte Rollen"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('users')"><i class="fas fa-list"></i></button>
@@ -73,62 +73,73 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Personalverwaltung,Leitungseben,Ausbilder">
+<div class="card" data-role="Admin,Commissioner,Personalverwaltung,Leitungseben,Ausbilder">
 <i class="fas fa-id-card card-icon"></i>
 <div class="card-title">Mitarbeiter</div>
 <div class="card-count" id="employeeCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung, Ausbilder</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Personal, Leitung, Ausbilder</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addEmployee')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('employees')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
+<div class="card" data-role="Admin,Commissioner,Leitungseben,Mitarbeiter">
 <i class="fas fa-user-circle card-icon"></i>
 <div class="card-title">Bürger</div>
 <div class="card-count" id="citizenCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, Mitarbeiter</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Leitung, Mitarbeiter</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addCitizen')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('citizens')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Mitarbeiter,Ausbilder">
+<div class="card" data-role="Admin,Commissioner,Leitungseben,Mitarbeiter,Ausbilder">
 <i class="fas fa-dna card-icon"></i>
 <div class="card-title">Beweise</div>
 <div class="card-count" id="evidenceCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, MA, Ausbilder</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Leitung, MA, Ausbilder</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addEvidence')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('evidence')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Ausbilder,Leitungseben">
+<div class="card" data-role="Admin,Commissioner,Ausbilder,Leitungseben">
 <i class="fas fa-book card-icon"></i>
 <div class="card-title">Schulung</div>
 <div class="card-count" id="trainingCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Ausbilder, Leitung</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Ausbilder, Leitung</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addTraining')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('training')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Personalverwaltung,Leitungseben">
+<div class="card" data-role="Admin,Commissioner,Personalverwaltung,Leitungseben">
 <i class="fas fa-file-alt card-icon"></i>
 <div class="card-title">Bewerbungen</div>
 <div class="card-count" id="applicationsCount">0</div>
 <div class="card-subtitle">Bearbeiten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Personal, Leitung</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('applications')"><i class="fas fa-list"></i></button>
+</div>
+</div>
+
+<div class="card" data-role="Admin,Commissioner,Leitungseben,Personalverwaltung">
+<i class="fas fa-envelope card-icon"></i>
+<div class="card-title">Sonstiges</div>
+<div class="card-count" id="requestsCount">0</div>
+<div class="card-subtitle">Anfragen & Beschwerden</div>
+<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Ab Leitungsebene</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openModal('requests')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
@@ -167,7 +178,7 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Personalverwaltung,Ausbilder,Mitarbeiter">
+<div class="card" data-role="Admin,Commissioner,Leitungseben,Personalverwaltung,Ausbilder,Mitarbeiter">
 <i class="fas fa-newspaper card-icon"></i>
 <div class="card-title">Presseabteilung</div>
 <div class="card-count" id="pressCount">0</div>
@@ -227,6 +238,10 @@
 <div id="chargesSection" class="table-container hidden">
 <div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesSearch" placeholder="Nach Name oder Vorwurf suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCharges()"></div>
 <table><thead><tr><th>Anzeige-Nr</th><th>Bürger</th><th>Vorwurf</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="chargesInlineTableBody"></tbody></table>
+</div>
+
+<div id="requestsSection" class="table-container hidden">
+<table><thead><tr><th>ID</th><th>Name</th><th>Betreff</th><th>Status</th><th>Datum</th></tr></thead><tbody id="requestsInlineTableBody"></tbody></table>
 </div></div>
 
 <!-- MODALS -->
@@ -468,6 +483,29 @@
 <div class="modal-header"><h2><i class="fas fa-user-check"></i> Bewerbungsdetails</h2><button class="modal-close" onclick="document.getElementById('applicationDetailModal').classList.remove('show')">×</button></div>
 <div id="applicationDetailContent" style="padding:10px 0"></div>
 <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap" id="applicationDetailActions"></div>
+</div>
+</div>
+
+<div id="requestsViewModal" class="modal">
+<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-envelope"></i> Sonstiges – Anfragen &amp; Beschwerden <span id="pendingRequestsBadge" style="font-size:0.75em;background:rgba(255,170,0,0.25);color:var(--warning);padding:3px 10px;border-radius:12px;margin-left:8px"></span></h2><button class="modal-close" onclick="closeViewModal('requests')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+<div style="flex:1;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="requestsSearch" placeholder="Nach Name, Betreff oder E-Mail suchen..." style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px 12px;border-radius:6px;flex:1;font-size:0.9em" onkeyup="filterRequestsModal()"></div>
+<select id="requestsFilter" onchange="filterRequestsModal()" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:6px;font-size:0.85em">
+<option value="">Alle Status</option>
+<option value="Eingereicht">Eingereicht</option>
+<option value="In Bearbeitung">In Bearbeitung</option>
+<option value="Abgeschlossen">Abgeschlossen</option>
+</select>
+</div>
+<div class="table-container" style="margin:0"><table><thead><tr><th>ID</th><th>Name</th><th>E-Mail</th><th>Betreff</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="requestsViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="requestDetailModal" class="modal">
+<div class="modal-content" style="max-width:650px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-envelope-open"></i> Anfrage Details</h2><button class="modal-close" onclick="document.getElementById('requestDetailModal').classList.remove('show')">×</button></div>
+<div id="requestDetailContent" style="padding:10px 0"></div>
 </div>
 </div>
 

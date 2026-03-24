@@ -39,10 +39,10 @@ let autoSyncInterval = null;
 
 // Standardberechtigungen für Rollen
 const defaultRolePermissions = {
-    Admin: ['users', 'ranks', 'employees', 'citizens', 'evidence', 'training', 'applications', 'citations', 'charges', 'press', 'admin'],
-    Commissioner: ['users', 'employees', 'citizens', 'evidence', 'training', 'applications', 'press'],
-    Leitungseben: ['employees', 'citizens', 'evidence', 'training', 'ranks', 'applications', 'citations', 'charges', 'press'],
-    Personalverwaltung: ['users', 'ranks', 'employees', 'applications', 'press'],
+    Admin: ['users', 'ranks', 'employees', 'citizens', 'evidence', 'training', 'applications', 'citations', 'charges', 'press', 'requests', 'admin'],
+    Commissioner: ['users', 'employees', 'citizens', 'evidence', 'training', 'applications', 'press', 'requests'],
+    Leitungseben: ['employees', 'citizens', 'evidence', 'training', 'ranks', 'applications', 'citations', 'charges', 'press', 'requests'],
+    Personalverwaltung: ['users', 'ranks', 'employees', 'applications', 'press', 'requests'],
     Ausbilder: ['training', 'employees', 'citizens', 'evidence', 'applications', 'charges', 'press'],
     Mitarbeiter: ['citizens', 'evidence', 'applications', 'press'],
     Trainee: ['citizens']
