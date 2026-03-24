@@ -865,6 +865,28 @@ function updateCounts() {
     document.getElementById('pressCount').textContent = database.press.length;
 }
 
+// ========== LIVE UI REFRESH (called by auto-sync every 5 s) ==========
+function refreshUI() {
+    if (!currentUser) return;
+    updateCounts();
+    const viewModals = [
+        { id: 'usersViewModal',        render: renderUsersView },
+        { id: 'ranksViewModal',        render: renderRanksView },
+        { id: 'employeesViewModal',    render: renderEmployeesView },
+        { id: 'citizensViewModal',     render: renderCitizensView },
+        { id: 'evidenceViewModal',     render: renderEvidenceView },
+        { id: 'trainingViewModal',     render: renderTrainingView },
+        { id: 'applicationsViewModal', render: renderApplicationsView },
+        { id: 'citationsViewModal',    render: renderCitationsView },
+        { id: 'chargesViewModal',      render: renderChargesView },
+        { id: 'pressViewModal',        render: renderPressArticles },
+    ];
+    viewModals.forEach(({ id, render }) => {
+        const el = document.getElementById(id);
+        if (el && el.classList.contains('show')) render();
+    });
+}
+
 // ========== MODAL CLICK OUTSIDE ==========
 window.onclick = function(e) {
     if (e.target.classList.contains('modal'))

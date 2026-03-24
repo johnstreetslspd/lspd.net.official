@@ -180,7 +180,9 @@ function startAutoSync() {
     
     autoSyncInterval = setInterval(() => {
         if (firebaseEnabled) {
-            loadFromFirestore().catch(e => console.warn('Auto-load failed:', e));
+            loadFromFirestore().then(() => {
+                if (typeof refreshUI === 'function') refreshUI();
+            }).catch(e => console.warn('Auto-sync from Firestore failed:', e));
         }
     }, 5000);
 }
