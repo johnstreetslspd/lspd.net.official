@@ -408,9 +408,117 @@ function deleteTraining(id) {
 // ========== APPLICATIONS ==========
 function renderApplicationsView() {
     const b = document.getElementById('applicationsViewTableBody');
-    b.innerHTML = database.applications.map(a => 
-        `<tr><td>${a.name}</td><td>${a.code}</td><td>${a.email}</td><td><span class="badge ${a.status === 'Akzeptiert' ? 'badge-success' : a.status === 'Abgelehnt' ? 'badge-danger' : 'badge-warning'}">${a.status}</span></td><td><button class="btn btn-small" ${a.status === 'Eingereicht' ? '' : 'disabled'} onclick="acceptApplication(${a.id})">✓</button><button class="btn btn-small" ${a.status === 'Eingereicht' ? '' : 'disabled'} onclick="rejectApplication(${a.id})">✗</button></td></tr>`
-    ).join('');
+    const pending = database.applications.filter(a => a.status === 'Eingereicht').length;
+    const badge = document.getElementById('pendingAppsBadge');
+    if (badge) badge.textContent = pending > 0 ? `${pending} ausstehend` : '';
+
+    const filterText = document.getElementById('applicationsSearch')?.value?.toLowerCase() || '';
+    const filterStatus = document.getElementById('applicationsFilter')?.value || '';
+
+    const filtered = database.applications.filter(a => {
+        const matchText = !filterText ||
+            a.name?.toLowerCase().includes(filterText) ||
+            a.code?.toLowerCase().includes(filterText) ||
+            a.email?.toLowerCase().includes(filterText);
+        const matchStatus = !filterStatus || a.status === filterStatus;
+        return matchText && matchStatus;
+    });
+
+    if (filtered.length === 0) {
+        b.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Bewerbungen gefunden</td></tr>`;
+        return;
+    }
+
+    b.innerHTML = filtered.sort((x, y) => {
+        // Ausstehende Bewerbungen zuerst
+        if (x.status === 'Eingereicht' && y.status !== 'Eingereicht') return -1;
+        if (x.status !== 'Eingereicht' && y.status === 'Eingereicht') return 1;
+        return new Date(y.date) - new Date(x.date);
+    }).map(a => {
+        const isPending = a.status === 'Eingereicht';
+        const badgeCls = a.status === 'Akzeptiert' ? 'badge-success' : a.status === 'Abgelehnt' ? 'badge-danger' : 'badge-warning';
+        const dateStr = a.date ? new Date(a.date).toLocaleDateString('de-DE') : '—';
+        return `<tr>
+            <td><strong>${escapeHtml(a.name)}</strong></td>
+            <td style="font-size:0.8em;font-family:monospace">${escapeHtml(a.code)}</td>
+            <td>${escapeHtml(a.email || '—')}</td>
+            <td>${escapeHtml(a.phone || '—')}</td>
+            <td style="font-size:0.85em">${dateStr}</td>
+            <td><span class="badge ${badgeCls}">${a.status}</span></td>
+            <td style="white-space:nowrap">
+                <button class="btn btn-small btn-primary" onclick="viewApplication(${a.id})" title="Details anzeigen"><i class="fas fa-eye"></i></button>
+                ${isPending ? `<button class="btn btn-small btn-success" onclick="acceptApplication(${a.id})" title="Annehmen" style="margin-left:4px">✓</button><button class="btn btn-small" onclick="rejectApplication(${a.id})" title="Ablehnen" style="margin-left:4px;background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.4)">✗</button>` : ''}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filterApplications() {
+    renderApplicationsView();
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function viewApplication(id) {
+    const a = database.applications.find(x => x.id === id);
+    if (!a) return;
+
+    const isPending = a.status === 'Eingereicht';
+    const badgeCls = a.status === 'Akzeptiert' ? 'badge-success' : a.status === 'Abgelehnt' ? 'badge-danger' : 'badge-warning';
+    const dateStr = a.date ? new Date(a.date).toLocaleString('de-DE') : '—';
+
+    const content = document.getElementById('applicationDetailContent');
+    content.innerHTML = `
+        <div style="display:grid;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(0,102,204,0.1);border-radius:8px;border:1px solid rgba(0,102,204,0.2)">
+                <i class="fas fa-user-circle" style="font-size:2.5em;color:var(--primary-bright)"></i>
+                <div>
+                    <div style="font-size:1.2em;font-weight:700;color:var(--secondary)">${escapeHtml(a.name)}</div>
+                    <div style="font-size:0.85em;color:var(--text-secondary);font-family:monospace">${escapeHtml(a.code)}</div>
+                    <span class="badge ${badgeCls}" style="margin-top:4px">${a.status}</span>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-envelope"></i> E-Mail</div>
+                    <div style="font-weight:600">${escapeHtml(a.email || '—')}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-phone"></i> Telefon</div>
+                    <div style="font-weight:600">${escapeHtml(a.phone || '—')}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-graduation-cap"></i> Ausbildung</div>
+                    <div>${escapeHtml(a.education || '—')}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-calendar-alt"></i> Eingereicht am</div>
+                    <div>${dateStr}</div>
+                </div>
+            </div>
+            ${a.experience ? `<div style="background:rgba(0,102,204,0.07);padding:12px;border-radius:6px">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:6px"><i class="fas fa-briefcase"></i> Erfahrung / Motivation</div>
+                <div style="line-height:1.6;white-space:pre-wrap">${escapeHtml(a.experience)}</div>
+            </div>` : ''}
+        </div>`;
+
+    const actions = document.getElementById('applicationDetailActions');
+    if (isPending) {
+        actions.innerHTML = `
+            <button class="btn btn-success" onclick="acceptApplication(${a.id});document.getElementById('applicationDetailModal').classList.remove('show')">
+                <i class="fas fa-check"></i> Annehmen
+            </button>
+            <button class="btn" onclick="rejectApplication(${a.id});document.getElementById('applicationDetailModal').classList.remove('show')" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.4)">
+                <i class="fas fa-times"></i> Ablehnen
+            </button>`;
+    } else {
+        actions.innerHTML = `<span style="color:var(--text-secondary);font-size:0.9em">Diese Bewerbung wurde bereits bearbeitet.</span>`;
+    }
+
+    document.getElementById('applicationDetailModal').classList.add('show');
 }
 
 function acceptApplication(id) {
@@ -420,7 +528,7 @@ function acceptApplication(id) {
         saveDatabase();
         renderApplicationsView();
         updateCounts();
-        showToast('✅ Bewerbung akzeptiert', a.name, 'success');
+        showToast('✅ Bewerbung angenommen', a.name, 'success');
     }
 }
 
