@@ -141,6 +141,8 @@ function openModal(t) {
     }
 
     if (t === 'addUser') { populateJobRankDropdown(); generateNewPassword(); }
+    if (t === 'addEvidence') populateEvidenceModal();
+    if (t === 'addCharge') populateChargeModal();
     if (t === 'users') renderUsersView();
     if (t === 'ranks') renderRanksView();
     if (t === 'employees') renderEmployeesView();
@@ -334,11 +336,17 @@ function deleteCitizen(id) {
 // ========== EVIDENCE ==========
 function addEvidence(e) {
     e.preventDefault();
+    const vergehen = getSelectedVergehen('evVergehen');
     const ev = {
         id: Date.now(),
-        aktenzeichen: `AZ-${Date.now().toString().slice(-6)}`,
+        aktenzeichen: `BM-${Date.now().toString().slice(-6)}`,
+        type: document.getElementById('evType').value,
+        name: document.getElementById('evName').value,
         description: document.getElementById('evDesc').value,
-        location: document.getElementById('evLocation').value
+        location: document.getElementById('evLocation').value,
+        citationAZ: document.getElementById('evCitationAZ').value,
+        vergehen: vergehen,
+        date: new Date().toISOString()
     };
     database.evidence.push(ev);
     saveDatabase();
@@ -348,11 +356,16 @@ function addEvidence(e) {
     updateCounts();
 }
 
+const EVIDENCE_TYPE_ICON = { Waffe: '🔫', Drogen: '💊', Sonstiges: '📦' };
+
 function renderEvidenceView() {
     const b = document.getElementById('evidenceViewTableBody');
-    b.innerHTML = database.evidence.map(e => 
-        `<tr><td>${e.aktenzeichen}</td><td>${e.description}</td><td>${e.location}</td><td><button class="btn btn-small" onclick="deleteEvidence(${e.id})">×</button></td></tr>`
-    ).join('');
+    b.innerHTML = database.evidence.map(e => {
+        const icon = EVIDENCE_TYPE_ICON[e.type] || '📦';
+        const az = e.citationAZ ? `<span class="badge badge-info" style="font-size:0.75em">${e.citationAZ}</span>` : '<span style="color:var(--text-secondary)">–</span>';
+        const vergehen = (e.vergehen && e.vergehen.length) ? e.vergehen.join(', ') : '<span style="color:var(--text-secondary)">–</span>';
+        return `<tr><td>${e.aktenzeichen}</td><td>${icon} ${e.type || 'Sonstiges'}</td><td><strong>${e.name || e.description}</strong></td><td>${e.location}</td><td>${az}</td><td style="max-width:180px;font-size:0.8em">${vergehen}</td><td><button class="btn btn-small" onclick="deleteEvidence(${e.id})">×</button></td></tr>`;
+    }).join('');
 }
 
 function deleteEvidence(id) {
@@ -364,7 +377,182 @@ function deleteEvidence(id) {
     }
 }
 
-// ========== TRAINING ==========
+// ========== EVIDENCE & CHARGE HELPERS ==========
+const VERGEHEN_LIST = [
+    'Körperverletzung', 'Schwere Körperverletzung', 'Totschlag', 'Mord',
+    'Raub', 'Diebstahl', 'Einbruchsdiebstahl', 'Betrug',
+    'Drogenbesitz', 'Drogenhandel', 'Illegaler Waffenbesitz',
+    'Widerstand gegen Vollstreckungsbeamte', 'Fahren ohne Fahrerlaubnis',
+    'Fahren unter Einfluss', 'Sachbeschädigung', 'Erpressung'
+];
+
+function renderVergehenCheckboxes(containerId, selected = []) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = VERGEHEN_LIST.map(v => {
+        const checked = selected.includes(v) ? 'checked' : '';
+        return `<label style="display:flex;align-items:center;gap:4px;font-size:0.85em;cursor:pointer"><input type="checkbox" value="${v}" ${checked} style="accent-color:var(--secondary)"> ${v}</label>`;
+    }).join('');
+}
+
+function getSelectedVergehen(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return [];
+    return Array.from(container.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+}
+
+function populateEvidenceModal() {
+    const sel = document.getElementById('evCitationAZ');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Keine Strafakte zuordnen --</option>';
+    database.citations.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.aktenzeichen;
+        opt.textContent = `${c.aktenzeichen} – ${c.name}`;
+        sel.appendChild(opt);
+    });
+    renderVergehenCheckboxes('evVergehen');
+}
+
+function populateChargeModal() {
+    const sel = document.getElementById('chargeAktenzeichen');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Keine Strafakte --</option>';
+    database.citations.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.aktenzeichen;
+        opt.textContent = `${c.aktenzeichen} – ${c.name}`;
+        sel.appendChild(opt);
+    });
+    renderVergehenCheckboxes('chargeVergehen');
+    const box = document.getElementById('chargeLinkedEvidenceBox');
+    if (box) box.style.display = 'none';
+}
+
+function updateLinkedEvidence() {
+    const az = document.getElementById('chargeAktenzeichen').value;
+    const box = document.getElementById('chargeLinkedEvidenceBox');
+    const list = document.getElementById('chargeLinkedEvidence');
+    if (!az) { if (box) box.style.display = 'none'; return; }
+    const linked = database.evidence.filter(ev => ev.citationAZ === az);
+    if (box) box.style.display = 'block';
+    if (list) {
+        if (linked.length === 0) {
+            list.innerHTML = '<em style="color:var(--text-secondary)">Keine Beweismittel für dieses AZ erfasst.</em>';
+        } else {
+            list.innerHTML = linked.map(ev =>
+                `<div>• ${EVIDENCE_TYPE_ICON[ev.type] || '📦'} <strong>${ev.name || ev.description}</strong> (${ev.type || 'Sonstiges'}) – ${ev.location}</div>`
+            ).join('');
+        }
+    }
+}
+
+// ========== AI TEXT IMPROVEMENT ==========
+function improveTextLegal(fieldId) {
+    const field = document.getElementById(fieldId);
+    if (!field || !field.value.trim()) {
+        showToast('⚠️ Hinweis', 'Bitte zuerst eine Beschreibung eingeben.', 'error');
+        return;
+    }
+    const original = field.value.trim();
+    field.value = formatLegalText(original);
+    showToast('🤖 KI', 'Text wurde rechtssicherer formuliert.', 'success');
+}
+
+function formatLegalText(text) {
+    let t = text.replace(/([.!?]\s+)([a-zäöüß])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+    t = t.charAt(0).toUpperCase() + t.slice(1);
+    if (!/[.!?]$/.test(t.trim())) t = t.trim() + '.';
+
+    const replacements = [
+        [/\bwurde erwischt\b/gi, 'wurde auf frischer Tat angetroffen'],
+        [/\bwar dabei\b/gi, 'wurde dabei angetroffen'],
+        [/\bziemlich\b/gi, 'deutlich'],
+        [/\bsehr\b/gi, 'erheblich'],
+        [/\bviele\b/gi, 'mehrere'],
+        [/\bein bisschen\b/gi, 'geringfügig'],
+        [/\bman hat\b/gi, 'die Beamten haben'],
+        [/\bwir haben\b/gi, 'die eingesetzten Beamten haben'],
+        [/\bich habe\b/gi, 'der unterzeichnende Beamte hat'],
+        [/\bschnell\b/gi, 'unverzüglich'],
+        [/\bDann\b/g, 'Im Anschluss daran'],
+        [/\bdann\b/g, 'im Anschluss daran'],
+        [/\bDanach\b/g, 'Im weiteren Verlauf'],
+        [/\bdanach\b/g, 'im weiteren Verlauf'],
+        [/\bgefunden\b/g, 'aufgefunden'],
+        [/\bsah\b/g, 'nahm wahr'],
+        [/\bsehen\b/g, 'wahrnehmen']
+    ];
+
+    for (const [pattern, replacement] of replacements) {
+        t = t.replace(pattern, replacement);
+    }
+
+    const formalPrefixes = ['Am ', 'Im Rahmen', 'Hiermit', 'Es wird', 'Der Beschuldigte', 'Die Beamten'];
+    const hasPrefix = formalPrefixes.some(p => t.startsWith(p));
+    if (!hasPrefix) {
+        const date = new Date().toLocaleDateString('de-DE');
+        t = `Am ${date} wurde Folgendes festgestellt: ${t}`;
+    }
+    return t;
+}
+
+// ========== CHARGE REPORT ==========
+function generateChargeReport(data) {
+    const date = new Date().toLocaleDateString('de-DE');
+    const time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    const vergehen = (data.vergehen && data.vergehen.length) ? data.vergehen.join(', ') : data.type;
+    const evidenceSection = (data.evidence && data.evidence.length)
+        ? data.evidence.map(ev => `  • [${ev.type || 'Sonstiges'}] ${ev.name || ev.description} – Fundort: ${ev.location}`).join('\n')
+        : '  Keine Beweismittel erfasst.';
+
+    return `POLIZEIANZEIGE – Los Santos Police Department
+${'='.repeat(50)}
+Datum: ${date}  |  Uhrzeit: ${time}
+Bearbeitender Beamter: ${data.officer}
+${'─'.repeat(50)}
+BESCHULDIGTER: ${data.name}
+Aktenzeichen Strafakte: ${data.aktenzeichen || 'Nicht zugeordnet'}
+Hauptvorwurf: ${data.type}
+Vergehen: ${vergehen}
+${'─'.repeat(50)}
+SACHVERHALT:
+${data.description}
+${'─'.repeat(50)}
+SICHERGESTELLTE BEWEISMITTEL:
+${evidenceSection}
+${'─'.repeat(50)}
+Diese Anzeige wurde gemäß den Vorschriften der
+Los Santos Police Department erstellt.`;
+}
+
+function showChargeReport(c) {
+    if (!c.report) return;
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.style.zIndex = '10000';
+    const escHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const safeReport = escHtml(c.report);
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto">
+            <div class="modal-header"><h2>📋 Anzeige ${escHtml(c.chargeNumber)}</h2><button class="modal-close" onclick="this.closest('.modal').remove()">×</button></div>
+            <pre style="background:rgba(0,0,0,0.3);padding:16px;border-radius:6px;white-space:pre-wrap;font-size:0.85em;color:var(--text-primary);font-family:monospace;margin:12px 0">${safeReport}</pre>
+            <button class="btn btn-primary" style="width:100%" id="copyReportBtn_${c.id}">📋 Bericht kopieren</button>
+        </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector(`#copyReportBtn_${c.id}`).addEventListener('click', function() {
+        const btn = this;
+        navigator.clipboard.writeText(c.report).then(() => {
+            btn.textContent = '✅ Kopiert!';
+            setTimeout(() => { btn.textContent = '📋 Bericht kopieren'; }, 2000);
+        }).catch(() => {
+            showToast('⚠️ Fehler', 'Kopieren nicht möglich. Bitte manuell kopieren.', 'error');
+        });
+    });
+    modal.addEventListener('click', function(ev) { if (ev.target === modal) modal.remove(); });
+}
+
+
 function addTraining(e) {
     e.preventDefault();
     const t = {
@@ -653,16 +841,31 @@ function editCitation(id) {
 // ========== CHARGES (Anzeigen) ==========
 function addCharge(e) {
     e.preventDefault();
+    const vergehen = getSelectedVergehen('chargeVergehen');
+    const aktenzeichen = document.getElementById('chargeAktenzeichen').value;
+    const linkedEvidence = database.evidence.filter(ev => ev.citationAZ === aktenzeichen);
     const c = {
         id: Date.now(),
         chargeNumber: `AZ-${Date.now().toString().slice(-6)}`,
         name: document.getElementById('chargeName').value,
         type: document.getElementById('chargeType').value,
+        vergehen: vergehen,
+        aktenzeichen: aktenzeichen,
         description: document.getElementById('chargeDesc').value,
         officer: document.getElementById('chargeOfficer').value,
         status: 'Aktiv',
         date: new Date().toISOString(),
-        editUntil: Date.now() + 30 * 60000
+        editUntil: Date.now() + 30 * 60000,
+        linkedEvidenceIds: linkedEvidence.map(ev => ev.id),
+        report: generateChargeReport({
+            name: document.getElementById('chargeName').value,
+            type: document.getElementById('chargeType').value,
+            vergehen: vergehen,
+            aktenzeichen: aktenzeichen,
+            description: document.getElementById('chargeDesc').value,
+            officer: document.getElementById('chargeOfficer').value,
+            evidence: linkedEvidence
+        })
     };
     database.charges.push(c);
     saveDatabase();
@@ -671,6 +874,7 @@ function addCharge(e) {
     showToast('✅ Anzeige erstellt', c.chargeNumber, 'success');
     updateCounts();
     renderChargesView();
+    showChargeReport(c);
 }
 
 function renderChargesView() {
@@ -678,7 +882,8 @@ function renderChargesView() {
     b.innerHTML = database.charges.map(c => {
         const canEdit = Date.now() < c.editUntil;
         const timeLeft = Math.max(0, Math.ceil((c.editUntil - Date.now()) / 60000));
-        return `<tr><td>${c.chargeNumber}</td><td>${c.name}</td><td><span class="badge badge-danger">${c.type}</span></td><td>${c.officer}</td><td><span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${c.status}</span></td><td>${new Date(c.date).toLocaleDateString('de-DE')}</td><td>${canEdit ? `<button class="btn btn-small" onclick="editCharge(${c.id})" title="Noch ${timeLeft} Min">✎</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>'}<button class="btn btn-small" ${canEdit ? '' : 'disabled'} onclick="deleteCharge(${c.id})">×</button></td></tr>`;
+        const reportBtn = c.report ? `<button class="btn btn-small" onclick="showChargeReport(database.charges.find(x=>x.id===${c.id}))" title="Bericht anzeigen">📋</button>` : '';
+        return `<tr><td>${c.chargeNumber}</td><td>${c.name}</td><td><span class="badge badge-danger">${c.type}</span></td><td>${c.officer}</td><td><span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${c.status}</span></td><td>${new Date(c.date).toLocaleDateString('de-DE')}</td><td>${reportBtn}${canEdit ? `<button class="btn btn-small" onclick="editCharge(${c.id})" title="Noch ${timeLeft} Min">✎</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>'}<button class="btn btn-small" ${canEdit ? '' : 'disabled'} onclick="deleteCharge(${c.id})">×</button></td></tr>`;
     }).join('');
 }
 
@@ -703,15 +908,26 @@ function editCharge(id) {
         showToast('🔒 Zu spät', 'Diese Anzeige kann nicht mehr bearbeitet werden', 'error');
         return;
     }
+    populateChargeModal();
     document.getElementById('chargeName').value = c.name;
     document.getElementById('chargeType').value = c.type;
     document.getElementById('chargeDesc').value = c.description;
     document.getElementById('chargeOfficer').value = c.officer;
+    if (c.aktenzeichen) {
+        document.getElementById('chargeAktenzeichen').value = c.aktenzeichen;
+        updateLinkedEvidence();
+    }
+    if (c.vergehen && c.vergehen.length) {
+        renderVergehenCheckboxes('chargeVergehen', c.vergehen);
+    }
     
     document.getElementById('addChargeModal').querySelector('form').onsubmit = ((e) => {
         e.preventDefault();
+        const vergehen = getSelectedVergehen('chargeVergehen');
         c.name = document.getElementById('chargeName').value;
         c.type = document.getElementById('chargeType').value;
+        c.vergehen = vergehen;
+        c.aktenzeichen = document.getElementById('chargeAktenzeichen').value;
         c.description = document.getElementById('chargeDesc').value;
         c.officer = document.getElementById('chargeOfficer').value;
         saveDatabase();
@@ -721,7 +937,9 @@ function editCharge(id) {
         showToast('✅ Aktualisiert', 'Anzeige aktualisiert', 'success');
         renderChargesView();
     });
-    openModal('addCharge');
+    // Show modal directly to avoid populateChargeModal() being called again by openModal()
+    const el = document.getElementById('addChargeModal');
+    if (el) el.classList.add('show');
 }
 
 // ========== PRESS ARTICLES ==========
@@ -955,7 +1173,7 @@ function filterUsersModal() { makeSearchFilter('usersModalSearch', 'usersViewTab
 function filterRanksModal() { makeSearchFilter('ranksModalSearch', 'ranksViewTableBody', [0, 2]); }
 function filterEmployeesModal() { makeSearchFilter('employeesModalSearch', 'employeesViewTableBody', [0, 1, 2]); }
 function filterCitizensModal() { makeSearchFilter('citizensModalSearch', 'citizensViewTableBody', [0, 1, 2]); }
-function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'evidenceViewTableBody', [0, 1, 2]); }
+function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'evidenceViewTableBody', [0, 1, 2, 3, 4]); }
 function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'trainingViewTableBody', [0, 1]); }
 function filterApplicationsModal() { makeSearchFilter('applicationsModalSearch', 'applicationsViewTableBody', [0, 1, 2]); }
 function filterCitationsModal() { makeSearchFilter('citationsModalSearch', 'citationsViewTableBody', [0, 1]); }
