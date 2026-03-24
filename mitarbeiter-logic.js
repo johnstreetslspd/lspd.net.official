@@ -63,16 +63,6 @@ function filterDashboardCards() {
     });
 }
 
-function switchRole(role) {
-    if (!currentUser) return;
-    currentUser.role = role;
-    document.getElementById('roleSelector').value = role;
-    document.getElementById('currentUser').textContent = role;
-    document.getElementById('userRole').textContent = `(${role})`;
-    filterDashboardCards();
-    showToast('🔄 Rolle gewechselt', `Sie sind jetzt: ${role}`, 'info');
-}
-
 // ========== LOGIN ==========
 function handleLogin(e) {
     e.preventDefault();
@@ -82,7 +72,6 @@ function handleLogin(e) {
     
     if (usr) {
         currentUser = { username: u, role: usr.role };
-        document.getElementById('roleSelector').value = usr.role;
         loginSuccess();
     } else {
         document.getElementById('loginError').style.display = 'block';
@@ -95,7 +84,6 @@ function loginSuccess() {
     document.getElementById('mainApp').classList.remove('hidden');
     document.getElementById('currentUser').textContent = currentUser.username;
     document.getElementById('userRole').textContent = `(${currentUser.role})`;
-    document.getElementById('roleSelector').value = currentUser.role;
     filterDashboardCards();
     updateCounts();
     
@@ -728,19 +716,6 @@ function toggleRolePermission(role, feature) {
     saveDatabase();
     showToast('✅ Berechtigung aktualisiert', `${role} - ${feature}`, 'success');
     filterDashboardCards();
-}
-
-function resetTestData() {
-    if (!confirm('Alle Daten zurücksetzen?')) return;
-    database = {
-        users: [{id: 1, username: 'Admin', password: 'Admin123!', role: 'Admin', jobRank: 'Admin', status: 'Aktiv', created: new Date().toISOString()}],
-        jobRanks: [{id: 1, name: 'Admin', color: '#ff0000'}, {id: 2, name: 'Chief', color: '#0066cc'}, {id: 3, name: 'Officer', color: '#00ff88'}],
-        employees: [], citizens: [], evidence: [], training: [], applications: [], citations: [], charges: [], press: [], auditLog: [], requests: [], news: [],
-        rolePermissions: JSON.parse(JSON.stringify(defaultRolePermissions))
-    };
-    saveDatabase();
-    showToast('🔄 Reset', 'Daten & Berechtigungen zurückgesetzt', 'success');
-    location.reload();
 }
 
 function exportAdminData() {
