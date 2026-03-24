@@ -472,6 +472,10 @@
             }
         }
     </style>
+    <!-- Firebase SDK v9 Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
 </head>
 <body>
     <!-- HEADER -->
@@ -745,30 +749,119 @@
             news: []
         };
 
-        // Initialize database with sample news
+        // Firebase Firestore Variablen
+        let fsDB = null;
+        let firebaseEnabled = false;
+
+        // Standardnews falls keine Daten vorhanden
+        const defaultNews = [
+            {
+                id: 1,
+                title: 'Willkommen im LSPD Portal',
+                content: 'Wir heißen Sie herzlich willkommen im öffentlichen Bürgerdiensteportal der LSPD!',
+                date: new Date().toISOString()
+            },
+            {
+                id: 2,
+                title: 'Neue Bewerbungsphase offen',
+                content: 'Die nächste Bewerbungsphase für neue Beamte hat begonnen. Jetzt bewerben!',
+                date: new Date().toISOString()
+            }
+        ];
+
+        // Firebase Firestore initialisieren
+        function initFirestoreDB() {
+            try {
+                if (window.firebase && window.firebase.firestore) {
+                    fsDB = window.firebase.firestore();
+                    firebaseEnabled = true;
+                    console.log('✅ Firestore initialisiert (Bürger-Portal)');
+                    return true;
+                } else {
+                    console.warn('⚠️ Firebase Firestore nicht verfügbar');
+                    firebaseEnabled = false;
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Firestore Init Error:', error);
+                firebaseEnabled = false;
+                return false;
+            }
+        }
+
+        // Daten von Firestore laden
+        async function loadFromFirestore() {
+            if (!firebaseEnabled || !fsDB) return false;
+
+            try {
+                const doc = await fsDB.collection('lspdDatabase').doc('shared').get();
+
+                if (doc.exists) {
+                    const data = doc.data();
+                    database.applications = data.applications || database.applications;
+                    database.requests = data.requests || database.requests;
+                    database.news = data.news || database.news;
+                    console.log('✅ Daten von Firestore geladen (Bürger-Portal)');
+                    return true;
+                } else {
+                    console.log('ℹ️ Keine Daten in Firestore - nutze Standard');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Firestore Load Error:', error);
+                return false;
+            }
+        }
+
+        // Daten zu Firestore speichern (nur Bürger-relevante Felder aktualisieren)
+        async function saveToFirestore() {
+            if (!firebaseEnabled || !fsDB) return false;
+
+            try {
+                // Lade aktuelle Daten, um andere Felder nicht zu überschreiben
+                const doc = await fsDB.collection('lspdDatabase').doc('shared').get();
+                const existingData = doc.exists ? doc.data() : {};
+
+                await fsDB.collection('lspdDatabase').doc('shared').set({
+                    ...existingData,
+                    applications: database.applications,
+                    requests: database.requests,
+                    news: database.news,
+                    lastUpdated: new Date().toISOString()
+                });
+
+                console.log('✅ Daten zu Firestore gespeichert (Bürger-Portal)');
+                return true;
+            } catch (error) {
+                console.error('❌ Firestore Save Error:', error);
+                return false;
+            }
+        }
+
+        // Datenbank initialisieren mit Standarddaten
         function initDatabase() {
             database = {
                 applications: [],
                 requests: [],
-                news: [
-                    {
-                        id: 1,
-                        title: 'Willkommen im LSPD Portal',
-                        content: 'Wir heißen Sie herzlich willkommen im öffentlichen Bürgerdiensteportal der LSPD!',
-                        date: new Date().toISOString()
-                    },
-                    {
-                        id: 2,
-                        title: 'Neue Bewerbungsphase offen',
-                        content: 'Die nächste Bewerbungsphase für neue Beamte hat begonnen. Jetzt bewerben!',
-                        date: new Date().toISOString()
-                    }
-                ]
+                news: [...defaultNews]
             };
             saveDatabase();
         }
 
-        function loadDatabase() {
+        // Datenbank laden - zuerst Firestore, dann localStorage Fallback
+        async function loadDatabase() {
+            // Versuche zuerst Firestore
+            if (firebaseEnabled) {
+                const loaded = await loadFromFirestore();
+                if (loaded) {
+                    // Speichere auch in localStorage als Backup
+                    localStorage.setItem(DB_KEY, JSON.stringify(database));
+                    updateNewsCount();
+                    return;
+                }
+            }
+
+            // Fallback: localStorage
             const stored = localStorage.getItem(DB_KEY);
             if (stored) {
                 try {
@@ -783,8 +876,15 @@
             updateNewsCount();
         }
 
+        // Datenbank speichern - zu Firestore und localStorage
         function saveDatabase() {
+            // Immer in localStorage speichern (Backup)
             localStorage.setItem(DB_KEY, JSON.stringify(database));
+
+            // Wenn Firestore verfügbar, auch dort speichern
+            if (firebaseEnabled) {
+                saveToFirestore().catch(e => console.error('Firestore save failed:', e));
+            }
         }
 
         // UPDATE COUNTERS
@@ -820,25 +920,34 @@
         function checkStatus(e) {
             e.preventDefault();
             const code = document.getElementById('statusCode').value;
-            const app = database.applications.find(a => a.code === code);
             const resultDiv = document.getElementById('statusResult');
-            
-            if (app) {
-                resultDiv.innerHTML = `
-                    <div style="background: rgba(0, 255, 136, 0.15); border: 2px solid var(--secondary); padding: 20px; border-radius: 8px; color: var(--secondary);">
-                        <h3>✅ Bewerbung gefunden!</h3>
-                        <p><strong>Name:</strong> ${app.name}</p>
-                        <p><strong>Status:</strong> <span class="badge badge-success">${app.status}</span></p>
-                        <p><strong>Eingereicht:</strong> ${new Date(app.date).toLocaleDateString('de-DE')}</p>
-                    </div>
-                `;
+
+            // Lade aktuelle Daten von Firestore, um aktuellen Status zu erhalten
+            const doCheck = () => {
+                const app = database.applications.find(a => a.code === code);
+                if (app) {
+                    resultDiv.innerHTML = `
+                        <div style="background: rgba(0, 255, 136, 0.15); border: 2px solid var(--secondary); padding: 20px; border-radius: 8px; color: var(--secondary);">
+                            <h3>✅ Bewerbung gefunden!</h3>
+                            <p><strong>Name:</strong> ${app.name}</p>
+                            <p><strong>Status:</strong> <span class="badge badge-success">${app.status}</span></p>
+                            <p><strong>Eingereicht:</strong> ${new Date(app.date).toLocaleDateString('de-DE')}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="background: rgba(255, 51, 51, 0.15); border: 2px solid var(--danger); padding: 20px; border-radius: 8px; color: var(--danger);">
+                            <h3>❌ Bewerbung nicht gefunden</h3>
+                            <p>Der eingegebene Code ist ungültig. Überprüfen Sie Ihre Eingabe.</p>
+                        </div>
+                    `;
+                }
+            };
+
+            if (firebaseEnabled) {
+                loadFromFirestore().then(() => doCheck()).catch(() => doCheck());
             } else {
-                resultDiv.innerHTML = `
-                    <div style="background: rgba(255, 51, 51, 0.15); border: 2px solid var(--danger); padding: 20px; border-radius: 8px; color: var(--danger);">
-                        <h3>❌ Bewerbung nicht gefunden</h3>
-                        <p>Der eingegebene Code ist ungültig. Überprüfen Sie Ihre Eingabe.</p>
-                    </div>
-                `;
+                doCheck();
             }
         }
 
@@ -848,7 +957,7 @@
             const id = 'REQ-' + Date.now().toString().slice(-6);
             
             const req = {
-                id: req,
+                id: id,
                 name: document.getElementById('reqName').value,
                 email: document.getElementById('reqEmail').value,
                 subject: document.getElementById('reqSubject').value,
@@ -893,7 +1002,15 @@
             };
             
             if (type === 'news') {
-                displayNews();
+                // Lade aktuelle News von Firestore bevor sie angezeigt werden
+                if (firebaseEnabled) {
+                    loadFromFirestore().then(() => {
+                        updateNewsCount();
+                        displayNews();
+                    }).catch(() => displayNews());
+                } else {
+                    displayNews();
+                }
             }
             
             const modalId = modalMap[type];
@@ -938,8 +1055,20 @@
             });
         };
 
-        // Initialize
-        loadDatabase();
+        // Initialize - Firebase zuerst, dann Datenbank laden
+        function initApp() {
+            if (window.firebase && window.firebase.firestore) {
+                initFirestoreDB();
+            }
+            loadDatabase();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            // Firebase braucht kurz zum Laden
+            setTimeout(initApp, 200);
+        }
     </script>
 </body>
 </html>
