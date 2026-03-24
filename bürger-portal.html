@@ -558,6 +558,16 @@
                     <button class="btn btn-primary btn-small" onclick="openModal('contact')">📞 Kontakt</button>
                 </div>
             </div>
+
+            <!-- Strafanzeige Card -->
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-gavel"></i></div>
+                <div class="card-title">⚖️ Strafanzeige stellen</div>
+                <div class="card-subtitle">Erstatten Sie eine Anzeige gegen eine Person</div>
+                <div class="card-actions">
+                    <button class="btn btn-success btn-small" onclick="openModal('strafanzeige')">➕ Anzeige erstatten</button>
+                </div>
+            </div>
         </div>
 
         <!-- APPLICATIONS TABLE -->
@@ -596,6 +606,27 @@
                         </tr>
                     </thead>
                     <tbody id="requestsTableBody">
+                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Laden...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- MEINE ANZEIGEN TABLE -->
+        <div id="complaintsSection" class="hidden">
+            <div class="section-title">⚖️ Ihre Anzeigen</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Anzeige-Nr</th>
+                            <th>Beschuldigte Person</th>
+                            <th>Vorwurf</th>
+                            <th>Status</th>
+                            <th>Datum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsTableBody">
                         <tr><td colspan="5" style="text-align: center; padding: 40px;">Laden...</td></tr>
                     </tbody>
                 </table>
@@ -684,6 +715,48 @@
         </div>
     </div>
 
+    <!-- Strafanzeige Modal -->
+    <div id="strafanzeigeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚖️ Strafanzeige erstatten</h2>
+                <span class="modal-close" onclick="closeModal('strafanzeige')">&times;</span>
+            </div>
+            <form onsubmit="submitComplaint(event)">
+                <div class="form-group">
+                    <label>Ihr Name (Anzeigeerstatter)</label>
+                    <input type="text" id="complainantName" required>
+                </div>
+                <div class="form-group">
+                    <label>Ihre E-Mail</label>
+                    <input type="email" id="complainantEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Name der beschuldigten Person</label>
+                    <input type="text" id="accusedName" required>
+                </div>
+                <div class="form-group">
+                    <label>Art des Vergehens</label>
+                    <select id="complaintType" required>
+                        <option value="">-- Bitte wählen --</option>
+                        <option>Körperverletzung</option>
+                        <option>Diebstahl</option>
+                        <option>Raub</option>
+                        <option>Betrug</option>
+                        <option>Sachbeschädigung</option>
+                        <option>Nötigung / Bedrohung</option>
+                        <option>Sonstiges</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sachverhalt (Beschreibung)</label>
+                    <textarea id="complaintDesc" placeholder="Beschreiben Sie den Vorfall so genau wie möglich..." required style="min-height:100px"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">✅ Anzeige erstatten</button>
+            </form>
+        </div>
+    </div>
+
     <!-- News Modal -->
     <div id="newsModal" class="modal">
         <div class="modal-content">
@@ -746,6 +819,7 @@
         let database = {
             applications: [],
             requests: [],
+            charges: [],
             news: [],
             press: []
         };
@@ -801,6 +875,7 @@
                     const data = doc.data();
                     database.applications = data.applications || database.applications;
                     database.requests = data.requests || database.requests;
+                    database.charges = data.charges || database.charges;
                     database.news = data.news || database.news;
                     database.press = data.press || database.press;
                     console.log('✅ Daten von Firestore geladen (Bürger-Portal)');
@@ -828,6 +903,7 @@
                     ...existingData,
                     applications: database.applications,
                     requests: database.requests,
+                    charges: [...(existingData.charges || []), ...database.charges.filter(c => c.source === 'citizen' && !(existingData.charges || []).find(x => x.id === c.id))],
                     news: database.news,
                     lastUpdated: new Date().toISOString()
                 });
@@ -845,6 +921,7 @@
             database = {
                 applications: [],
                 requests: [],
+                charges: [],
                 news: [...defaultNews]
             };
             saveDatabase();
@@ -892,6 +969,11 @@
         // UPDATE COUNTERS
         function updateNewsCount() {
             document.getElementById('newsCount').textContent = database.press.length;
+            const citizenCharges = (database.charges || []).filter(c => c.source === 'citizen');
+            if (citizenCharges.length > 0) {
+                document.getElementById('complaintsSection').classList.remove('hidden');
+                renderComplaints();
+            }
         }
 
         // APPLICATIONS
@@ -975,6 +1057,52 @@
             e.target.reset();
         }
 
+        // STRAFANZEIGE
+        function submitComplaint(e) {
+            e.preventDefault();
+            const nr = 'ANZ-' + Date.now().toString().slice(-6);
+            const complaint = {
+                id: Date.now(),
+                chargeNumber: nr,
+                name: document.getElementById('accusedName').value,
+                complainant: document.getElementById('complainantName').value,
+                email: document.getElementById('complainantEmail').value,
+                type: document.getElementById('complaintType').value,
+                description: document.getElementById('complaintDesc').value,
+                officer: 'Bürgerdienst',
+                status: 'Aktiv',
+                source: 'citizen',
+                date: new Date().toISOString(),
+                editUntil: Date.now() + 30 * 60000,
+                notes: []
+            };
+            database.charges.push(complaint);
+            saveDatabase();
+            closeModal('strafanzeige');
+            document.getElementById('complaintsSection').classList.remove('hidden');
+            renderComplaints();
+            showToast('✅ Anzeige erstattet', `Ihre Anzeige wurde eingereicht. Aktenzeichen: ${nr}`, 'success');
+            e.target.reset();
+        }
+
+        function renderComplaints() {
+            const tbody = document.getElementById('complaintsTableBody');
+            if (!tbody) return;
+            const myComplaints = database.charges.filter(c => c.source === 'citizen');
+            if (myComplaints.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary)">Keine Anzeigen vorhanden.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = myComplaints.sort((a, b) => new Date(b.date) - new Date(a.date)).map(c => `
+                <tr>
+                    <td style="font-family:monospace;font-size:0.85em">${escapeHtml(c.chargeNumber)}</td>
+                    <td><strong>${escapeHtml(c.name)}</strong></td>
+                    <td>${escapeHtml(c.type)}</td>
+                    <td><span class="badge ${c.status === 'Aktiv' ? 'badge-warning' : 'badge-success'}">${escapeHtml(c.status)}</span></td>
+                    <td style="font-size:0.85em">${new Date(c.date).toLocaleDateString('de-DE')}</td>
+                </tr>`).join('');
+        }
+
         // NEWS
         function escapeHtml(str) {
             return String(str)
@@ -1015,6 +1143,7 @@
                 'application': 'applicationModal',
                 'checkStatus': 'checkStatusModal',
                 'request': 'requestModal',
+                'strafanzeige': 'strafanzeigeModal',
                 'news': 'newsModal',
                 'faq': 'faqModal',
                 'contact': 'contactModal'
@@ -1043,6 +1172,7 @@
                 'application': 'applicationModal',
                 'checkStatus': 'checkStatusModal',
                 'request': 'requestModal',
+                'strafanzeige': 'strafanzeigeModal',
                 'news': 'newsModal',
                 'faq': 'faqModal',
                 'contact': 'contactModal'

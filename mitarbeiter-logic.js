@@ -8,6 +8,9 @@ const FEATURES = ['users', 'ranks', 'employees', 'citizens', 'evidence', 'traini
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
+let activeChargesTab = 'all';
+let currentChargeId = null;
+
 function getAllRoles() {
     return [...DEFAULT_ROLES, ...(database.customRoles || [])];
 }
@@ -842,6 +845,22 @@ function editCitation(id) {
 }
 
 // ========== CHARGES (Anzeigen) ==========
+function setChargesTab(tab) {
+    activeChargesTab = tab;
+    ['All', 'Polizei', 'Buerger'].forEach(t => {
+        const btn = document.getElementById('chargesTab' + t);
+        if (!btn) return;
+        if (tab === t.toLowerCase()) {
+            btn.className = 'btn btn-primary btn-small';
+            btn.style.cssText = '';
+        } else {
+            btn.className = 'btn btn-small';
+            btn.style.cssText = 'background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)';
+        }
+    });
+    renderChargesView();
+}
+
 function addCharge(e) {
     e.preventDefault();
     const vergehen = getSelectedVergehen('chargeVergehen');
@@ -882,18 +901,51 @@ function addCharge(e) {
 
 function renderChargesView() {
     const b = document.getElementById('chargesViewTableBody');
-    b.innerHTML = database.charges.map(c => {
-        const canEdit = Date.now() < c.editUntil;
+    const search = (document.getElementById('chargesModalSearch')?.value || '').toLowerCase();
+    const isAdmin = canAccess('admin');
+
+    let charges = [...database.charges];
+    if (activeChargesTab === 'polizei') charges = charges.filter(c => c.source !== 'citizen');
+    else if (activeChargesTab === 'buerger') charges = charges.filter(c => c.source === 'citizen');
+
+    if (search) {
+        charges = charges.filter(c =>
+            (c.chargeNumber || '').toLowerCase().includes(search) ||
+            (c.name || '').toLowerCase().includes(search) ||
+            (c.type || '').toLowerCase().includes(search)
+        );
+    }
+
+    if (charges.length === 0) {
+        b.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Anzeigen gefunden</td></tr>';
+        return;
+    }
+
+    b.innerHTML = charges.map(c => {
+        const withinWindow = Date.now() < c.editUntil;
         const timeLeft = Math.max(0, Math.ceil((c.editUntil - Date.now()) / 60000));
-        const reportBtn = c.report ? `<button class="btn btn-small" onclick="showChargeReport(database.charges.find(x=>x.id===${c.id}))" title="Bericht anzeigen">📋</button>` : '';
-        return `<tr><td>${c.chargeNumber}</td><td>${c.name}</td><td><span class="badge badge-danger">${c.type}</span></td><td>${c.officer}</td><td><span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${c.status}</span></td><td>${new Date(c.date).toLocaleDateString('de-DE')}</td><td>${reportBtn}${canEdit ? `<button class="btn btn-small" onclick="editCharge(${c.id})" title="Noch ${timeLeft} Min">✎</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>'}<button class="btn btn-small" ${canEdit ? '' : 'disabled'} onclick="deleteCharge(${c.id})">×</button></td></tr>`;
+        const canDel = isAdmin || withinWindow;
+        const reportBtn = c.report ? `<button class="btn btn-small" onclick="showChargeReport(database.charges.find(x=>x.id===${c.id}))" title="Bericht">📋</button>` : '';
+        const detailBtn = `<button class="btn btn-small btn-primary" onclick="viewCharge(${c.id})" title="Details"><i class="fas fa-eye"></i></button>`;
+        const editBtn = withinWindow ? `<button class="btn btn-small" onclick="editCharge(${c.id})" title="Noch ${timeLeft} Min">✎</button>` : '';
+        const delBtn = canDel ? `<button class="btn btn-small" onclick="deleteCharge(${c.id})" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)">×</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>';
+        const sourceLabel = c.source === 'citizen' ? '<span class="badge badge-warning">Bürger</span>' : '<span class="badge badge-info">Polizei</span>';
+        return `<tr>
+            <td style="font-family:monospace;font-size:0.85em">${c.chargeNumber}</td>
+            <td><strong>${c.name}</strong></td>
+            <td><span class="badge badge-danger">${c.type}</span></td>
+            <td>${sourceLabel}</td>
+            <td><span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${c.status}</span></td>
+            <td style="font-size:0.85em">${new Date(c.date).toLocaleDateString('de-DE')}</td>
+            <td style="white-space:nowrap">${detailBtn}${reportBtn}${editBtn}${delBtn}</td>
+        </tr>`;
     }).join('');
 }
 
 function deleteCharge(id) {
-    if (confirm('Anzeige löschen?')) {
+    if (confirm('Anzeige wirklich löschen?')) {
         const c = database.charges.find(x => x.id === id);
-        if (c && Date.now() >= c.editUntil) {
+        if (c && !canAccess('admin') && Date.now() >= c.editUntil) {
             showToast('🔒 Zu spät', 'Diese Anzeige kann nicht mehr gelöscht werden', 'error');
             return;
         }
@@ -901,7 +953,7 @@ function deleteCharge(id) {
         saveDatabase();
         renderChargesView();
         updateCounts();
-        showToast('✅ Gelöscht', 'Anzeige gelöscht', 'success');
+        showToast('✅ Gelöscht', 'Anzeige wurde gelöscht', 'success');
     }
 }
 
@@ -974,10 +1026,12 @@ function renderPressArticles() {
         c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:40px">Keine Nachrichten vorhanden</p>';
         return;
     }
+    const isAdmin = canAccess('admin');
     c.innerHTML = database.press.sort((a, b) => new Date(b.date) - new Date(a.date)).map(p => {
         const canEdit = Date.now() < p.editUntil;
         const editBtn = canEdit ? `<button class="btn btn-primary btn-small" onclick="editPressArticle(${p.id})">✎ Bearbeiten</button>` : '';
-        const delBtn = canEdit ? `<button class="btn btn-small" style="background:rgba(255,51,51,0.2);border:1px solid #ff6b6b;color:#ff6b6b" onclick="deletePressArticle(${p.id})">×</button>` : '';
+        const canDel = canEdit || isAdmin;
+        const delBtn = canDel ? `<button class="btn btn-small" style="background:rgba(255,51,51,0.2);border:1px solid #ff6b6b;color:#ff6b6b" onclick="deletePressArticle(${p.id})">× Löschen</button>` : '';
         return `<div style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.2);border-radius:8px;overflow:hidden"><div style="display:grid;grid-template-columns:200px 1fr;gap:15px;padding:20px">${p.image ? `<img src="${p.image}" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid rgba(0,102,204,0.3)">` : ''}<div><h3 style="color:var(--secondary);margin-bottom:6px;font-size:1.2em">${p.title}</h3><p style="color:rgba(255,255,255,0.7);margin-bottom:10px;font-size:0.9em">${p.subtitle}</p><p style="color:var(--text-secondary);line-height:1.6;margin-bottom:12px">${p.content.substring(0, 200)}...</p><div style="display:flex;gap:8px;align-items:center;font-size:0.85em;color:rgba(255,255,255,0.6);margin-bottom:12px"><i class="fas fa-user-circle"></i> <span>${p.author}</span> <i class="fas fa-calendar" style="margin-left:12px"></i> <span>${new Date(p.date).toLocaleDateString('de-DE')}</span></div><div style="display:flex;gap:8px">${editBtn}${delBtn}</div></div></div></div>`;
     }).join('');
 }
@@ -1018,7 +1072,87 @@ function deletePressArticle(id) {
     }
 }
 
-// ========== ADMIN PANEL ==========
+// ========== CHARGE DETAIL & NOTES ==========
+function viewCharge(id) {
+    const c = database.charges.find(x => x.id === id);
+    if (!c) return;
+    currentChargeId = id;
+    const sourceLabel = c.source === 'citizen' ? '🧑 Bürger' : '👮 Polizei';
+    const content = document.getElementById('chargeDetailContent');
+    content.innerHTML = `
+        <div style="display:grid;gap:10px">
+            <div style="background:rgba(0,102,204,0.1);padding:12px;border-radius:8px;border:1px solid rgba(0,102,204,0.2)">
+                <div style="font-size:1.1em;font-weight:700;color:var(--secondary)">${escapeHtml(c.chargeNumber)}</div>
+                <div style="font-size:0.85em;color:var(--text-secondary);margin-top:2px">${sourceLabel} · ${new Date(c.date).toLocaleDateString('de-DE')}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Bürger</div>
+                    <div style="font-weight:600">${escapeHtml(c.name)}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Vorwurf</div>
+                    <span class="badge badge-danger">${escapeHtml(c.type)}</span>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Beamte(r)</div>
+                    <div>${escapeHtml(c.officer || '—')}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Status</div>
+                    <span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${escapeHtml(c.status)}</span>
+                </div>
+            </div>
+            ${c.description ? `<div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Sachverhalt</div>
+                <div style="line-height:1.6;white-space:pre-wrap">${escapeHtml(c.description)}</div>
+            </div>` : ''}
+        </div>`;
+    renderChargeNotes(c);
+    document.getElementById('chargeDetailModal').classList.add('show');
+}
+
+function renderChargeNotes(c) {
+    const list = document.getElementById('chargeNotesList');
+    if (!list) return;
+    const notes = c.notes || [];
+    if (notes.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-secondary);font-size:0.9em;margin:0">Noch keine Notizen vorhanden.</p>';
+        return;
+    }
+    list.innerHTML = notes.map((n, i) => `
+        <div style="background:rgba(0,102,204,0.08);border:1px solid rgba(0,102,204,0.2);border-radius:6px;padding:10px;display:flex;gap:10px;align-items:flex-start">
+            <div style="flex:1">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-user"></i> ${escapeHtml(n.author)} · ${new Date(n.date).toLocaleString('de-DE')}</div>
+                <div style="line-height:1.5;white-space:pre-wrap">${escapeHtml(n.text)}</div>
+            </div>
+            <button class="btn btn-small" onclick="deleteChargeNote(${i})" style="background:rgba(255,51,51,0.15);color:var(--danger);border:1px solid rgba(255,51,51,0.3);flex-shrink:0" title="Notiz löschen">×</button>
+        </div>`).join('');
+}
+
+function addChargeNote() {
+    const c = database.charges.find(x => x.id === currentChargeId);
+    if (!c) return;
+    const input = document.getElementById('chargeNoteInput');
+    const text = input.value.trim();
+    if (!text) return;
+    if (!c.notes) c.notes = [];
+    c.notes.push({ text, author: currentUser?.username || 'Unbekannt', date: new Date().toISOString() });
+    saveDatabase();
+    input.value = '';
+    renderChargeNotes(c);
+    showToast('✅ Notiz hinzugefügt', '', 'success');
+}
+
+function deleteChargeNote(index) {
+    const c = database.charges.find(x => x.id === currentChargeId);
+    if (!c || !c.notes) return;
+    c.notes.splice(index, 1);
+    saveDatabase();
+    renderChargeNotes(c);
+}
+
+
 function renderAdminStats() {
     const s = document.getElementById('statsPanel');
     if (!s) return;
@@ -1284,7 +1418,7 @@ function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'eviden
 function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'trainingViewTableBody', [0, 1]); }
 function filterApplicationsModal() { makeSearchFilter('applicationsModalSearch', 'applicationsViewTableBody', [0, 1, 2]); }
 function filterCitationsModal() { makeSearchFilter('citationsModalSearch', 'citationsViewTableBody', [0, 1]); }
-function filterChargesModal() { makeSearchFilter('chargesModalSearch', 'chargesViewTableBody', [0, 1, 2]); }
+function filterChargesModal() { renderChargesView(); }
 function filterPressModal() {
     const query = (document.getElementById('pressModalSearch')?.value || '').toLowerCase();
     document.querySelectorAll('#pressArticlesContainer > div').forEach(el => {
@@ -1320,17 +1454,18 @@ function downloadCSV() {
 
 // ========== COUNTERS ==========
 function updateCounts() {
-    document.getElementById('userCount').textContent = database.users.length;
-    document.getElementById('rankCount').textContent = database.jobRanks.length;
-    document.getElementById('employeeCount').textContent = database.employees.length;
-    document.getElementById('citizenCount').textContent = database.citizens.length;
-    document.getElementById('evidenceCount').textContent = database.evidence.length;
-    document.getElementById('trainingCount').textContent = database.training.length;
-    document.getElementById('applicationsCount').textContent = database.applications.length;
-    document.getElementById('citationsCount').textContent = database.citations.length;
-    document.getElementById('chargesCount').textContent = database.charges.length;
-    document.getElementById('pressCount').textContent = database.press.length;
-    document.getElementById('requestsCount').textContent = (database.requests || []).length;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('userCount', database.users.length);
+    set('rankCount', database.jobRanks.length);
+    set('employeeCount', database.employees.length);
+    set('citizenCount', database.citizens.length);
+    set('evidenceCount', database.evidence.length);
+    set('trainingCount', database.training.length);
+    set('applicationsCount', database.applications.length);
+    set('citationsCount', database.citations.length);
+    set('chargesCount', database.charges.length);
+    set('pressCount', database.press.length);
+    set('requestsCount', (database.requests || []).length);
 }
 
 // ========== LIVE UI REFRESH (called by auto-sync every 5 s) ==========
