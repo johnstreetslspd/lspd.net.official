@@ -996,7 +996,8 @@
                 applications: [],
                 requests: [],
                 charges: [],
-                news: [...defaultNews]
+                news: [...defaultNews],
+                press: []
             };
             saveDatabase();
         }
@@ -1042,8 +1043,8 @@
 
         // UPDATE COUNTERS
         function updateNewsCount() {
-            document.getElementById('newsCount').textContent = database.press.length;
-
+            const el = document.getElementById('newsCount');
+            if (el) el.textContent = (database.press || []).length;
         }
 
         // APPLICATIONS
@@ -1083,8 +1084,8 @@
                     resultDiv.innerHTML = `
                         <div style="background: rgba(0, 255, 136, 0.15); border: 2px solid var(--secondary); padding: 20px; border-radius: 8px; color: var(--secondary);">
                             <h3>✅ Bewerbung gefunden!</h3>
-                            <p><strong>Name:</strong> ${app.name}</p>
-                            <p><strong>Status:</strong> <span class="badge badge-success">${app.status}</span></p>
+                            <p><strong>Name:</strong> ${escapeHtml(app.name)}</p>
+                            <p><strong>Status:</strong> <span class="badge badge-success">${escapeHtml(app.status)}</span></p>
                             <p><strong>Eingereicht:</strong> ${new Date(app.date).toLocaleDateString('de-DE')}</p>
                         </div>
                     `;
