@@ -49,24 +49,22 @@
 <div class="container">
 <div class="section-title"><i class="fas fa-chart-line"></i> Dashboard</div>
 <div class="cards-grid">
-<div class="card" data-role="Admin,Commissioner,Personalverwaltung">
+<div class="card" data-permission="users">
 <i class="fas fa-users card-icon"></i>
 <div class="card-title">Nutzer</div>
 <div class="card-count" id="userCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Personal</div>
 <div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addUser')" title="Nur für berechtigte Rollen"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" onclick="openModal('addUser')" title="Nutzer hinzufügen"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('users')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Personalverwaltung,Leitungseben">
-<i class="fas fa-briefcase card-icon"></i>
+<div class="card" data-permission="ranks">
+<i class="fas fa-award card-icon"></i>
 <div class="card-title">Ränge</div>
 <div class="card-count" id="rankCount">0</div>
-<div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung</div>
+<div class="card-subtitle">Dienstgrade verwalten</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addRank')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('ranks')"><i class="fas fa-list"></i></button>
@@ -74,116 +72,106 @@
 </div>
 
 
-<div class="card" data-role="Admin,Commissioner,Leitungseben,Mitarbeiter">
+<div class="card" data-permission="citizens">
 <i class="fas fa-user-circle card-icon"></i>
 <div class="card-title">Bürger</div>
 <div class="card-count" id="citizenCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Leitung, Mitarbeiter</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addCitizen')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('citizens')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Commissioner,Leitungseben,Mitarbeiter,Ausbilder">
+<div class="card" data-permission="evidence">
 <i class="fas fa-dna card-icon"></i>
 <div class="card-title">Beweise</div>
 <div class="card-count" id="evidenceCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Leitung, MA, Ausbilder</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addEvidence')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('evidence')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Commissioner,Ausbilder,Leitungseben">
+<div class="card" data-permission="training">
 <i class="fas fa-book card-icon"></i>
 <div class="card-title">Schulung</div>
 <div class="card-count" id="trainingCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Ausbilder, Leitung</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addTraining')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('training')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Commissioner,Personalverwaltung,Leitungseben">
+<div class="card" data-permission="applications">
 <i class="fas fa-file-alt card-icon"></i>
 <div class="card-title">Bewerbungen</div>
 <div class="card-count" id="applicationsCount">0</div>
 <div class="card-subtitle">Bearbeiten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Personal, Leitung</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('applications')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Commissioner,Leitungseben,Personalverwaltung">
+<div class="card" data-permission="requests">
 <i class="fas fa-envelope card-icon"></i>
 <div class="card-title">Sonstiges</div>
 <div class="card-count" id="requestsCount">0</div>
 <div class="card-subtitle">Anfragen & Beschwerden</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Ab Leitungsebene</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('requests')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
+<div class="card" data-permission="citations">
 <i class="fas fa-gavel card-icon"></i>
 <div class="card-title">Strafakten</div>
 <div class="card-count" id="citationsCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, Mitarbeiter</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addCitation')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('citations')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Mitarbeiter">
+<div class="card" data-permission="charges">
 <i class="fas fa-exclamation-triangle card-icon"></i>
 <div class="card-title">Anzeigen</div>
 <div class="card-count" id="chargesCount">0</div>
 <div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Leitung, Mitarbeiter</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addCharge')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('charges')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Leitungseben,Personalverwaltung">
+<div class="card" data-permission="admin">
 <i class="fas fa-download card-icon"></i>
 <div class="card-title">Export</div>
 <div class="card-subtitle">Daten & Backup</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Personal, Leitung</div>
 <div class="card-actions">
 <button class="btn btn-success btn-small" onclick="downloadJSON()"><i class="fas fa-file"></i></button>
 <button class="btn btn-success btn-small" onclick="downloadCSV()"><i class="fas fa-table"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin,Commissioner,Leitungseben,Personalverwaltung,Ausbilder,Mitarbeiter">
+<div class="card" data-permission="press">
 <i class="fas fa-newspaper card-icon"></i>
 <div class="card-title">Presseabteilung</div>
 <div class="card-count" id="pressCount">0</div>
 <div class="card-subtitle">Nachrichten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Ab Mitarbeiter</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openModal('addPress')"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('press')"><i class="fas fa-list"></i></button>
 </div>
 </div>
 
-<div class="card" data-role="Admin">
+<div class="card" data-permission="admin">
 <i class="fas fa-cog card-icon"></i>
 <div class="card-title">Admin</div>
-<div class="card-subtitle">Panel</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Nur Admin</div>
+<div class="card-subtitle">Rollen, Ränge & System</div>
 <div class="card-actions">
 <button class="btn btn-primary btn-small" onclick="openAdminPanel()"><i class="fas fa-sliders-h"></i></button>
 </div>
@@ -250,11 +238,19 @@
 
 <div id="addRankModal" class="modal">
 <div class="modal-content">
-<div class="modal-header"><h2>Rang hinzufügen</h2><button class="modal-close" onclick="closeModal('addRank')">×</button></div>
+<div class="modal-header"><h2><i class="fas fa-award"></i> Rang hinzufügen</h2><button class="modal-close" onclick="closeModal('addRank')">×</button></div>
 <form onsubmit="addRank(event)">
-<div class="form-group"><label>Name</label><input type="text" id="rankName" required></div>
+<div class="form-group"><label>Name</label><input type="text" id="rankName" required placeholder="z.B. Sergeant"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="form-group"><label>Kürzel</label><input type="text" id="rankAbbreviation" placeholder="z.B. SGT" maxlength="6"></div>
+<div class="form-group"><label>Priorität (0–100)</label><input type="number" id="rankPriority" value="0" min="0" max="100"></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
 <div class="form-group"><label>Farbe</label><input type="color" id="rankColor" value="#0066cc" required></div>
-<div class="form-group"><label>Beschreibung</label><textarea id="rankDesc"></textarea></div>
+<div class="form-group"><label>Icon (Font Awesome)</label><input type="text" id="rankIcon" value="fas fa-award" placeholder="fas fa-award"></div>
+</div>
+<div class="form-group"><label>Abteilung</label><select id="rankDepartment"><option value="">– Keine Abteilung –</option></select></div>
+<div class="form-group"><label>Beschreibung</label><textarea id="rankDesc" placeholder="Beschreibung des Rangs..."></textarea></div>
 <button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
 </form>
 </div>
@@ -321,10 +317,10 @@
 </div>
 
 <div id="ranksViewModal" class="modal">
-<div class="modal-content" style="max-width:700px">
-<div class="modal-header"><h2>Ränge</h2><button class="modal-close" onclick="closeViewModal('ranks')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="ranksModalSearch" placeholder="Nach Name oder Beschreibung suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterRanksModal()"></div>
-<div class="table-container"><table><thead><tr><th>Name</th><th>Farbe</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody id="ranksViewTableBody"></tbody></table></div>
+<div class="modal-content" style="max-width:900px">
+<div class="modal-header"><h2><i class="fas fa-award"></i> Ränge / Dienstgrade</h2><button class="modal-close" onclick="closeViewModal('ranks')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="ranksModalSearch" placeholder="Nach Name, Abteilung oder Beschreibung suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterRanksModal()"></div>
+<div class="table-container"><table><thead><tr><th>Rang</th><th>Farbe</th><th>Abteilung</th><th>Prio</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody id="ranksViewTableBody"></tbody></table></div>
 </div>
 </div>
 
@@ -472,17 +468,43 @@
 </div>
 
 <div id="adminPanelModal" class="modal">
-<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2>Admin Panel - Rollen & Berechtigungen</h2><button class="modal-close" onclick="closeViewModal('admin')">×</button></div>
+<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-cog"></i> Admin Panel – Modulare Verwaltung</h2><button class="modal-close" onclick="closeViewModal('admin')">×</button></div>
 <div style="padding:10px 0">
-<h3 style="color:var(--secondary);margin:15px 0 10px">🔐 Rollen-Berechtigungen bearbeiten</h3>
+
+<!-- Tab-Navigation -->
+<div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid rgba(0,102,204,0.2);padding-bottom:10px">
+<button id="adminTab_roles" class="btn btn-primary btn-small" onclick="setAdminTab('roles')" style="border-radius:4px">🎭 Rollen</button>
+<button id="adminTab_ranks" class="btn btn-small" onclick="setAdminTab('ranks')" style="border-radius:4px;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">🏅 Ränge</button>
+<button id="adminTab_departments" class="btn btn-small" onclick="setAdminTab('departments')" style="border-radius:4px;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">🏢 Abteilungen</button>
+<button id="adminTab_stats" class="btn btn-small" onclick="setAdminTab('stats')" style="border-radius:4px;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">📊 Statistiken</button>
+</div>
+
+<!-- Tab: Rollen -->
+<div id="adminPanel_roles" style="display:block">
+<h3 style="color:var(--secondary);margin:0 0 10px 0">🎭 Rollen & Berechtigungen</h3>
 <div id="roleEditorPanel" style="margin-bottom:20px;font-size:0.85em;background:rgba(0,102,204,0.1);padding:15px;border-radius:8px"></div>
+</div>
 
-<h3 style="color:var(--secondary);margin:15px 0 10px">📊 Statistiken</h3>
+<!-- Tab: Ränge -->
+<div id="adminPanel_ranks" style="display:none">
+<h3 style="color:var(--secondary);margin:0 0 10px 0">🏅 Dienstgrade verwalten</h3>
+<div id="adminRanksPanel" style="margin-bottom:20px;font-size:0.85em;background:rgba(0,102,204,0.1);padding:15px;border-radius:8px"></div>
+</div>
+
+<!-- Tab: Abteilungen -->
+<div id="adminPanel_departments" style="display:none">
+<h3 style="color:var(--secondary);margin:0 0 10px 0">🏢 Abteilungen verwalten</h3>
+<div id="adminDepartmentsPanel" style="margin-bottom:20px;font-size:0.85em;background:rgba(0,102,204,0.1);padding:15px;border-radius:8px"></div>
+</div>
+
+<!-- Tab: Statistiken -->
+<div id="adminPanel_stats" style="display:none">
+<h3 style="color:var(--secondary);margin:0 0 10px 0">📊 Statistiken</h3>
 <div id="statsPanel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px"></div>
+</div>
 
-<h3 style="color:var(--secondary);margin:15px 0 10px">⚡ Schnellaktionen</h3>
-<div style="display:flex;gap:8px;flex-wrap:wrap">
+<div style="border-top:1px solid rgba(0,102,204,0.2);padding-top:12px;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
 <button class="btn btn-success" onclick="exportAdminData()">💾 Export</button>
 <button class="btn btn-primary" onclick="closeViewModal('admin')">✓ Fertig</button>
 </div>
@@ -531,14 +553,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Warte auf die Firebase-Initialisierung
     setTimeout(() => {
-        // Lade die Datenbank
+        // Lade die Datenbank und migriere auf neues System
         loadDatabase();
+        migrateDataIfNeeded();
         populateJobRankDropdown();
+        populateRankDepartmentDropdown();
         updateCounts();
         
-        console.log('✅ Mitarbeiterportal initialisiert');
+        console.log('✅ Mitarbeiterportal initialisiert (Modulares System)');
+        console.log('🎭 Rollen:', getAvailableRoles().map(r => r.name).join(', '));
+        console.log('🏅 Ränge:', database.jobRanks.map(r => r.name).join(', '));
+        console.log('🏢 Abteilungen:', getAvailableDepartments().map(d => d.name).join(', '));
         console.log('🔥 Firebase Status: ' + (firebaseEnabled ? '✓ Aktiviert' : '⚠️ Nur lokal'));
-        console.log('💾 Auto-Sync ist active alle 5 Sekunden');
     }, 1000);
 });
 
