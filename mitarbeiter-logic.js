@@ -1370,7 +1370,7 @@ function createNewRole() {
     if (!name) { showToast('⚠️ Fehler', 'Bitte einen Rollennamen eingeben', 'error'); return; }
     if (getAvailableRoles().find(r => r.name === name)) { showToast('⚠️ Fehler', `Rolle "${name}" existiert bereits`, 'error'); return; }
     const newRole = {
-        id: 'role_custom_' + Date.now(),
+        id: 'role_custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
         name: name,
         color: document.getElementById('newRoleColor').value || '#888888',
         icon: document.getElementById('newRoleIcon').value || 'fas fa-user-tag',
@@ -1562,7 +1562,7 @@ function createDepartment() {
     if (!name) { showToast('⚠️ Fehler', 'Bitte einen Abteilungsnamen eingeben', 'error'); return; }
     if (getAvailableDepartments().find(d => d.name === name)) { showToast('⚠️ Fehler', 'Abteilung existiert bereits', 'error'); return; }
     const dept = {
-        id: 'dept_' + Date.now(),
+        id: 'dept_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
         name: name,
         color: document.getElementById('newDeptColor').value || '#0066cc',
         icon: document.getElementById('newDeptIcon').value || 'fas fa-building',
