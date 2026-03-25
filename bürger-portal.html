@@ -705,26 +705,7 @@
             </div>
         </div>
 
-        <!-- MEINE ANZEIGEN TABLE -->
-        <div id="complaintsSection" class="hidden">
-            <div class="section-title">⚖️ Ihre Anzeigen</div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Anzeige-Nr</th>
-                            <th>Beschuldigte Person</th>
-                            <th>Vorwurf</th>
-                            <th>Status</th>
-                            <th>Datum</th>
-                        </tr>
-                    </thead>
-                    <tbody id="complaintsTableBody">
-                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Laden...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+
     </div>
 
     <!-- MODALS -->
@@ -1062,11 +1043,7 @@
         // UPDATE COUNTERS
         function updateNewsCount() {
             document.getElementById('newsCount').textContent = database.press.length;
-            const citizenCharges = (database.charges || []).filter(c => c.source === 'citizen');
-            if (citizenCharges.length > 0) {
-                document.getElementById('complaintsSection').classList.remove('hidden');
-                renderComplaints();
-            }
+
         }
 
         // APPLICATIONS
@@ -1172,29 +1149,11 @@
             database.charges.push(complaint);
             saveDatabase();
             closeModal('strafanzeige');
-            document.getElementById('complaintsSection').classList.remove('hidden');
-            renderComplaints();
             showToast('✅ Anzeige erstattet', `Ihre Anzeige wurde eingereicht. Aktenzeichen: ${nr}`, 'success');
             e.target.reset();
         }
 
-        function renderComplaints() {
-            const tbody = document.getElementById('complaintsTableBody');
-            if (!tbody) return;
-            const myComplaints = database.charges.filter(c => c.source === 'citizen');
-            if (myComplaints.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-secondary)">Keine Anzeigen vorhanden.</td></tr>';
-                return;
-            }
-            tbody.innerHTML = myComplaints.sort((a, b) => new Date(b.date) - new Date(a.date)).map(c => `
-                <tr>
-                    <td style="font-family:monospace;font-size:0.85em">${escapeHtml(c.chargeNumber)}</td>
-                    <td><strong>${escapeHtml(c.name)}</strong></td>
-                    <td>${escapeHtml(c.type)}</td>
-                    <td><span class="badge ${c.status === 'Aktiv' ? 'badge-warning' : 'badge-success'}">${escapeHtml(c.status)}</span></td>
-                    <td style="font-size:0.85em">${new Date(c.date).toLocaleDateString('de-DE')}</td>
-                </tr>`).join('');
-        }
+
 
         // NEWS
         function escapeHtml(str) {
