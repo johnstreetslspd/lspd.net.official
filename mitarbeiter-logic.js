@@ -1466,6 +1466,23 @@ function updateCounts() {
     set('chargesCount', database.charges.length);
     set('pressCount', database.press.length);
     set('requestsCount', (database.requests || []).length);
+    renderOverviewStats();
+}
+
+function renderOverviewStats() {
+    const panel = document.getElementById('overviewStatsPanel');
+    if (!panel) return;
+    const now = Date.now();
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
+    const recentCitations = (database.citations || []).filter(c => c.date && new Date(c.date).getTime() >= oneDayAgo).length;
+    const recentApplications = (database.applications || []).filter(a => a.date && new Date(a.date).getTime() >= oneDayAgo).length;
+    const stats = [
+        { label: 'Akten (24h)', value: recentCitations, icon: '📄', color: 'rgba(0,102,204,0.15)', border: 'rgba(0,102,204,0.3)' },
+        { label: 'Bewerbungen (24h)', value: recentApplications, icon: '📋', color: 'rgba(0,255,136,0.1)', border: 'rgba(0,255,136,0.3)' }
+    ];
+    panel.innerHTML = stats.map(s =>
+        `<div style="background:${s.color};border:1px solid ${s.border};padding:14px;border-radius:8px;display:flex;align-items:center;gap:12px"><div style="font-size:1.8em">${s.icon}</div><div><div style="color:var(--text-secondary);font-size:0.8em">${s.label}</div><div style="font-size:1.6em;font-weight:700;color:var(--text-primary)">${s.value}</div></div></div>`
+    ).join('');
 }
 
 // ========== LIVE UI REFRESH (called by auto-sync every 5 s) ==========
