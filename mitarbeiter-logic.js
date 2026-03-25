@@ -684,6 +684,18 @@ function populateTrainingRankDropdown() {
     });
 }
 
+function formatTrainingDate(date, time) {
+    if (!date) return '—';
+    return new Date(date + (time ? 'T' + time : '')).toLocaleDateString('de-DE', time ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function checkUserMeetsRank(minRankName, username) {
+    const minRankObj = database.jobRanks.find(r => r.name === minRankName);
+    const user = username ? database.users.find(u => u.username === username) : currentUser;
+    const userRankObj = user ? database.jobRanks.find(r => r.name === user.jobRank) : null;
+    return !minRankObj || (userRankObj && (userRankObj.priority || 0) >= (minRankObj.priority || 0));
+}
+
 function renderTrainingView() {
     const b = document.getElementById('trainingViewTableBody');
     const isAdmin = canAccess('admin');
@@ -696,7 +708,7 @@ function renderTrainingView() {
 
     b.innerHTML = database.training.map(t => {
         const enrollCount = (t.enrollments || []).length;
-        const dateStr = t.date ? new Date(t.date + (t.time ? 'T' + t.time : '')).toLocaleDateString('de-DE', t.time ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+        const dateStr = formatTrainingDate(t.date, t.time);
         const isCreator = currentUser && t.creator === currentUser.username;
         const canDelete = isAdmin || (canManage && isCreator);
         const detailBtn = `<button class="btn btn-small btn-primary" onclick="viewTraining(${t.id})" title="Details"><i class="fas fa-eye"></i></button>`;
@@ -730,6 +742,7 @@ function deleteTraining(id) {
 function getGoogleDocsEmbedUrl(url) {
     if (!url) return '';
     let embedUrl = url.trim();
+    if (!/^https:\/\/docs\.google\.com\//.test(embedUrl)) return '';
     if (embedUrl.includes('docs.google.com')) {
         embedUrl = embedUrl.replace(/\/(edit|view|preview)(#.*)?(\?.*)?$/, '/preview');
         if (!embedUrl.endsWith('/preview')) {
@@ -745,12 +758,10 @@ function viewTraining(id) {
 
     const enrollments = t.enrollments || [];
     const isEnrolled = currentUser && enrollments.includes(currentUser.username);
-    const dateStr = t.date ? new Date(t.date + (t.time ? 'T' + t.time : '')).toLocaleDateString('de-DE', t.time ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Kein Datum festgelegt';
+    const dateStr = t.date ? formatTrainingDate(t.date, t.time) : 'Kein Datum festgelegt';
     const timeStr = t.time || '';
 
-    const minRankObj = database.jobRanks.find(r => r.name === t.minRank);
-    const userRankObj = currentUser ? database.jobRanks.find(r => r.name === currentUser.jobRank) : null;
-    const meetsRank = !minRankObj || (userRankObj && (userRankObj.priority || 0) >= (minRankObj.priority || 0));
+    const meetsRank = checkUserMeetsRank(t.minRank, currentUser ? currentUser.username : null);
 
     const content = document.getElementById('trainingDetailContent');
     let html = `
@@ -793,7 +804,7 @@ function viewTraining(id) {
             <div style="margin-top:8px;border-top:1px solid rgba(0,102,204,0.2);padding-top:12px">
                 <div style="font-size:1em;font-weight:700;color:var(--secondary);margin-bottom:10px"><i class="fas fa-file-alt"></i> Schulungsmaterial</div>
                 <div style="background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:8px;overflow:hidden">
-                    <iframe src="${escapeHtml(embedUrl)}" style="width:100%;height:500px;border:none" allowfullscreen></iframe>
+                    <iframe src="${escapeHtml(embedUrl)}" style="width:100%;height:500px;border:none" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" allowfullscreen></iframe>
                 </div>
                 <a href="${escapeHtml(t.googleDocsUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;color:var(--info);font-size:0.85em;text-decoration:none"><i class="fas fa-external-link-alt"></i> Dokument in neuem Tab öffnen</a>
             </div>`;
@@ -813,9 +824,7 @@ function enrollTraining(id) {
         showToast('ℹ️ Bereits eingeschrieben', 'Du bist bereits für diese Schulung eingeschrieben', 'info');
         return;
     }
-    const minRankObj = database.jobRanks.find(r => r.name === t.minRank);
-    const userRankObj = database.jobRanks.find(r => r.name === currentUser.jobRank);
-    if (minRankObj && userRankObj && (userRankObj.priority || 0) < (minRankObj.priority || 0)) {
+    if (!checkUserMeetsRank(t.minRank, currentUser.username)) {
         showToast('🚫 Rang nicht ausreichend', 'Dein Rang reicht für diese Schulung nicht aus', 'error');
         return;
     }
