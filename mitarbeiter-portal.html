@@ -94,13 +94,13 @@
 </div>
 </div>
 
-<div class="card" data-permission="training">
+<div class="card">
 <i class="fas fa-book card-icon"></i>
-<div class="card-title">Schulung</div>
+<div class="card-title">Schulungen</div>
 <div class="card-count" id="trainingCount">0</div>
-<div class="card-subtitle">Verwalten</div>
+<div class="card-subtitle">Schulungen & Ausbildung</div>
 <div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addTraining')"><i class="fas fa-plus"></i></button>
+<button class="btn btn-primary btn-small" id="trainingAddBtn" onclick="openModal('addTraining')" style="display:none"><i class="fas fa-plus"></i></button>
 <button class="btn btn-primary btn-small" onclick="openModal('training')"><i class="fas fa-list"></i></button>
 </div>
 </div>
@@ -202,7 +202,7 @@
 </div>
 
 <div id="trainingSection" class="table-container hidden">
-<table><thead><tr><th>Titel</th><th>Dozent</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="trainingTableBody"></tbody></table>
+<table><thead><tr><th>Titel</th><th>Ersteller</th><th>Min. Rang</th><th>Datum</th><th>Teilnehmer</th><th>Aktion</th></tr></thead><tbody id="trainingTableBody"></tbody></table>
 </div>
 <div id="applicationsSection" class="table-container hidden">
 <table><thead><tr><th>Name</th><th>Code</th><th>Email</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsInlineTableBody"></tbody></table>
@@ -299,11 +299,16 @@
 
 <div id="addTrainingModal" class="modal">
 <div class="modal-content">
-<div class="modal-header"><h2>Schulung hinzufügen</h2><button class="modal-close" onclick="closeModal('addTraining')">×</button></div>
+<div class="modal-header"><h2><i class="fas fa-book"></i> Schulung erstellen</h2><button class="modal-close" onclick="closeModal('addTraining')">×</button></div>
 <form onsubmit="addTraining(event)">
-<div class="form-group"><label>Titel</label><input type="text" id="trainTitle" required></div>
-<div class="form-group"><label>Dozent</label><input type="text" id="trainInstructor" required></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+<div class="form-group"><label>Titel der Schulung</label><input type="text" id="trainTitle" required placeholder="z.B. Grundausbildung Streifendienst"></div>
+<div class="form-group"><label>Ab welchem Rang</label><select id="trainMinRank" required></select></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="form-group"><label>Datum (optional)</label><input type="date" id="trainDate"></div>
+<div class="form-group"><label>Uhrzeit (optional)</label><input type="time" id="trainTime"></div>
+</div>
+<div class="form-group"><label>Google Docs Link (optional)</label><input type="url" id="trainGoogleDocs" placeholder="https://docs.google.com/document/d/..."></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Schulung erstellen</button>
 </form>
 </div>
 </div>
@@ -349,10 +354,17 @@
 </div>
 
 <div id="trainingViewModal" class="modal">
-<div class="modal-content" style="max-width:700px">
-<div class="modal-header"><h2>Schulungen</h2><button class="modal-close" onclick="closeViewModal('training')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="trainingModalSearch" placeholder="Nach Titel oder Dozent suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterTrainingModal()"></div>
-<div class="table-container"><table><thead><tr><th>Titel</th><th>Dozent</th><th>Aktion</th></tr></thead><tbody id="trainingViewTableBody"></tbody></table></div>
+<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-book"></i> Schulungen</h2><button class="modal-close" onclick="closeViewModal('training')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="trainingModalSearch" placeholder="Nach Titel, Ersteller oder Rang suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterTrainingModal()"></div>
+<div class="table-container"><table><thead><tr><th>Titel</th><th>Ersteller</th><th>Min. Rang</th><th>Datum</th><th>Teilnehmer</th><th>Aktion</th></tr></thead><tbody id="trainingViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="trainingDetailModal" class="modal">
+<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-book-open"></i> Schulung – Details</h2><button class="modal-close" onclick="document.getElementById('trainingDetailModal').classList.remove('show')">×</button></div>
+<div id="trainingDetailContent" style="padding:10px 0"></div>
 </div>
 </div>
 
