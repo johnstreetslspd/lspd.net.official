@@ -73,17 +73,6 @@
 </div>
 </div>
 
-<div class="card" data-role="Admin,Commissioner,Personalverwaltung,Leitungseben,Ausbilder">
-<i class="fas fa-id-card card-icon"></i>
-<div class="card-title">Mitarbeiter</div>
-<div class="card-count" id="employeeCount">0</div>
-<div class="card-subtitle">Verwalten</div>
-<div style="font-size:0.7em;color:var(--warning);margin-bottom:8px"><i class="fas fa-lock"></i> Admin, Commissioner, Personal, Leitung, Ausbilder</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addEmployee')"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('employees')"><i class="fas fa-list"></i></button>
-</div>
-</div>
 
 <div class="card" data-role="Admin,Commissioner,Leitungseben,Mitarbeiter">
 <i class="fas fa-user-circle card-icon"></i>
@@ -423,10 +412,32 @@
 </div>
 
 <div id="chargesViewModal" class="modal">
-<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2>Anzeigen</h2><button class="modal-close" onclick="closeViewModal('charges')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesModalSearch" placeholder="Nach AZ, Bürger oder Vorwurf suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterChargesModal()"></div>
-<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Vorwurf</th><th>Beamte</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="chargesViewTableBody"></tbody></table></div>
+<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-exclamation-triangle"></i> Anzeigen</h2><button class="modal-close" onclick="closeViewModal('charges')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+  <div style="display:flex;gap:4px">
+    <button id="chargesTabAll" class="btn btn-primary btn-small" onclick="setChargesTab('all')" style="border-radius:4px 0 0 4px">Alle</button>
+    <button id="chargesTabPolizei" class="btn btn-small" onclick="setChargesTab('polizei')" style="border-radius:0;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">Von Polizei</button>
+    <button id="chargesTabBuerger" class="btn btn-small" onclick="setChargesTab('buerger')" style="border-radius:0 4px 4px 0;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">Von Bürgern</button>
+  </div>
+  <div style="flex:1;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesModalSearch" placeholder="Nach AZ, Bürger oder Vorwurf suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterChargesModal()"></div>
+</div>
+<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Vorwurf</th><th>Quelle</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="chargesViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="chargeDetailModal" class="modal">
+<div class="modal-content" style="max-width:750px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-exclamation-triangle"></i> Anzeige – Details</h2><button class="modal-close" onclick="document.getElementById('chargeDetailModal').classList.remove('show')">×</button></div>
+<div id="chargeDetailContent" style="padding:10px 0"></div>
+<div style="margin-top:20px;border-top:1px solid rgba(0,102,204,0.2);padding-top:16px">
+  <div style="font-size:1em;font-weight:700;color:var(--secondary);margin-bottom:10px"><i class="fas fa-clipboard-list"></i> Notizen & Ermittlungen</div>
+  <div id="chargeNotesList" style="margin-bottom:10px;display:grid;gap:8px"></div>
+  <div style="display:flex;gap:8px">
+    <textarea id="chargeNoteInput" placeholder="Notiz / Ermittlungsschritt hinzufügen..." style="flex:1;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;font-size:0.9em;resize:vertical;min-height:60px"></textarea>
+    <button class="btn btn-primary" onclick="addChargeNote()" style="align-self:flex-end">➕ Hinzufügen</button>
+  </div>
+</div>
 </div>
 </div>
 
