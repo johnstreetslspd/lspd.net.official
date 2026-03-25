@@ -1,18 +1,20 @@
 // ============================================
 // mitarbeiter-logic.js - All Portal Staff Logic
 // Nutzt die globalen Variablen aus db.js
+// Modulares Rang- & Rollen-System
 // ============================================
 
-const DEFAULT_ROLES = ['Trainee', 'Mitarbeiter', 'Ausbilder', 'Leitungseben', 'Personalverwaltung', 'Admin', 'Commissioner'];
 const FEATURES = ['users', 'ranks', 'employees', 'citizens', 'evidence', 'training', 'applications', 'citations', 'charges', 'press', 'requests', 'admin'];
 
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 let activeChargesTab = 'all';
 let currentChargeId = null;
+let activeAdminTab = 'roles'; // Aktiver Tab im Admin-Panel
 
+// Rückwärtskompatibilität: getAllRoles gibt Rollennamen zurück
 function getAllRoles() {
-    return [...DEFAULT_ROLES, ...(database.customRoles || [])];
+    return getAllRoleNames();
 }
 
 // ========== PASSWORD & GENERATION ==========
@@ -29,9 +31,7 @@ function generateNewPassword() {
 // ========== DATABASE OPERATIONS ==========
 function loadDatabase() {
     // Die Daten sind jetzt in db.js initialisiert
-    if (!database.rolePermissions) {
-        database.rolePermissions = { ...defaultRolePermissions };
-    }
+    migrateDataIfNeeded();
 }
 
 function saveDatabase() {
@@ -54,12 +54,15 @@ function showToast(title, message, type) {
 
 // ========== ROLE & PERMISSIONS ==========
 function getRolePermissions() {
-    return database.rolePermissions || defaultRolePermissions;
+    // Primär aus Rollen-Objekten, Fallback auf alte Map
+    const perms = {};
+    getAvailableRoles().forEach(r => { perms[r.name] = r.permissions || []; });
+    return perms;
 }
 
 function canAccess(capability) {
     if (!currentUser) return false;
-    const perms = getRolePermissions()[currentUser.role] || [];
+    const perms = getPermissionsForRole(currentUser.role);
     const userObj = database.users.find(u => u.username === currentUser.username);
     const extra = userObj?.extraPermissions || [];
     return perms.includes(capability) || extra.includes(capability);
@@ -67,8 +70,13 @@ function canAccess(capability) {
 
 function filterDashboardCards() {
     if (!currentUser) return;
-    const cards = document.querySelectorAll('.card[data-role]');
-    cards.forEach(card => {
+    document.querySelectorAll('.card[data-permission]').forEach(card => {
+        const reqPerm = card.dataset.permission;
+        card.classList.toggle('hidden', !canAccess(reqPerm));
+    });
+    // Rückwärtskompatibilität: Karten mit data-role
+    document.querySelectorAll('.card[data-role]').forEach(card => {
+        if (card.dataset.permission) return; // Schon via permission behandelt
         const roles = card.dataset.role.split(',');
         card.classList.toggle('hidden', !roles.includes(currentUser.role));
     });
@@ -145,6 +153,7 @@ function openModal(t) {
     }
 
     if (t === 'addUser') { populateJobRankDropdown(); generateNewPassword(); }
+    if (t === 'addRank') populateRankDepartmentDropdown();
     if (t === 'addEvidence') populateEvidenceModal();
     if (t === 'addCharge') populateChargeModal();
     if (t === 'users') renderUsersView();
@@ -189,13 +198,22 @@ function closeViewModal(t) {
 function populateJobRankDropdown() {
     const s = document.getElementById('newJobRank');
     s.innerHTML = '';
-    database.jobRanks.forEach(r => {
-        s.innerHTML += `<option>${r.name}</option>`;
+    // Ränge nach Priorität sortiert
+    const sortedRanks = [...database.jobRanks].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    sortedRanks.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.name;
+        opt.textContent = r.abbreviation ? `${r.abbreviation} – ${r.name}` : r.name;
+        s.appendChild(opt);
     });
     const r = document.getElementById('newRole');
     r.innerHTML = '';
-    getAllRoles().forEach(rl => {
-        r.innerHTML += `<option>${rl}</option>`;
+    getAvailableRoles().forEach(role => {
+        const opt = document.createElement('option');
+        opt.value = role.name;
+        opt.textContent = role.name;
+        opt.style.color = role.color || '';
+        r.appendChild(opt);
     });
 }
 
@@ -225,7 +243,14 @@ function renderUsersView() {
     b.innerHTML = database.users.map(u => {
         const extra = u.extraPermissions || [];
         const extraBadge = extra.length > 0 ? ` <span style="color:var(--warning);font-size:0.8em">+${extra.length}</span>` : '';
-        return `<tr><td>${u.username}</td><td><span class="badge badge-info">${u.role}</span></td><td>${u.jobRank}</td><td><span class="badge badge-success">${u.status}</span></td><td><button class="btn btn-small btn-primary" onclick="openUserPermissionsModal(${u.id})" title="Individuelle Berechtigungen">🔑${extraBadge}</button><button class="btn btn-small" onclick="deleteUser(${u.id})">×</button></td></tr>`;
+        const roleObj = findRoleByName(u.role);
+        const roleColor = roleObj ? roleObj.color : 'var(--info)';
+        const roleIcon = roleObj ? `<i class="${roleObj.icon}" style="margin-right:4px"></i>` : '';
+        const rankObj = database.jobRanks.find(r => r.name === u.jobRank);
+        const rankDisplay = rankObj
+            ? `<span style="color:${rankObj.color};font-weight:600">${rankObj.abbreviation ? rankObj.abbreviation + ' – ' : ''}${u.jobRank}</span>`
+            : u.jobRank;
+        return `<tr><td>${escapeHtml(u.username)}</td><td><span class="badge" style="background:${roleColor}22;color:${roleColor};border:1px solid ${roleColor}44">${roleIcon}${escapeHtml(u.role)}</span></td><td>${rankDisplay}</td><td><span class="badge badge-success">${u.status}</span></td><td><button class="btn btn-small btn-primary" onclick="openUserPermissionsModal(${u.id})" title="Individuelle Berechtigungen">🔑${extraBadge}</button><button class="btn btn-small" onclick="deleteUser(${u.id})">×</button></td></tr>`;
     }).join('');
 }
 
@@ -245,6 +270,10 @@ function addRank(e) {
         id: Date.now(),
         name: document.getElementById('rankName').value,
         color: document.getElementById('rankColor').value,
+        icon: document.getElementById('rankIcon').value || 'fas fa-award',
+        priority: parseInt(document.getElementById('rankPriority').value) || 0,
+        department: document.getElementById('rankDepartment').value || '',
+        abbreviation: document.getElementById('rankAbbreviation').value || '',
         description: document.getElementById('rankDesc').value
     };
     database.jobRanks.push(r);
@@ -257,18 +286,75 @@ function addRank(e) {
 
 function renderRanksView() {
     const b = document.getElementById('ranksViewTableBody');
-    b.innerHTML = database.jobRanks.map(r => 
-        `<tr><td>${r.name}</td><td><div style="width:20px;height:20px;background:${r.color};border-radius:2px"></div></td><td>${r.description}</td><td><button class="btn btn-small" onclick="deleteRank(${r.id})">×</button></td></tr>`
-    ).join('');
+    const sorted = [...database.jobRanks].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    b.innerHTML = sorted.map(r => {
+        const deptBadge = r.department ? `<span class="badge badge-info" style="font-size:0.7em">${escapeHtml(r.department)}</span>` : '<span style="color:var(--text-secondary);font-size:0.8em">–</span>';
+        const iconHtml = r.icon ? `<i class="${r.icon}" style="color:${r.color};margin-right:4px"></i>` : '';
+        return `<tr>
+            <td>${iconHtml}<strong style="color:${r.color}">${escapeHtml(r.name)}</strong>${r.abbreviation ? ` <span style="color:var(--text-secondary);font-size:0.8em">(${escapeHtml(r.abbreviation)})</span>` : ''}</td>
+            <td><div style="width:20px;height:20px;background:${r.color};border-radius:4px;border:1px solid rgba(255,255,255,0.2)"></div></td>
+            <td>${deptBadge}</td>
+            <td style="text-align:center"><span style="color:var(--info);font-weight:700">${r.priority || 0}</span></td>
+            <td style="font-size:0.85em;color:var(--text-secondary)">${escapeHtml(r.description || '')}</td>
+            <td style="white-space:nowrap">
+                <button class="btn btn-small btn-primary" onclick="editRank(${r.id})" title="Bearbeiten">✎</button>
+                <button class="btn btn-small" onclick="deleteRank(${r.id})" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)">×</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function editRank(id) {
+    const r = database.jobRanks.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('rankName').value = r.name;
+    document.getElementById('rankColor').value = r.color || '#0066cc';
+    document.getElementById('rankIcon').value = r.icon || 'fas fa-award';
+    document.getElementById('rankPriority').value = r.priority || 0;
+    document.getElementById('rankDepartment').value = r.department || '';
+    document.getElementById('rankAbbreviation').value = r.abbreviation || '';
+    document.getElementById('rankDesc').value = r.description || '';
+
+    const form = document.getElementById('addRankModal').querySelector('form');
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        r.name = document.getElementById('rankName').value;
+        r.color = document.getElementById('rankColor').value;
+        r.icon = document.getElementById('rankIcon').value || 'fas fa-award';
+        r.priority = parseInt(document.getElementById('rankPriority').value) || 0;
+        r.department = document.getElementById('rankDepartment').value || '';
+        r.abbreviation = document.getElementById('rankAbbreviation').value || '';
+        r.description = document.getElementById('rankDesc').value;
+        saveDatabase();
+        closeModal('addRank');
+        form.reset();
+        form.onsubmit = null;
+        showToast('✅ Rang aktualisiert', r.name, 'success');
+        renderRanksView();
+    };
+    const el = document.getElementById('addRankModal');
+    if (el) el.classList.add('show');
 }
 
 function deleteRank(id) {
-    if (confirm('Löschen?')) {
+    if (confirm('Rang wirklich löschen?')) {
         database.jobRanks = database.jobRanks.filter(r => r.id !== id);
         saveDatabase();
         renderRanksView();
         updateCounts();
     }
+}
+
+// Rang-Modal Abteilungs-Dropdown befüllen
+function populateRankDepartmentDropdown() {
+    const sel = document.getElementById('rankDepartment');
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = '<option value="">– Keine Abteilung –</option>';
+    getAvailableDepartments().forEach(d => {
+        sel.innerHTML += `<option value="${escapeHtml(d.name)}">${escapeHtml(d.name)}</option>`;
+    });
+    sel.value = current;
 }
 
 // ========== EMPLOYEES ==========
@@ -1159,6 +1245,8 @@ function renderAdminStats() {
     const stats = [
         { label: 'Nutzer', value: database.users.length, icon: '👤' },
         { label: 'Ränge', value: database.jobRanks.length, icon: '🏅' },
+        { label: 'Rollen', value: getAvailableRoles().length, icon: '🎭' },
+        { label: 'Abteilungen', value: getAvailableDepartments().length, icon: '🏢' },
         { label: 'Mitarbeiter', value: database.employees.length, icon: '👮' },
         { label: 'Bürger', value: database.citizens.length, icon: '🧑' },
         { label: 'Beweise', value: database.evidence.length, icon: '🔍' },
@@ -1179,51 +1267,368 @@ function openAdminPanel() {
         return;
     }
     document.getElementById('adminPanelModal').classList.add('show');
-    renderRoleEditor();
-    renderAdminStats();
+    setAdminTab(activeAdminTab);
 }
 
-function renderRoleEditor() {
-    const perms = getRolePermissions();
-    const allRoles = getAllRoles();
-    let html = '<div style="margin-bottom:15px"><h4 style="color:var(--secondary);margin:0 0 10px 0">📋 Berechtigungen verwalten</h4><p style="font-size:0.9em;margin:0;color:rgba(255,255,255,0.7)">Wähle aus, welche Funktionen jede Rolle verwenden kann:</p></div>';
-    allRoles.forEach(role => {
-        const isCustom = (database.customRoles || []).includes(role);
-        html += `<div style="border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="color:var(--secondary);font-size:1.1em">${role}${isCustom ? ' <span style="font-size:0.7em;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:1px 5px">Custom</span>' : ''}</strong>${isCustom ? `<button onclick="deleteCustomRole('${role}')" style="background:rgba(255,51,51,0.2);border:1px solid #ff6b6b;color:#ff6b6b;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:0.8em">Löschen</button>` : ''}</div>`;
-        FEATURES.forEach(feature => {
-            const isChecked = perms[role] && perms[role].includes(feature);
-            html += `<label style="display:inline-flex;align-items:center;gap:8px;margin-right:15px;cursor:pointer;font-size:0.9em"><input type="checkbox" id="perm_${role}_${feature}" ${isChecked ? 'checked' : ''} onchange="toggleRolePermission('${role}','${feature}')" style="cursor:pointer"><span>${feature}</span></label>`;
-        });
-        html += '</div>';
+function setAdminTab(tab) {
+    activeAdminTab = tab;
+    ['roles', 'ranks', 'departments', 'stats'].forEach(t => {
+        const btn = document.getElementById('adminTab_' + t);
+        const panel = document.getElementById('adminPanel_' + t);
+        if (btn) {
+            btn.className = t === tab ? 'btn btn-primary btn-small' : 'btn btn-small';
+            if (t !== tab) btn.style.cssText = 'background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)';
+            else btn.style.cssText = '';
+        }
+        if (panel) panel.style.display = t === tab ? 'block' : 'none';
     });
-    html += `<div style="border:2px dashed rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-top:15px"><h4 style="color:var(--secondary);margin-bottom:10px">➕ Neue Rolle erstellen</h4><div style="display:flex;gap:8px;align-items:center"><input type="text" id="newRoleName" placeholder="Rollenname..." style="flex:1;padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em"><button onclick="createCustomRole()" style="padding:8px 15px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.9em">Erstellen</button></div><p style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-top:6px">Berechtigungen können nach der Erstellung vergeben werden.</p></div>`;
-    html += '<div style="border-top:1px solid rgba(0,255,136,0.2);padding-top:12px;margin-top:15px"><button onclick="resetPermissionsToDefault()" style="padding:8px 15px;background:rgba(255,107,107,0.2);border:1px solid #ff6b6b;color:#ff6b6b;border-radius:5px;cursor:pointer;font-size:0.9em;transition:all 0.3s">🔄 Auf Standard zurücksetzen</button></div>';
-    document.getElementById('roleEditorPanel').innerHTML = html;
+    if (tab === 'roles') renderRoleEditor();
+    if (tab === 'ranks') renderAdminRanksEditor();
+    if (tab === 'departments') renderDepartmentsEditor();
+    if (tab === 'stats') renderAdminStats();
 }
 
-function resetPermissionsToDefault() {
-    if (!confirm('Alle Berechtigungen auf Standard zurücksetzen?')) return;
-    database.rolePermissions = JSON.parse(JSON.stringify(defaultRolePermissions));
+// ========== ADMIN: ROLLEN-EDITOR ==========
+function renderRoleEditor() {
+    const panel = document.getElementById('roleEditorPanel');
+    if (!panel) return;
+    const allRoles = getAvailableRoles();
+
+    let html = '<div style="margin-bottom:15px"><p style="font-size:0.9em;margin:0;color:rgba(255,255,255,0.7)">Verwalte alle Rollen im System. Jede Rolle hat Farbe, Icon, Priorität und Berechtigungen.</p></div>';
+
+    allRoles.forEach(role => {
+        const isDefault = role.isDefault;
+        const badgeStyle = `background:${role.color}22;color:${role.color};border:1px solid ${role.color}44`;
+        html += `<div style="border:1px solid ${role.color}55;border-radius:8px;padding:12px;margin-bottom:12px;background:rgba(0,0,0,0.15)">`;
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+                <i class="${role.icon || 'fas fa-user'}" style="color:${role.color};font-size:1.2em"></i>
+                <strong style="color:${role.color};font-size:1.1em">${escapeHtml(role.name)}</strong>
+                <span style="font-size:0.75em;color:var(--text-secondary);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:1px 6px">Prio: ${role.priority}</span>
+                ${isDefault ? '<span style="font-size:0.7em;color:var(--info);border:1px solid var(--info);border-radius:4px;padding:1px 5px">Standard</span>' : '<span style="font-size:0.7em;color:var(--warning);border:1px solid var(--warning);border-radius:4px;padding:1px 5px">Custom</span>'}
+            </div>
+            <div style="display:flex;gap:4px">
+                <button onclick="editRoleModal('${escapeHtml(role.id)}')" class="btn btn-small btn-primary" title="Rolle bearbeiten">✎</button>
+                ${!isDefault ? `<button onclick="deleteRole('${escapeHtml(role.id)}')" class="btn btn-small" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)" title="Rolle löschen">×</button>` : ''}
+            </div>
+        </div>`;
+        if (role.description) html += `<div style="font-size:0.8em;color:var(--text-secondary);margin-bottom:8px"><i class="fas fa-info-circle"></i> ${escapeHtml(role.description)}</div>`;
+
+        // Berechtigungen als Chips
+        html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        FEATURES.forEach(feature => {
+            const has = (role.permissions || []).includes(feature);
+            const chipStyle = has
+                ? `background:${role.color}22;color:${role.color};border:1px solid ${role.color}44;opacity:1`
+                : 'background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.08);opacity:0.5';
+            html += `<label style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:12px;${chipStyle};cursor:pointer;font-size:0.8em;transition:all 0.2s">
+                <input type="checkbox" ${has ? 'checked' : ''} onchange="toggleRolePermission('${escapeHtml(role.id)}','${feature}')" style="display:none">
+                ${has ? '✓' : '○'} ${feature}
+            </label>`;
+        });
+        html += '</div></div>';
+    });
+
+    // Neue Rolle erstellen
+    html += `<div style="border:2px dashed rgba(0,255,136,0.3);border-radius:8px;padding:14px;margin-top:15px">
+        <h4 style="color:var(--secondary);margin-bottom:10px">➕ Neue Rolle erstellen</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <input type="text" id="newRoleName" placeholder="Rollenname..." style="padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em">
+            <input type="color" id="newRoleColor" value="#888888" style="height:36px;border:1px solid rgba(0,102,204,0.3);border-radius:4px;background:transparent;cursor:pointer">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <input type="text" id="newRoleIcon" placeholder="Icon (z.B. fas fa-user-tag)" value="fas fa-user-tag" style="padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em">
+            <input type="number" id="newRolePriority" placeholder="Priorität (0-100)" value="20" min="0" max="100" style="padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em">
+        </div>
+        <input type="text" id="newRoleDescription" placeholder="Beschreibung..." style="width:100%;padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em;margin-bottom:8px">
+        <button onclick="createNewRole()" style="padding:8px 18px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.9em">Erstellen</button>
+        <p style="font-size:0.8em;color:rgba(255,255,255,0.5);margin-top:6px">Berechtigungen können nach der Erstellung direkt per Klick vergeben werden.</p>
+    </div>`;
+
+    // Reset-Button
+    html += '<div style="border-top:1px solid rgba(0,255,136,0.2);padding-top:12px;margin-top:15px"><button onclick="resetRolesToDefault()" style="padding:8px 15px;background:rgba(255,107,107,0.2);border:1px solid #ff6b6b;color:#ff6b6b;border-radius:5px;cursor:pointer;font-size:0.9em;transition:all 0.3s">🔄 Rollen auf Standard zurücksetzen</button></div>';
+
+    panel.innerHTML = html;
+}
+
+function toggleRolePermission(roleId, feature) {
+    const role = (database.roles || []).find(r => r.id === roleId);
+    if (!role) return;
+    if (!role.permissions) role.permissions = [];
+    const idx = role.permissions.indexOf(feature);
+    if (idx >= 0) role.permissions.splice(idx, 1);
+    else role.permissions.push(feature);
+    _syncRolePermissions();
     saveDatabase();
     renderRoleEditor();
-    showToast('✅ Berechtigungen', 'Auf Standard zurückgesetzt', 'success');
     filterDashboardCards();
+    showToast('✅ Berechtigung aktualisiert', `${role.name} – ${feature}`, 'success');
 }
 
-function toggleRolePermission(role, feature) {
-    const perms = getRolePermissions();
-    if (!perms[role]) perms[role] = [];
-    const idx = perms[role].indexOf(feature);
-    const checkbox = document.getElementById(`perm_${role}_${feature}`);
-    if (checkbox.checked) {
-        if (idx < 0) perms[role].push(feature);
-    } else {
-        if (idx >= 0) perms[role].splice(idx, 1);
-    }
-    database.rolePermissions = perms;
+function createNewRole() {
+    const name = (document.getElementById('newRoleName').value || '').trim();
+    if (!name) { showToast('⚠️ Fehler', 'Bitte einen Rollennamen eingeben', 'error'); return; }
+    if (getAvailableRoles().find(r => r.name === name)) { showToast('⚠️ Fehler', `Rolle "${name}" existiert bereits`, 'error'); return; }
+    const newRole = {
+        id: 'role_custom_' + Date.now(),
+        name: name,
+        color: document.getElementById('newRoleColor').value || '#888888',
+        icon: document.getElementById('newRoleIcon').value || 'fas fa-user-tag',
+        priority: parseInt(document.getElementById('newRolePriority').value) || 20,
+        description: document.getElementById('newRoleDescription').value || '',
+        isDefault: false,
+        permissions: []
+    };
+    if (!database.roles) database.roles = [];
+    database.roles.push(newRole);
+    // Rückwärtskompatibilität
+    if (!database.customRoles) database.customRoles = [];
+    database.customRoles.push(name);
+    _syncRolePermissions();
     saveDatabase();
-    showToast('✅ Berechtigung aktualisiert', `${role} - ${feature}`, 'success');
+    document.getElementById('newRoleName').value = '';
+    document.getElementById('newRoleDescription').value = '';
+    renderRoleEditor();
+    showToast('✅ Rolle erstellt', name, 'success');
+}
+
+function deleteRole(roleId) {
+    const role = (database.roles || []).find(r => r.id === roleId);
+    if (!role) return;
+    if (role.isDefault) { showToast('⚠️ Fehler', 'Standard-Rollen können nicht gelöscht werden', 'error'); return; }
+    if (!confirm(`Rolle "${role.name}" wirklich löschen?`)) return;
+    database.roles = database.roles.filter(r => r.id !== roleId);
+    database.customRoles = (database.customRoles || []).filter(r => r !== role.name);
+    if (database.rolePermissions) delete database.rolePermissions[role.name];
+    saveDatabase();
+    renderRoleEditor();
+    showToast('✅ Rolle gelöscht', role.name, 'success');
+}
+
+function editRoleModal(roleId) {
+    const role = (database.roles || []).find(r => r.id === roleId);
+    if (!role) return;
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.style.zIndex = '10001';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:480px">
+            <div class="modal-header"><h2><i class="${escapeHtml(role.icon || 'fas fa-user')}" style="color:${role.color}"></i> Rolle bearbeiten: ${escapeHtml(role.name)}</h2><button class="modal-close" onclick="this.closest('.modal').remove()">×</button></div>
+            <div style="display:grid;gap:10px;padding:10px 0">
+                <div class="form-group"><label>Name</label><input type="text" id="editRoleName" value="${escapeHtml(role.name)}" ${role.isDefault ? 'readonly style="opacity:0.6"' : ''}></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                    <div class="form-group"><label>Farbe</label><input type="color" id="editRoleColor" value="${role.color || '#888888'}" style="height:36px;width:100%"></div>
+                    <div class="form-group"><label>Priorität</label><input type="number" id="editRolePriority" value="${role.priority || 0}" min="0" max="100"></div>
+                </div>
+                <div class="form-group"><label>Icon (Font Awesome Klasse)</label><input type="text" id="editRoleIcon" value="${escapeHtml(role.icon || 'fas fa-user')}" placeholder="fas fa-user"></div>
+                <div class="form-group"><label>Beschreibung</label><textarea id="editRoleDesc">${escapeHtml(role.description || '')}</textarea></div>
+                <button class="btn btn-success" style="width:100%" onclick="saveRoleEdit('${escapeHtml(roleId)}')">💾 Speichern</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+function saveRoleEdit(roleId) {
+    const role = (database.roles || []).find(r => r.id === roleId);
+    if (!role) return;
+    const oldName = role.name;
+    if (!role.isDefault) {
+        const newName = document.getElementById('editRoleName').value.trim();
+        if (newName && newName !== oldName) {
+            // Prüfe ob Name schon existiert
+            if (getAvailableRoles().find(r => r.name === newName && r.id !== roleId)) {
+                showToast('⚠️ Fehler', 'Dieser Rollenname existiert bereits', 'error');
+                return;
+            }
+            role.name = newName;
+            // Nutzer mit alter Rolle aktualisieren
+            database.users.forEach(u => { if (u.role === oldName) u.role = newName; });
+            // customRoles aktualisieren
+            database.customRoles = (database.customRoles || []).map(r => r === oldName ? newName : r);
+        }
+    }
+    role.color = document.getElementById('editRoleColor').value;
+    role.priority = parseInt(document.getElementById('editRolePriority').value) || 0;
+    role.icon = document.getElementById('editRoleIcon').value || 'fas fa-user';
+    role.description = document.getElementById('editRoleDesc').value;
+    _syncRolePermissions();
+    saveDatabase();
+    document.querySelector('.modal[style*="z-index: 10001"]')?.remove();
+    renderRoleEditor();
+    showToast('✅ Rolle aktualisiert', role.name, 'success');
+}
+
+function resetRolesToDefault() {
+    if (!confirm('Alle Rollen auf Standard zurücksetzen? Custom-Rollen bleiben erhalten, aber Standard-Rollen werden zurückgesetzt.')) return;
+    const customRoles = (database.roles || []).filter(r => !r.isDefault);
+    database.roles = [...JSON.parse(JSON.stringify(DEFAULT_ROLES_DATA)), ...customRoles];
+    _syncRolePermissions();
+    saveDatabase();
+    renderRoleEditor();
     filterDashboardCards();
+    showToast('✅ Rollen zurückgesetzt', 'Standard-Rollen wiederhergestellt', 'success');
+}
+
+// Rückwärtskompatibilität: alte Funktionen
+function resetPermissionsToDefault() { resetRolesToDefault(); }
+function createCustomRole() { createNewRole(); }
+function deleteCustomRole(roleName) {
+    const role = (database.roles || []).find(r => r.name === roleName && !r.isDefault);
+    if (role) deleteRole(role.id);
+}
+
+// ========== ADMIN: RÄNGE-EDITOR ==========
+function renderAdminRanksEditor() {
+    const panel = document.getElementById('adminRanksPanel');
+    if (!panel) return;
+    const sorted = [...database.jobRanks].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+    let html = '<div style="margin-bottom:15px"><p style="font-size:0.9em;margin:0;color:rgba(255,255,255,0.7)">Verwalte alle Dienstgrade. Ränge bestimmen die Position in der Hierarchie und können Abteilungen zugeordnet werden.</p></div>';
+
+    sorted.forEach(rank => {
+        const deptBadge = rank.department
+            ? `<span class="badge badge-info" style="font-size:0.7em">${escapeHtml(rank.department)}</span>`
+            : '';
+        html += `<div style="border:1px solid ${rank.color}55;border-radius:8px;padding:10px;margin-bottom:8px;background:rgba(0,0,0,0.15);display:flex;align-items:center;gap:10px">
+            <i class="${rank.icon || 'fas fa-award'}" style="color:${rank.color};font-size:1.3em;width:28px;text-align:center"></i>
+            <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                    <strong style="color:${rank.color}">${escapeHtml(rank.name)}</strong>
+                    ${rank.abbreviation ? `<span style="font-size:0.75em;color:var(--text-secondary)">(${escapeHtml(rank.abbreviation)})</span>` : ''}
+                    ${deptBadge}
+                    <span style="font-size:0.7em;color:var(--info);border:1px solid rgba(0,221,255,0.3);border-radius:4px;padding:1px 5px">Prio ${rank.priority || 0}</span>
+                </div>
+                ${rank.description ? `<div style="font-size:0.8em;color:var(--text-secondary);margin-top:2px">${escapeHtml(rank.description)}</div>` : ''}
+            </div>
+            <div style="display:flex;gap:4px">
+                <button class="btn btn-small btn-primary" onclick="editRank(${rank.id})" title="Bearbeiten">✎</button>
+                <button class="btn btn-small" onclick="deleteRank(${rank.id});renderAdminRanksEditor()" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)">×</button>
+            </div>
+        </div>`;
+    });
+
+    html += `<div style="border:2px dashed rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-top:12px">
+        <button class="btn btn-primary" onclick="openModal('addRank')" style="width:100%"><i class="fas fa-plus"></i> Neuen Rang hinzufügen</button>
+    </div>`;
+
+    panel.innerHTML = html;
+}
+
+// ========== ADMIN: ABTEILUNGEN-EDITOR ==========
+function renderDepartmentsEditor() {
+    const panel = document.getElementById('adminDepartmentsPanel');
+    if (!panel) return;
+    const depts = getAvailableDepartments();
+
+    let html = '<div style="margin-bottom:15px"><p style="font-size:0.9em;margin:0;color:rgba(255,255,255,0.7)">Verwalte Abteilungen. Abteilungen können Rängen zugeordnet werden.</p></div>';
+
+    depts.forEach(d => {
+        const assignedRanks = database.jobRanks.filter(r => r.department === d.name).length;
+        html += `<div style="border:1px solid ${d.color}55;border-radius:8px;padding:10px;margin-bottom:8px;background:rgba(0,0,0,0.15);display:flex;align-items:center;gap:10px">
+            <i class="${d.icon || 'fas fa-building'}" style="color:${d.color};font-size:1.3em;width:28px;text-align:center"></i>
+            <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:6px">
+                    <strong style="color:${d.color}">${escapeHtml(d.name)}</strong>
+                    <span style="font-size:0.7em;color:var(--text-secondary)">${assignedRanks} Ränge</span>
+                </div>
+                ${d.description ? `<div style="font-size:0.8em;color:var(--text-secondary);margin-top:2px">${escapeHtml(d.description)}</div>` : ''}
+            </div>
+            <div style="display:flex;gap:4px">
+                <button class="btn btn-small btn-primary" onclick="editDepartmentModal('${escapeHtml(d.id)}')" title="Bearbeiten">✎</button>
+                <button class="btn btn-small" onclick="deleteDepartment('${escapeHtml(d.id)}')" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)">×</button>
+            </div>
+        </div>`;
+    });
+
+    html += `<div style="border:2px dashed rgba(0,255,136,0.3);border-radius:8px;padding:12px;margin-top:12px">
+        <h4 style="color:var(--secondary);margin-bottom:10px">➕ Neue Abteilung</h4>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px">
+            <input type="text" id="newDeptName" placeholder="Name..." style="padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em">
+            <input type="color" id="newDeptColor" value="#0066cc" style="height:36px;border:1px solid rgba(0,102,204,0.3);border-radius:4px;background:transparent;cursor:pointer">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <input type="text" id="newDeptIcon" placeholder="Icon (fas fa-...)" value="fas fa-building" style="padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em">
+            <input type="text" id="newDeptDesc" placeholder="Beschreibung..." style="padding:8px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:4px;color:var(--text-primary);font-size:0.9em">
+        </div>
+        <button onclick="createDepartment()" style="padding:8px 18px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.9em">Erstellen</button>
+    </div>`;
+
+    panel.innerHTML = html;
+}
+
+function createDepartment() {
+    const name = (document.getElementById('newDeptName').value || '').trim();
+    if (!name) { showToast('⚠️ Fehler', 'Bitte einen Abteilungsnamen eingeben', 'error'); return; }
+    if (getAvailableDepartments().find(d => d.name === name)) { showToast('⚠️ Fehler', 'Abteilung existiert bereits', 'error'); return; }
+    const dept = {
+        id: 'dept_' + Date.now(),
+        name: name,
+        color: document.getElementById('newDeptColor').value || '#0066cc',
+        icon: document.getElementById('newDeptIcon').value || 'fas fa-building',
+        description: document.getElementById('newDeptDesc').value || ''
+    };
+    if (!database.departments) database.departments = [];
+    database.departments.push(dept);
+    saveDatabase();
+    document.getElementById('newDeptName').value = '';
+    document.getElementById('newDeptDesc').value = '';
+    renderDepartmentsEditor();
+    showToast('✅ Abteilung erstellt', name, 'success');
+}
+
+function deleteDepartment(deptId) {
+    const dept = (database.departments || []).find(d => d.id === deptId);
+    if (!dept) return;
+    if (!confirm(`Abteilung "${dept.name}" löschen?`)) return;
+    database.departments = database.departments.filter(d => d.id !== deptId);
+    // Ränge in dieser Abteilung entkoppeln
+    database.jobRanks.forEach(r => { if (r.department === dept.name) r.department = ''; });
+    saveDatabase();
+    renderDepartmentsEditor();
+    showToast('✅ Abteilung gelöscht', dept.name, 'success');
+}
+
+function editDepartmentModal(deptId) {
+    const dept = (database.departments || []).find(d => d.id === deptId);
+    if (!dept) return;
+    const modal = document.createElement('div');
+    modal.className = 'modal show';
+    modal.style.zIndex = '10001';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:450px">
+            <div class="modal-header"><h2><i class="${escapeHtml(dept.icon)}" style="color:${dept.color}"></i> Abteilung bearbeiten</h2><button class="modal-close" onclick="this.closest('.modal').remove()">×</button></div>
+            <div style="display:grid;gap:10px;padding:10px 0">
+                <div class="form-group"><label>Name</label><input type="text" id="editDeptName" value="${escapeHtml(dept.name)}"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                    <div class="form-group"><label>Farbe</label><input type="color" id="editDeptColor" value="${dept.color || '#0066cc'}" style="height:36px;width:100%"></div>
+                    <div class="form-group"><label>Icon</label><input type="text" id="editDeptIcon" value="${escapeHtml(dept.icon || 'fas fa-building')}"></div>
+                </div>
+                <div class="form-group"><label>Beschreibung</label><textarea id="editDeptDesc">${escapeHtml(dept.description || '')}</textarea></div>
+                <button class="btn btn-success" style="width:100%" onclick="saveDepartmentEdit('${escapeHtml(deptId)}')">💾 Speichern</button>
+            </div>
+        </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+function saveDepartmentEdit(deptId) {
+    const dept = (database.departments || []).find(d => d.id === deptId);
+    if (!dept) return;
+    const oldName = dept.name;
+    const newName = document.getElementById('editDeptName').value.trim();
+    if (newName && newName !== oldName) {
+        dept.name = newName;
+        // Ränge aktualisieren
+        database.jobRanks.forEach(r => { if (r.department === oldName) r.department = newName; });
+    }
+    dept.color = document.getElementById('editDeptColor').value;
+    dept.icon = document.getElementById('editDeptIcon').value || 'fas fa-building';
+    dept.description = document.getElementById('editDeptDesc').value;
+    saveDatabase();
+    document.querySelector('.modal[style*="z-index: 10001"]')?.remove();
+    renderDepartmentsEditor();
+    showToast('✅ Abteilung aktualisiert', dept.name, 'success');
 }
 
 function exportAdminData() {
@@ -1238,30 +1643,7 @@ function exportAdminData() {
     showToast('💾 Admin-Export', 'Exportiert', 'success');
 }
 
-// ========== CUSTOM ROLES ==========
-function createCustomRole() {
-    const nameInput = document.getElementById('newRoleName');
-    const name = nameInput.value.trim();
-    if (!name) { showToast('⚠️ Fehler', 'Bitte einen Rollennamen eingeben', 'error'); return; }
-    if (getAllRoles().includes(name)) { showToast('⚠️ Fehler', `Rolle "${name}" existiert bereits`, 'error'); return; }
-    if (!database.customRoles) database.customRoles = [];
-    database.customRoles.push(name);
-    if (!database.rolePermissions) database.rolePermissions = {};
-    database.rolePermissions[name] = [];
-    saveDatabase();
-    nameInput.value = '';
-    renderRoleEditor();
-    showToast('✅ Rolle erstellt', name, 'success');
-}
-
-function deleteCustomRole(roleName) {
-    if (!confirm(`Rolle "${roleName}" wirklich löschen?`)) return;
-    database.customRoles = (database.customRoles || []).filter(r => r !== roleName);
-    if (database.rolePermissions) delete database.rolePermissions[roleName];
-    saveDatabase();
-    renderRoleEditor();
-    showToast('✅ Rolle gelöscht', roleName, 'success');
-}
+// ========== CUSTOM ROLES (Rückwärtskompatibilität) ==========
 
 // ========== USER PERMISSIONS ==========
 function openUserPermissionsModal(userId) {
@@ -1269,17 +1651,20 @@ function openUserPermissionsModal(userId) {
     if (!user) return;
     if (!canAccess('admin')) { showToast('🚫 Zugriff verweigert', 'Nur Admins dürfen Berechtigungen vergeben', 'error'); return; }
     const extra = user.extraPermissions || [];
-    const rolePerms = getRolePermissions()[user.role] || [];
-    document.getElementById('userPermissionsTitle').textContent = `🔑 Berechtigungen: ${user.username} (${user.role})`;
+    const rolePerms = getPermissionsForRole(user.role);
+    const roleObj = findRoleByName(user.role);
+    const roleColor = roleObj ? roleObj.color : 'var(--info)';
+    const roleIcon = roleObj ? `<i class="${roleObj.icon}" style="margin-right:4px"></i>` : '';
+    document.getElementById('userPermissionsTitle').innerHTML = `🔑 Berechtigungen: ${escapeHtml(user.username)} <span class="badge" style="background:${roleColor}22;color:${roleColor};border:1px solid ${roleColor}44">${roleIcon}${escapeHtml(user.role)}</span>`;
     let html = '<p style="color:var(--text-secondary);font-size:0.85em;margin-bottom:12px">Aktivierte Features zusätzlich zur Rollen-Berechtigung:</p>';
     FEATURES.forEach(f => {
         const fromRole = rolePerms.includes(f);
         const fromExtra = extra.includes(f);
-        const labelColor = fromRole ? 'rgba(0,102,204,0.2)' : fromExtra ? 'rgba(0,255,136,0.1)' : 'rgba(0,0,0,0.1)';
+        const labelColor = fromRole ? `${roleColor}15` : fromExtra ? 'rgba(0,255,136,0.1)' : 'rgba(0,0,0,0.1)';
         html += `<label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:${labelColor};margin-bottom:6px;cursor:${fromRole ? 'default' : 'pointer'}">
             <input type="checkbox" ${(fromRole || fromExtra) ? 'checked' : ''} ${fromRole ? 'disabled' : `onchange="saveUserPermission(${userId}, '${f}', this.checked)"`} style="cursor:${fromRole ? 'default' : 'pointer'}">
             <span style="flex:1;font-weight:600">${f}</span>
-            ${fromRole ? '<span style="font-size:0.75em;color:var(--info);border:1px solid var(--info);border-radius:4px;padding:1px 5px">Rolle</span>' : fromExtra ? '<span style="font-size:0.75em;color:var(--success);border:1px solid var(--success);border-radius:4px;padding:1px 5px">Individuell</span>' : ''}
+            ${fromRole ? `<span style="font-size:0.75em;color:${roleColor};border:1px solid ${roleColor};border-radius:4px;padding:1px 5px">Rolle</span>` : fromExtra ? '<span style="font-size:0.75em;color:var(--success);border:1px solid var(--success);border-radius:4px;padding:1px 5px">Individuell</span>' : ''}
         </label>`;
     });
     document.getElementById('userPermissionsBody').innerHTML = html;
