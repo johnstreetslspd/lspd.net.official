@@ -742,12 +742,11 @@ function deleteTraining(id) {
 function getGoogleDocsEmbedUrl(url) {
     if (!url) return '';
     let embedUrl = url.trim();
+    // Strict origin check: must start with https://docs.google.com/
     if (!/^https:\/\/docs\.google\.com\//.test(embedUrl)) return '';
-    if (embedUrl.includes('docs.google.com')) {
-        embedUrl = embedUrl.replace(/\/(edit|view|preview)(#.*)?(\?.*)?$/, '/preview');
-        if (!embedUrl.endsWith('/preview')) {
-            embedUrl = embedUrl.replace(/\/?(\?.*)?$/, '/preview');
-        }
+    embedUrl = embedUrl.replace(/\/(edit|view|preview)(#.*)?(\?.*)?$/, '/preview');
+    if (!embedUrl.endsWith('/preview')) {
+        embedUrl = embedUrl.replace(/\/?(\?.*)?$/, '/preview');
     }
     return embedUrl;
 }
