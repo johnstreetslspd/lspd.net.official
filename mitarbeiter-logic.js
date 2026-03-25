@@ -803,7 +803,7 @@ function viewTraining(id) {
             <div style="margin-top:8px;border-top:1px solid rgba(0,102,204,0.2);padding-top:12px">
                 <div style="font-size:1em;font-weight:700;color:var(--secondary);margin-bottom:10px"><i class="fas fa-file-alt"></i> Schulungsmaterial</div>
                 <div style="background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:8px;overflow:hidden">
-                    <iframe src="${escapeHtml(embedUrl)}" style="width:100%;height:500px;border:none" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" allowfullscreen></iframe>
+                    <iframe src="${escapeHtml(embedUrl)}" style="width:100%;height:500px;border:none" sandbox="allow-scripts allow-popups allow-forms" allowfullscreen></iframe>
                 </div>
                 <a href="${escapeHtml(t.googleDocsUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;color:var(--info);font-size:0.85em;text-decoration:none"><i class="fas fa-external-link-alt"></i> Dokument in neuem Tab öffnen</a>
             </div>`;
