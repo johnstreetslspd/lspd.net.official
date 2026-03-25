@@ -80,6 +80,9 @@ function filterDashboardCards() {
         const roles = card.dataset.role.split(',');
         card.classList.toggle('hidden', !roles.includes(currentUser.role));
     });
+    // Show/hide training add button based on permission
+    const trainAddBtn = document.getElementById('trainingAddBtn');
+    if (trainAddBtn) trainAddBtn.style.display = canAccess('training') ? '' : 'none';
 }
 
 // ========== LOGIN ==========
@@ -155,6 +158,7 @@ function openModal(t) {
     if (t === 'addUser') { populateJobRankDropdown(); generateNewPassword(); }
     if (t === 'addRank') populateRankDepartmentDropdown();
     if (t === 'addEvidence') populateEvidenceModal();
+    if (t === 'addTraining') populateTrainingRankDropdown();
     if (t === 'addCharge') populateChargeModal();
     if (t === 'users') renderUsersView();
     if (t === 'ranks') renderRanksView();
@@ -186,6 +190,7 @@ function closeViewModal(t) {
     const m = {
         users: 'usersViewModal', ranks: 'ranksViewModal', employees: 'employeesViewModal',
         citizens: 'citizensViewModal', evidence: 'evidenceViewModal', training: 'trainingViewModal',
+        trainingDetail: 'trainingDetailModal',
         applications: 'applicationsViewModal', citations: 'citationsViewModal', charges: 'chargesViewModal',
         press: 'pressViewModal', admin: 'adminPanelModal', userPermissions: 'userPermissionsModal',
         requests: 'requestsViewModal'
@@ -650,30 +655,196 @@ function addTraining(e) {
     const t = {
         id: Date.now(),
         title: document.getElementById('trainTitle').value,
-        instructor: document.getElementById('trainInstructor').value
+        creator: currentUser ? currentUser.username : 'Unbekannt',
+        minRank: document.getElementById('trainMinRank').value,
+        date: document.getElementById('trainDate').value || '',
+        time: document.getElementById('trainTime').value || '',
+        googleDocsUrl: document.getElementById('trainGoogleDocs').value || '',
+        enrollments: [],
+        created: new Date().toISOString()
     };
     database.training.push(t);
     saveDatabase();
     closeModal('addTraining');
     document.getElementById('addTrainingModal').querySelector('form').reset();
-    showToast('✅ Schulung hinzugefügt', t.title, 'success');
+    showToast('✅ Schulung erstellt', t.title, 'success');
     updateCounts();
+}
+
+function populateTrainingRankDropdown() {
+    const s = document.getElementById('trainMinRank');
+    if (!s) return;
+    s.innerHTML = '';
+    const sortedRanks = [...database.jobRanks].sort((a, b) => (a.priority || 0) - (b.priority || 0));
+    sortedRanks.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.name;
+        opt.textContent = r.abbreviation ? `${r.abbreviation} – ${r.name}` : r.name;
+        s.appendChild(opt);
+    });
+}
+
+function formatTrainingDate(date, time) {
+    if (!date) return '—';
+    return new Date(date + (time ? 'T' + time : '')).toLocaleDateString('de-DE', time ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function checkUserMeetsRank(minRankName, username) {
+    const minRankObj = database.jobRanks.find(r => r.name === minRankName);
+    const user = username ? database.users.find(u => u.username === username) : currentUser;
+    const userRankObj = user ? database.jobRanks.find(r => r.name === user.jobRank) : null;
+    return !minRankObj || (userRankObj && (userRankObj.priority || 0) >= (minRankObj.priority || 0));
 }
 
 function renderTrainingView() {
     const b = document.getElementById('trainingViewTableBody');
-    b.innerHTML = database.training.map(t => 
-        `<tr><td>${t.title}</td><td>${t.instructor}</td><td><button class="btn btn-small" onclick="deleteTraining(${t.id})">×</button></td></tr>`
-    ).join('');
+    const isAdmin = canAccess('admin');
+    const canManage = canAccess('training');
+
+    if (database.training.length === 0) {
+        b.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Schulungen vorhanden</td></tr>';
+        return;
+    }
+
+    b.innerHTML = database.training.map(t => {
+        const enrollCount = (t.enrollments || []).length;
+        const dateStr = formatTrainingDate(t.date, t.time);
+        const isCreator = currentUser && t.creator === currentUser.username;
+        const canDelete = isAdmin || (canManage && isCreator);
+        const detailBtn = `<button class="btn btn-small btn-primary" onclick="viewTraining(${t.id})" title="Details"><i class="fas fa-eye"></i></button>`;
+        const delBtn = canDelete ? ` <button class="btn btn-small" onclick="deleteTraining(${t.id})" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)">×</button>` : '';
+        return `<tr>
+            <td><strong>${escapeHtml(t.title)}</strong></td>
+            <td>${escapeHtml(t.creator || t.instructor || '—')}</td>
+            <td><span class="badge badge-info">${escapeHtml(t.minRank || '—')}</span></td>
+            <td style="font-size:0.85em">${dateStr}</td>
+            <td><span class="badge badge-success">${enrollCount}</span></td>
+            <td style="white-space:nowrap">${detailBtn}${delBtn}</td>
+        </tr>`;
+    }).join('');
 }
 
 function deleteTraining(id) {
-    if (confirm('Löschen?')) {
+    if (confirm('Schulung wirklich löschen?')) {
+        const t = database.training.find(x => x.id === id);
+        if (t && !canAccess('admin') && !(canAccess('training') && currentUser && t.creator === currentUser.username)) {
+            showToast('🚫 Keine Berechtigung', 'Nur der Ersteller oder Admin kann diese Schulung löschen', 'error');
+            return;
+        }
         database.training = database.training.filter(t => t.id !== id);
         saveDatabase();
         renderTrainingView();
         updateCounts();
+        showToast('✅ Gelöscht', 'Schulung wurde gelöscht', 'success');
     }
+}
+
+function getGoogleDocsEmbedUrl(url) {
+    if (!url) return '';
+    let embedUrl = url.trim();
+    // Strict origin check: must start with https://docs.google.com/
+    if (!/^https:\/\/docs\.google\.com\//.test(embedUrl)) return '';
+    embedUrl = embedUrl.replace(/\/(edit|view|preview)(#.*)?(\?.*)?$/, '/preview');
+    if (!embedUrl.endsWith('/preview')) {
+        embedUrl = embedUrl.replace(/\/?(\?.*)?$/, '/preview');
+    }
+    return embedUrl;
+}
+
+function viewTraining(id) {
+    const t = database.training.find(x => x.id === id);
+    if (!t) return;
+
+    const enrollments = t.enrollments || [];
+    const isEnrolled = currentUser && enrollments.includes(currentUser.username);
+    const dateStr = t.date ? formatTrainingDate(t.date, t.time) : 'Kein Datum festgelegt';
+    const timeStr = t.time || '';
+
+    const meetsRank = checkUserMeetsRank(t.minRank, currentUser ? currentUser.username : null);
+
+    const content = document.getElementById('trainingDetailContent');
+    let html = `
+        <div style="display:grid;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px;background:rgba(0,102,204,0.1);border-radius:8px;border:1px solid rgba(0,102,204,0.2)">
+                <i class="fas fa-book" style="font-size:2em;color:var(--primary-bright)"></i>
+                <div style="flex:1">
+                    <div style="font-size:1.2em;font-weight:700;color:var(--secondary)">${escapeHtml(t.title)}</div>
+                    <div style="font-size:0.85em;color:var(--text-secondary);margin-top:2px">Erstellt von <strong>${escapeHtml(t.creator || t.instructor || '—')}</strong></div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-award"></i> Mindest-Rang</div>
+                    <div style="font-weight:600"><span class="badge badge-info">${escapeHtml(t.minRank || 'Kein')}</span></div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-calendar-alt"></i> Datum & Uhrzeit</div>
+                    <div style="font-weight:600">${dateStr}${timeStr ? ' um ' + escapeHtml(timeStr) + ' Uhr' : ''}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px;grid-column:1/-1">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-users"></i> Teilnehmer (${enrollments.length})</div>
+                    <div style="font-weight:600">${enrollments.length > 0 ? enrollments.map(u => '<span class="badge badge-success" style="margin:2px">' + escapeHtml(u) + '</span>').join(' ') : '<span style="color:var(--text-secondary)">Noch keine Teilnehmer</span>'}</div>
+                </div>
+            </div>`;
+
+    if (currentUser) {
+        if (isEnrolled) {
+            html += `<button class="btn btn-small" onclick="unenrollTraining(${t.id})" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3);padding:10px;font-size:0.9em"><i class="fas fa-user-minus"></i> Abmelden</button>`;
+        } else if (meetsRank) {
+            html += `<button class="btn btn-success" onclick="enrollTraining(${t.id})" style="padding:10px;font-size:0.9em"><i class="fas fa-user-plus"></i> Einschreiben</button>`;
+        } else {
+            html += `<div style="background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.3);padding:10px;border-radius:6px;color:var(--warning);font-size:0.9em"><i class="fas fa-exclamation-triangle"></i> Dein Rang reicht nicht aus, um dich einzuschreiben. Mindestrang: <strong>${escapeHtml(t.minRank || '—')}</strong></div>`;
+        }
+    }
+
+    if (t.googleDocsUrl) {
+        const embedUrl = getGoogleDocsEmbedUrl(t.googleDocsUrl);
+        html += `
+            <div style="margin-top:8px;border-top:1px solid rgba(0,102,204,0.2);padding-top:12px">
+                <div style="font-size:1em;font-weight:700;color:var(--secondary);margin-bottom:10px"><i class="fas fa-file-alt"></i> Schulungsmaterial</div>
+                <div style="background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:8px;overflow:hidden">
+                    <iframe src="${escapeHtml(embedUrl)}" style="width:100%;height:500px;border:none" sandbox="allow-scripts allow-popups allow-forms" allowfullscreen></iframe>
+                </div>
+                <a href="${escapeHtml(t.googleDocsUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;color:var(--info);font-size:0.85em;text-decoration:none"><i class="fas fa-external-link-alt"></i> Dokument in neuem Tab öffnen</a>
+            </div>`;
+    }
+
+    html += '</div>';
+    content.innerHTML = html;
+    document.getElementById('trainingDetailModal').classList.add('show');
+}
+
+function enrollTraining(id) {
+    if (!currentUser) return;
+    const t = database.training.find(x => x.id === id);
+    if (!t) return;
+    if (!t.enrollments) t.enrollments = [];
+    if (t.enrollments.includes(currentUser.username)) {
+        showToast('ℹ️ Bereits eingeschrieben', 'Du bist bereits für diese Schulung eingeschrieben', 'info');
+        return;
+    }
+    if (!checkUserMeetsRank(t.minRank, currentUser.username)) {
+        showToast('🚫 Rang nicht ausreichend', 'Dein Rang reicht für diese Schulung nicht aus', 'error');
+        return;
+    }
+    t.enrollments.push(currentUser.username);
+    saveDatabase();
+    viewTraining(id);
+    renderTrainingView();
+    updateCounts();
+    showToast('✅ Eingeschrieben', 'Du bist jetzt für "' + t.title + '" eingeschrieben', 'success');
+}
+
+function unenrollTraining(id) {
+    if (!currentUser) return;
+    const t = database.training.find(x => x.id === id);
+    if (!t || !t.enrollments) return;
+    t.enrollments = t.enrollments.filter(u => u !== currentUser.username);
+    saveDatabase();
+    viewTraining(id);
+    renderTrainingView();
+    updateCounts();
+    showToast('✅ Abgemeldet', 'Du bist von "' + t.title + '" abgemeldet', 'success');
 }
 
 // ========== APPLICATIONS ==========
@@ -1800,7 +1971,7 @@ function filterRanksModal() { makeSearchFilter('ranksModalSearch', 'ranksViewTab
 function filterEmployeesModal() { makeSearchFilter('employeesModalSearch', 'employeesViewTableBody', [0, 1, 2]); }
 function filterCitizensModal() { makeSearchFilter('citizensModalSearch', 'citizensViewTableBody', [0, 1, 2]); }
 function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'evidenceViewTableBody', [0, 1, 2, 3, 4]); }
-function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'trainingViewTableBody', [0, 1]); }
+function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'trainingViewTableBody', [0, 1, 2, 3]); }
 function filterApplicationsModal() { makeSearchFilter('applicationsModalSearch', 'applicationsViewTableBody', [0, 1, 2]); }
 function filterCitationsModal() { makeSearchFilter('citationsModalSearch', 'citationsViewTableBody', [0, 1]); }
 function filterChargesModal() { renderChargesView(); }
