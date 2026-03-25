@@ -1240,7 +1240,11 @@
         function showToast(title, message, type) {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            toast.innerHTML = `<strong>${title}</strong><br>${message}`;
+            const strong = document.createElement('strong');
+            strong.textContent = title;
+            toast.appendChild(strong);
+            toast.appendChild(document.createElement('br'));
+            toast.appendChild(document.createTextNode(message));
             document.body.appendChild(toast);
             setTimeout(() => {
                 toast.remove();
