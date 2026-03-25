@@ -1289,7 +1289,7 @@ function renderPressArticles() {
         const editBtn = canEdit ? `<button class="btn btn-primary btn-small" onclick="editPressArticle(${p.id})">✎ Bearbeiten</button>` : '';
         const canDel = canEdit || isAdmin;
         const delBtn = canDel ? `<button class="btn btn-small" style="background:rgba(255,51,51,0.2);border:1px solid #ff6b6b;color:#ff6b6b" onclick="deletePressArticle(${p.id})">× Löschen</button>` : '';
-        return `<div style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.2);border-radius:8px;overflow:hidden"><div style="display:grid;grid-template-columns:200px 1fr;gap:15px;padding:20px">${p.image ? `<img src="${p.image}" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid rgba(0,102,204,0.3)">` : ''}<div><h3 style="color:var(--secondary);margin-bottom:6px;font-size:1.2em">${p.title}</h3><p style="color:rgba(255,255,255,0.7);margin-bottom:10px;font-size:0.9em">${p.subtitle}</p><p style="color:var(--text-secondary);line-height:1.6;margin-bottom:12px">${p.content.substring(0, 200)}...</p><div style="display:flex;gap:8px;align-items:center;font-size:0.85em;color:rgba(255,255,255,0.6);margin-bottom:12px"><i class="fas fa-user-circle"></i> <span>${p.author}</span> <i class="fas fa-calendar" style="margin-left:12px"></i> <span>${new Date(p.date).toLocaleDateString('de-DE')}</span></div><div style="display:flex;gap:8px">${editBtn}${delBtn}</div></div></div></div>`;
+        return `<div style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.2);border-radius:8px;overflow:hidden"><div style="display:grid;grid-template-columns:200px 1fr;gap:15px;padding:20px">${p.image ? `<img src="${escapeHtml(p.image)}" style="width:100%;height:180px;object-fit:cover;border-radius:6px;border:1px solid rgba(0,102,204,0.3)">` : ''}<div><h3 style="color:var(--secondary);margin-bottom:6px;font-size:1.2em">${escapeHtml(p.title)}</h3><p style="color:rgba(255,255,255,0.7);margin-bottom:10px;font-size:0.9em">${escapeHtml(p.subtitle)}</p><p style="color:var(--text-secondary);line-height:1.6;margin-bottom:12px">${escapeHtml(p.content.substring(0, 200))}...</p><div style="display:flex;gap:8px;align-items:center;font-size:0.85em;color:rgba(255,255,255,0.6);margin-bottom:12px"><i class="fas fa-user-circle"></i> <span>${escapeHtml(p.author)}</span> <i class="fas fa-calendar" style="margin-left:12px"></i> <span>${new Date(p.date).toLocaleDateString('de-DE')}</span></div><div style="display:flex;gap:8px">${editBtn}${delBtn}</div></div></div></div>`;
     }).join('');
 }
 
@@ -1975,6 +1975,12 @@ function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'traini
 function filterApplicationsModal() { makeSearchFilter('applicationsModalSearch', 'applicationsViewTableBody', [0, 1, 2]); }
 function filterCitationsModal() { makeSearchFilter('citationsModalSearch', 'citationsViewTableBody', [0, 1]); }
 function filterChargesModal() { renderChargesView(); }
+
+// Inline-Tabellen-Filter (Dashboard-Sektion)
+function filterCitizens() { makeSearchFilter('citizensSearch', 'citizensTableBody', [0, 1, 2]); }
+function filterCitations() { makeSearchFilter('citationSearch', 'citationsInlineTableBody', [0, 1]); }
+function filterCharges() { makeSearchFilter('chargesSearch', 'chargesInlineTableBody', [0, 1, 2]); }
+
 function filterPressModal() {
     const query = (document.getElementById('pressModalSearch')?.value || '').toLowerCase();
     document.querySelectorAll('#pressArticlesContainer > div').forEach(el => {

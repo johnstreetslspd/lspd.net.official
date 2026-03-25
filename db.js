@@ -200,12 +200,18 @@ function initFirestoreDB() {
 }
 
 // Überprüfe Firebase-Status und initialisiere wenn ready
+let _firebaseRetryCount = 0;
+const _firebaseMaxRetries = 20; // max 10 Sekunden (20 × 500ms)
+
 function checkFirebaseReady() {
     if (window.firebase && window.firebase.firestore) {
         initFirestoreDB();
-    } else {
-        console.warn('⚠️ Firebase wird noch geladen...');
+    } else if (_firebaseRetryCount < _firebaseMaxRetries) {
+        _firebaseRetryCount++;
+        console.warn('⚠️ Firebase wird noch geladen... (Versuch ' + _firebaseRetryCount + '/' + _firebaseMaxRetries + ')');
         setTimeout(checkFirebaseReady, 500);
+    } else {
+        console.error('❌ Firebase konnte nach ' + _firebaseMaxRetries + ' Versuchen nicht geladen werden');
     }
 }
 
