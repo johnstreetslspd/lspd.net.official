@@ -47,7 +47,12 @@ function saveDatabase() {
 function showToast(title, message, type) {
     const d = document.createElement('div');
     d.className = `toast ${type}`;
-    d.innerHTML = `<strong>${title}</strong><br>${message}`;
+    const strong = document.createElement('strong');
+    strong.textContent = title;
+    d.appendChild(strong);
+    d.appendChild(document.createElement('br'));
+    const msg = document.createTextNode(message);
+    d.appendChild(msg);
     document.body.appendChild(d);
     setTimeout(() => d.remove(), 3000);
 }
@@ -628,11 +633,10 @@ function showChargeReport(c) {
     const modal = document.createElement('div');
     modal.className = 'modal show';
     modal.style.zIndex = '10000';
-    const escHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    const safeReport = escHtml(c.report);
+    const safeReport = escapeHtml(c.report);
     modal.innerHTML = `
         <div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto">
-            <div class="modal-header"><h2>📋 Anzeige ${escHtml(c.chargeNumber)}</h2><button class="modal-close" onclick="this.closest('.modal').remove()">×</button></div>
+            <div class="modal-header"><h2>📋 Anzeige ${escapeHtml(c.chargeNumber)}</h2><button class="modal-close" onclick="this.closest('.modal').remove()">×</button></div>
             <pre style="background:rgba(0,0,0,0.3);padding:16px;border-radius:6px;white-space:pre-wrap;font-size:0.85em;color:var(--text-primary);font-family:monospace;margin:12px 0">${safeReport}</pre>
             <button class="btn btn-primary" style="width:100%" id="copyReportBtn_${c.id}">📋 Bericht kopieren</button>
         </div>`;
@@ -1132,6 +1136,7 @@ function addCharge(e) {
         aktenzeichen: aktenzeichen,
         description: document.getElementById('chargeDesc').value,
         officer: document.getElementById('chargeOfficer').value,
+        source: 'police',
         status: 'Aktiv',
         date: new Date().toISOString(),
         editUntil: Date.now() + 30 * 60000,
@@ -1188,11 +1193,11 @@ function renderChargesView() {
         const delBtn = canDel ? `<button class="btn btn-small" onclick="deleteCharge(${c.id})" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)">×</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>';
         const sourceLabel = c.source === 'citizen' ? '<span class="badge badge-warning">Bürger</span>' : '<span class="badge badge-info">Polizei</span>';
         return `<tr>
-            <td style="font-family:monospace;font-size:0.85em">${c.chargeNumber}</td>
-            <td><strong>${c.name}</strong></td>
-            <td><span class="badge badge-danger">${c.type}</span></td>
+            <td style="font-family:monospace;font-size:0.85em">${escapeHtml(c.chargeNumber)}</td>
+            <td><strong>${escapeHtml(c.name)}</strong></td>
+            <td><span class="badge badge-danger">${escapeHtml(c.type)}</span></td>
             <td>${sourceLabel}</td>
-            <td><span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${c.status}</span></td>
+            <td><span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${escapeHtml(c.status)}</span></td>
             <td style="font-size:0.85em">${new Date(c.date).toLocaleDateString('de-DE')}</td>
             <td style="white-space:nowrap">${detailBtn}${reportBtn}${editBtn}${delBtn}</td>
         </tr>`;
