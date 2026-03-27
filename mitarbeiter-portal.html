@@ -305,7 +305,7 @@
 <div class="form-group"><label>Beschreibung</label><textarea id="evDesc" required></textarea></div>
 <div class="form-group"><label>Ort / Fundort</label><input type="text" id="evLocation" required></div>
 <div class="form-group"><label>Zugehörige Strafakte (AZ)</label><select id="evCitationAZ"><option value="">-- Keine Strafakte zuordnen --</option></select></div>
-<div class="form-group"><label>Vergehen</label><div id="evVergehen" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:150px;overflow-y:auto;padding:6px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px"></div></div>
+<div class="form-group"><label>Vergehen</label><div id="evVergehen" style="display:flex;flex-wrap:wrap;gap:2px;max-height:150px;overflow-y:auto;padding:6px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px"></div></div>
 <button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
 </form>
 </div>
@@ -397,6 +397,17 @@
 <div class="table-container" style="margin:0"><table><thead><tr><th>Name</th><th>Code</th><th>E-Mail</th><th>Telefon</th><th>Datum</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsViewTableBody"></tbody></table></div>
 </div>
 </div>
+<div id="kiImproveModal" class="modal">
+<div class="modal-content" style="max-width:600px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>🤖 KI Text verbessern</h2><button class="modal-close" onclick="document.getElementById('kiImproveModal').classList.remove('show')">×</button></div>
+<div class="form-group"><label>Vergehen auswählen (optional, Mehrfachauswahl):</label><div id="kiImproveVergehen" style="display:flex;flex-wrap:wrap;gap:2px;padding:8px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px;min-height:40px"></div></div>
+<div class="form-group"><label>Vorschau:</label><div id="kiImprovePreview" style="white-space:pre-wrap;background:rgba(0,102,204,0.07);border:1px solid rgba(0,102,204,0.2);border-radius:4px;padding:10px;font-size:0.9em;min-height:60px;color:var(--text-primary)"></div></div>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button type="button" class="btn btn-success" onclick="applyKiImprovement()" style="flex:1">✅ Anwenden</button>
+<button type="button" class="btn" onclick="document.getElementById('kiImproveModal').classList.remove('show')" style="flex:1;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">Abbrechen</button>
+</div>
+</div>
+</div>
 <div id="addCitationModal" class="modal">
 <div class="modal-content">
 <div class="modal-header"><h2>Strafakte erstellen</h2><button class="modal-close" onclick="closeModal('addCitation')">×</button></div>
@@ -427,7 +438,7 @@
 <div class="form-group"><label>Zugehörige Strafakte (AZ)</label><select id="chargeAktenzeichen" onchange="updateLinkedEvidence()"><option value="">-- Keine Strafakte --</option></select></div>
 <div id="chargeLinkedEvidenceBox" style="display:none;margin-bottom:10px;padding:8px;background:rgba(0,102,204,0.07);border:1px solid rgba(0,102,204,0.2);border-radius:4px;font-size:0.85em"><strong>🔍 Zugehörige Beweismittel:</strong><div id="chargeLinkedEvidence" style="margin-top:4px"></div></div>
 <div class="form-group"><label>Hauptvorwurf</label><select id="chargeType" required><option>Raub</option><option>Diebstahl</option><option>Körperverletzung</option><option>Mord</option><option>Betrug</option><option>Drogenhandel</option><option>Sonstiges</option></select></div>
-<div class="form-group"><label>Vergehen (Mehrfachauswahl)</label><div id="chargeVergehen" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;max-height:140px;overflow-y:auto;padding:6px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px"></div></div>
+<div class="form-group"><label>Vergehen (Mehrfachauswahl)</label><div id="chargeVergehen" style="display:flex;flex-wrap:wrap;gap:2px;max-height:140px;overflow-y:auto;padding:6px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px"></div></div>
 <div class="form-group"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><label for="chargeDesc">Beschreibung / Sachverhalt</label><button type="button" class="btn btn-small" onclick="improveTextLegal('chargeDesc')" title="Text rechtssicherer formulieren" style="font-size:0.8em;padding:2px 8px">🤖 KI verbessern</button></div><textarea id="chargeDesc" required></textarea></div>
 <div class="form-group"><label>Beamte(r)</label><input type="text" id="chargeOfficer" required></div>
 <button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Anzeige erstellen &amp; Bericht generieren</button>
