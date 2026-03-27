@@ -396,6 +396,7 @@ function editRank(id) {
     document.getElementById('rankDesc').value = r.description || '';
 
     const form = document.getElementById('addRankModal').querySelector('form');
+    const originalRankOnsubmit = form.onsubmit;
     form.onsubmit = (e) => {
         e.preventDefault();
         r.name = document.getElementById('rankName').value;
@@ -408,7 +409,7 @@ function editRank(id) {
         saveDatabase();
         closeModal('addRank');
         form.reset();
-        form.onsubmit = null;
+        form.onsubmit = originalRankOnsubmit;
         showToast('✅ Rang aktualisiert', r.name, 'success');
         renderRanksView();
     };
@@ -532,6 +533,7 @@ function editCitizen(id) {
     document.getElementById('ctAddress').value = c.address;
     document.getElementById('ctStatus').value = c.status;
     const form = document.getElementById('addCitizenModal').querySelector('form');
+    const originalCitizenOnsubmit = form.onsubmit;
     form.onsubmit = (e) => {
         e.preventDefault();
         c.name = document.getElementById('ctName').value;
@@ -541,7 +543,7 @@ function editCitizen(id) {
         saveDatabase();
         closeModal('addCitizen');
         form.reset();
-        form.onsubmit = null;
+        form.onsubmit = originalCitizenOnsubmit;
         showToast('✅ Bürger aktualisiert', c.name, 'success');
         renderCitizensView();
     };
@@ -1452,7 +1454,9 @@ function editCitation(id) {
     const citStatus = document.getElementById('citStatus');
     if (citStatus) citStatus.value = c.status || 'Offen';
     
-    document.getElementById('addCitationModal').querySelector('form').onsubmit = ((e) => {
+    const citForm = document.getElementById('addCitationModal').querySelector('form');
+    const originalCitOnsubmit = citForm.onsubmit;
+    citForm.onsubmit = ((e) => {
         e.preventDefault();
         c.name = document.getElementById('citName').value;
         c.citizenId = document.getElementById('citNameCitizenId').value ? Number(document.getElementById('citNameCitizenId').value) : (c.citizenId || null);
@@ -1462,8 +1466,8 @@ function editCitation(id) {
         if (citStatus) c.status = citStatus.value;
         saveDatabase();
         closeModal('addCitation');
-        document.getElementById('addCitationModal').querySelector('form').reset();
-        document.getElementById('addCitationModal').querySelector('form').onsubmit = null;
+        citForm.reset();
+        citForm.onsubmit = originalCitOnsubmit;
         showToast('✅ Aktualisiert', 'Strafakte aktualisiert', 'success');
         renderCitationsView();
     });
@@ -1608,7 +1612,9 @@ function editCharge(id) {
         renderVergehenTags('chargeVergehen', c.vergehen);
     }
     
-    document.getElementById('addChargeModal').querySelector('form').onsubmit = ((e) => {
+    const chargeForm = document.getElementById('addChargeModal').querySelector('form');
+    const originalChargeOnsubmit = chargeForm.onsubmit;
+    chargeForm.onsubmit = ((e) => {
         e.preventDefault();
         const vergehen = getSelectedVergehen('chargeVergehen');
         c.name = document.getElementById('chargeName').value;
@@ -1620,8 +1626,8 @@ function editCharge(id) {
         c.officer = document.getElementById('chargeOfficer').value;
         saveDatabase();
         closeModal('addCharge');
-        document.getElementById('addChargeModal').querySelector('form').reset();
-        document.getElementById('addChargeModal').querySelector('form').onsubmit = null;
+        chargeForm.reset();
+        chargeForm.onsubmit = originalChargeOnsubmit;
         showToast('✅ Aktualisiert', 'Anzeige aktualisiert', 'success');
         renderChargesView();
     });
@@ -1678,7 +1684,9 @@ function editPressArticle(id) {
     document.getElementById('pressImage').value = p.image;
     document.getElementById('pressAuthor').value = p.author;
     
-    document.getElementById('addPressModal').querySelector('form').onsubmit = ((e) => {
+    const pressForm = document.getElementById('addPressModal').querySelector('form');
+    const originalPressOnsubmit = pressForm.onsubmit;
+    pressForm.onsubmit = ((e) => {
         e.preventDefault();
         p.title = document.getElementById('pressTitle').value;
         p.subtitle = document.getElementById('pressSubtitle').value;
@@ -1687,8 +1695,8 @@ function editPressArticle(id) {
         p.author = document.getElementById('pressAuthor').value;
         saveDatabase();
         closeModal('addPress');
-        document.getElementById('addPressModal').querySelector('form').reset();
-        document.getElementById('addPressModal').querySelector('form').onsubmit = null;
+        pressForm.reset();
+        pressForm.onsubmit = originalPressOnsubmit;
         showToast('✅ Nachricht aktualisiert', p.title, 'success');
         renderPressArticles();
     });
