@@ -133,8 +133,27 @@ function loginSuccess() {
     updateCounts();
 
     if (firebaseEnabled) {
-        // Load fresh data after login and update counters once loaded
+        // Lade aktuelle Daten und validiere den angemeldeten Nutzer
         loadFromFirestore().then(() => {
+            const freshUser = database.users.find(x => x.username === currentUser.username);
+            if (!freshUser) {
+                // Nutzer existiert nicht mehr – automatisch abmelden
+                showToast('⚠️ Konto nicht gefunden', 'Bitte erneut anmelden', 'error');
+                handleLogout();
+                return;
+            }
+            // Rolle aus aktuellen Firestore-Daten übernehmen (könnte sich geändert haben)
+            currentUser.role = freshUser.role;
+            // Sitzung mit aktualisierten Daten und erneuerter TTL speichern
+            if (currentUser.stayLoggedIn) {
+                localStorage.setItem(SESSION_KEY, JSON.stringify({
+                    username: currentUser.username,
+                    role: currentUser.role,
+                    expires: Date.now() + SESSION_TTL_MS
+                }));
+            }
+            document.getElementById('userRole').textContent = `(${currentUser.role})`;
+            filterDashboardCards();
             updateCounts();
             cleanupOldApplications();
         }).catch(e => console.warn('Firestore load on login failed:', e));
@@ -163,13 +182,12 @@ function tryAutoLogin() {
     if (raw) {
         try {
             const session = JSON.parse(raw);
-            if (session && session.username && session.expires && Date.now() < session.expires) {
-                const usr = database.users.find(x => x.username === session.username);
-                if (usr) {
-                    currentUser = { username: usr.username, role: usr.role, stayLoggedIn: true };
-                    loginSuccess();
-                    return true;
-                }
+            if (session && session.username && session.role && session.expires && Date.now() < session.expires) {
+                // Sitzungsdaten vertrauen – Firestore-Daten werden erst nach dem Login geladen.
+                // Die Validierung des Nutzers erfolgt in loginSuccess() nach dem Laden.
+                currentUser = { username: session.username, role: session.role, stayLoggedIn: true };
+                loginSuccess();
+                return true;
             }
         } catch (_) { /* ungültige Sitzungsdaten */ }
         // Sitzung abgelaufen oder ungültig - entfernen
@@ -1091,6 +1109,7 @@ function addCitation(e) {
         aktenzeichen: `CA-${Date.now().toString().slice(-6)}`,
         name: document.getElementById('citName').value,
         type: document.getElementById('citType').value,
+        status: (document.getElementById('citStatus') || {}).value || 'Offen',
         description: document.getElementById('citDesc').value,
         officer: document.getElementById('citOfficer').value,
         date: new Date().toISOString(),
@@ -1107,17 +1126,34 @@ function addCitation(e) {
 
 function renderCitationsView() {
     const b = document.getElementById('citationsViewTableBody');
+    const isAdmin = canAccess('admin') || canAccess('citations');
+    const statusColors = { 'Offen': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Abgeschlossen': 'badge-success', 'Archiviert': 'badge-info' };
     b.innerHTML = database.citations.map(c => {
-        const canEdit = Date.now() < c.editUntil;
+        const withinWindow = Date.now() < c.editUntil;
+        const canEdit = isAdmin || withinWindow;
         const timeLeft = Math.max(0, Math.ceil((c.editUntil - Date.now()) / 60000));
-        return `<tr><td>${c.aktenzeichen}</td><td>${c.name}</td><td><span class="badge badge-info">${c.type}</span></td><td>${c.officer}</td><td>${new Date(c.date).toLocaleDateString('de-DE')}</td><td>${canEdit ? `<button class="btn btn-small" onclick="editCitation(${c.id})" title="Noch ${timeLeft} Min">✎</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>'}<button class="btn btn-small" ${canEdit ? '' : 'disabled'} onclick="deleteCitation(${c.id})">×</button></td></tr>`;
+        const linkedEvCount = database.evidence.filter(e => e.citationAZ === c.aktenzeichen).length;
+        const linkedChCount = database.charges.filter(ch => ch.aktenzeichen === c.aktenzeichen).length;
+        const statusBadge = `<span class="badge ${statusColors[c.status] || 'badge-danger'}">${escapeHtml(c.status || 'Offen')}</span>`;
+        const linksInfo = (linkedEvCount + linkedChCount > 0)
+            ? `<span title="${linkedEvCount} Beweise, ${linkedChCount} Anzeigen" style="font-size:0.75em;color:var(--text-secondary);margin-right:4px">🔗${linkedEvCount + linkedChCount}</span>`
+            : '';
+        return `<tr>
+            <td style="font-family:monospace;font-size:0.85em">${escapeHtml(c.aktenzeichen)}</td>
+            <td><strong>${escapeHtml(c.name)}</strong></td>
+            <td><span class="badge badge-info">${escapeHtml(c.type)}</span></td>
+            <td>${statusBadge}</td>
+            <td>${escapeHtml(c.officer)}</td>
+            <td style="font-size:0.85em">${new Date(c.date).toLocaleDateString('de-DE')}</td>
+            <td style="white-space:nowrap">${linksInfo}<button class="btn btn-small btn-primary" onclick="viewCitationDetail(${c.id})" title="Akte anzeigen"><i class="fas fa-eye"></i></button> ${canEdit ? `<button class="btn btn-small" onclick="editCitation(${c.id})" title="${withinWindow ? `Noch ${timeLeft} Min` : 'Admin-Bearbeitung'}">✎</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>'}<button class="btn btn-small" ${canEdit ? `onclick="deleteCitation(${c.id})"` : 'disabled'} style="background:rgba(255,51,51,0.1);color:var(--danger)">×</button></td>
+        </tr>`;
     }).join('');
 }
 
 function deleteCitation(id) {
     if (confirm('Strafakte löschen?')) {
         const c = database.citations.find(x => x.id === id);
-        if (c && Date.now() >= c.editUntil) {
+        if (c && !canAccess('admin') && !canAccess('citations') && Date.now() >= c.editUntil) {
             showToast('🔒 Zu spät', 'Diese Strafakte kann nicht mehr gelöscht werden', 'error');
             return;
         }
@@ -1131,7 +1167,8 @@ function deleteCitation(id) {
 
 function editCitation(id) {
     const c = database.citations.find(x => x.id === id);
-    if (!c || Date.now() >= c.editUntil) {
+    const isPrivileged = canAccess('admin') || canAccess('citations');
+    if (!c || (!isPrivileged && Date.now() >= c.editUntil)) {
         showToast('🔒 Zu spät', 'Diese Strafakte kann nicht mehr bearbeitet werden', 'error');
         return;
     }
@@ -1139,6 +1176,8 @@ function editCitation(id) {
     document.getElementById('citType').value = c.type;
     document.getElementById('citDesc').value = c.description;
     document.getElementById('citOfficer').value = c.officer;
+    const citStatus = document.getElementById('citStatus');
+    if (citStatus) citStatus.value = c.status || 'Offen';
     
     document.getElementById('addCitationModal').querySelector('form').onsubmit = ((e) => {
         e.preventDefault();
@@ -1146,6 +1185,7 @@ function editCitation(id) {
         c.type = document.getElementById('citType').value;
         c.description = document.getElementById('citDesc').value;
         c.officer = document.getElementById('citOfficer').value;
+        if (citStatus) c.status = citStatus.value;
         saveDatabase();
         closeModal('addCitation');
         document.getElementById('addCitationModal').querySelector('form').reset();
@@ -1238,17 +1278,19 @@ function renderChargesView() {
         const withinWindow = Date.now() < c.editUntil;
         const timeLeft = Math.max(0, Math.ceil((c.editUntil - Date.now()) / 60000));
         const canDel = isAdmin || withinWindow;
+        const canEdit = isAdmin || withinWindow;
         const reportBtn = c.report ? `<button class="btn btn-small" onclick="showChargeReport(database.charges.find(x=>x.id===${c.id}))" title="Bericht">📋</button>` : '';
         const detailBtn = `<button class="btn btn-small btn-primary" onclick="viewCharge(${c.id})" title="Details"><i class="fas fa-eye"></i></button>`;
-        const editBtn = withinWindow ? `<button class="btn btn-small" onclick="editCharge(${c.id})" title="Noch ${timeLeft} Min">✎</button>` : '';
+        const editBtn = canEdit ? `<button class="btn btn-small" onclick="editCharge(${c.id})" title="${withinWindow ? `Noch ${timeLeft} Min` : 'Admin-Bearbeitung'}">✎</button>` : '';
         const delBtn = canDel ? `<button class="btn btn-small" onclick="deleteCharge(${c.id})" style="background:rgba(255,51,51,0.2);color:var(--danger);border:1px solid rgba(255,51,51,0.3)">×</button>` : '<span style="color:var(--text-secondary);font-size:0.8em">Gesperrt</span>';
         const sourceLabel = c.source === 'citizen' ? '<span class="badge badge-warning">Bürger</span>' : '<span class="badge badge-info">Polizei</span>';
+        const chargeStatusColors = { 'Aktiv': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Eingestellt': 'badge-info', 'Verurteilt': 'badge-success', 'Freigesprochen': 'badge-success' };
         return `<tr>
             <td style="font-family:monospace;font-size:0.85em">${escapeHtml(c.chargeNumber)}</td>
             <td><strong>${escapeHtml(c.name)}</strong></td>
             <td><span class="badge badge-danger">${escapeHtml(c.type)}</span></td>
             <td>${sourceLabel}</td>
-            <td><span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${escapeHtml(c.status)}</span></td>
+            <td><span class="badge ${chargeStatusColors[c.status] || 'badge-info'}">${escapeHtml(c.status || 'Aktiv')}</span></td>
             <td style="font-size:0.85em">${new Date(c.date).toLocaleDateString('de-DE')}</td>
             <td style="white-space:nowrap">${detailBtn}${reportBtn}${editBtn}${delBtn}</td>
         </tr>`;
@@ -1272,7 +1314,8 @@ function deleteCharge(id) {
 
 function editCharge(id) {
     const c = database.charges.find(x => x.id === id);
-    if (!c || Date.now() >= c.editUntil) {
+    const isPrivileged = canAccess('admin') || canAccess('charges');
+    if (!c || (!isPrivileged && Date.now() >= c.editUntil)) {
         showToast('🔒 Zu spät', 'Diese Anzeige kann nicht mehr bearbeitet werden', 'error');
         return;
     }
@@ -1391,6 +1434,18 @@ function viewCharge(id) {
     if (!c) return;
     currentChargeId = id;
     const sourceLabel = c.source === 'citizen' ? '🧑 Bürger' : '👮 Polizei';
+    const linkedCitation = c.aktenzeichen ? database.citations.find(x => x.aktenzeichen === c.aktenzeichen) : null;
+    const linkedEvidence = c.linkedEvidenceIds && c.linkedEvidenceIds.length
+        ? database.evidence.filter(ev => c.linkedEvidenceIds.includes(ev.id))
+        : (c.aktenzeichen ? database.evidence.filter(ev => ev.citationAZ === c.aktenzeichen) : []);
+    const CHARGE_STATUSES = ['Aktiv', 'In Bearbeitung', 'Eingestellt', 'Verurteilt', 'Freigesprochen'];
+    const statusOpts = CHARGE_STATUSES.map(s => `<option value="${s}" ${c.status === s ? 'selected' : ''}>${s}</option>`).join('');
+    const citationHtml = linkedCitation
+        ? `<a style="color:var(--info);cursor:pointer;text-decoration:underline" onclick="document.getElementById('chargeDetailModal').classList.remove('show');viewCitationDetail(${linkedCitation.id})">${escapeHtml(linkedCitation.aktenzeichen)} – ${escapeHtml(linkedCitation.name)}</a>`
+        : (c.aktenzeichen ? `<span style="color:var(--text-secondary)">${escapeHtml(c.aktenzeichen)}</span>` : '<span style="color:var(--text-secondary)">–</span>');
+    const evidenceHtml = linkedEvidence.length
+        ? linkedEvidence.map(ev => `<div style="padding:4px 6px;background:rgba(0,102,204,0.07);border-radius:4px;margin-bottom:3px;font-size:0.85em">${EVIDENCE_TYPE_ICON[ev.type] || '📦'} <strong>${escapeHtml(ev.name || ev.description)}</strong> – ${escapeHtml(ev.location)}</div>`).join('')
+        : '<span style="color:var(--text-secondary);font-size:0.85em">Keine Beweismittel verknüpft</span>';
     const content = document.getElementById('chargeDetailContent');
     content.innerHTML = `
         <div style="display:grid;gap:10px">
@@ -1412,9 +1467,17 @@ function viewCharge(id) {
                     <div>${escapeHtml(c.officer || '—')}</div>
                 </div>
                 <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
-                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Status</div>
-                    <span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${escapeHtml(c.status)}</span>
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Status ändern</div>
+                    <select onchange="changeChargeStatus(${c.id}, this.value)" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:4px 8px;border-radius:4px;font-size:0.85em;width:100%">${statusOpts}</select>
                 </div>
+            </div>
+            ${c.aktenzeichen ? `<div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Verknüpfte Strafakte</div>
+                <div>${citationHtml}</div>
+            </div>` : ''}
+            <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:6px">Beweismittel</div>
+                ${evidenceHtml}
             </div>
             ${c.description ? `<div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
                 <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Sachverhalt</div>
@@ -1463,6 +1526,134 @@ function deleteChargeNote(index) {
     c.notes.splice(index, 1);
     saveDatabase();
     renderChargeNotes(c);
+}
+
+// ========== STATUS MANAGEMENT ==========
+function changeChargeStatus(id, newStatus) {
+    const c = database.charges.find(x => x.id === id);
+    if (!c) return;
+    c.status = newStatus;
+    saveDatabase();
+    renderChargesView();
+    showToast('✅ Status geändert', `${c.chargeNumber}: ${newStatus}`, 'success');
+}
+
+function changeCitationStatus(id, newStatus) {
+    const c = database.citations.find(x => x.id === id);
+    if (!c) return;
+    c.status = newStatus;
+    saveDatabase();
+    renderCitationsView();
+    showToast('✅ Status geändert', `${c.aktenzeichen}: ${newStatus}`, 'success');
+}
+
+// ========== STRAFAKTEN DETAIL (Akte anzeigen) ==========
+function viewCitationDetail(id) {
+    const c = database.citations.find(x => x.id === id);
+    if (!c) return;
+    const linkedEv = database.evidence.filter(e => e.citationAZ === c.aktenzeichen);
+    const linkedCh = database.charges.filter(ch => ch.aktenzeichen === c.aktenzeichen);
+    const statusColors = { 'Offen': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Abgeschlossen': 'badge-success', 'Archiviert': 'badge-info' };
+    const CITATION_STATUSES = ['Offen', 'In Bearbeitung', 'Abgeschlossen', 'Archiviert'];
+    const statusOpts = CITATION_STATUSES.map(s => `<option value="${s}" ${(c.status || 'Offen') === s ? 'selected' : ''}>${s}</option>`).join('');
+    const evHtml = linkedEv.length
+        ? linkedEv.map(ev => `<div style="padding:6px 8px;background:rgba(0,102,204,0.07);border-radius:4px;margin-bottom:4px;font-size:0.85em">${EVIDENCE_TYPE_ICON[ev.type] || '📦'} <strong>${escapeHtml(ev.name || ev.description)}</strong> <span class="badge badge-info">${escapeHtml(ev.aktenzeichen)}</span> – ${escapeHtml(ev.location)}</div>`).join('')
+        : '<div style="color:var(--text-secondary);font-size:0.85em;padding:4px 0">Keine Beweismittel erfasst</div>';
+    const chHtml = linkedCh.length
+        ? linkedCh.map(ch => `<div style="padding:6px 8px;background:rgba(255,51,51,0.07);border-radius:4px;margin-bottom:4px;font-size:0.85em;cursor:pointer" onclick="document.getElementById('citationDetailModal').classList.remove('show');viewCharge(${ch.id})"><span class="badge badge-danger">${escapeHtml(ch.type)}</span> <strong>${escapeHtml(ch.chargeNumber)}</strong> – ${escapeHtml(ch.name)} <span class="badge ${ch.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${escapeHtml(ch.status || 'Aktiv')}</span></div>`).join('')
+        : '<div style="color:var(--text-secondary);font-size:0.85em;padding:4px 0">Keine Anzeigen vorhanden</div>';
+    document.getElementById('citationDetailContent').innerHTML = `
+        <div style="display:grid;gap:12px">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:rgba(0,102,204,0.1);padding:12px;border-radius:8px;border:1px solid rgba(0,102,204,0.2)">
+                <span style="font-family:monospace;font-size:1.1em;font-weight:700;color:var(--info)">${escapeHtml(c.aktenzeichen)}</span>
+                <span class="badge badge-info">${escapeHtml(c.type)}</span>
+                <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+                    <span style="font-size:0.8em;color:var(--text-secondary)">Status:</span>
+                    <select onchange="changeCitationStatus(${c.id}, this.value)" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:4px 8px;border-radius:4px;font-size:0.85em">${statusOpts}</select>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Bürger</div>
+                    <div style="font-weight:600">${escapeHtml(c.name)}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Beamte(r)</div>
+                    <div>${escapeHtml(c.officer)}</div>
+                </div>
+            </div>
+            <div style="background:rgba(0,102,204,0.05);padding:10px;border-radius:6px;border-left:3px solid var(--primary)">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px">Beschreibung</div>
+                <div style="font-size:0.9em;line-height:1.6;white-space:pre-wrap">${escapeHtml(c.description)}</div>
+            </div>
+            <div>
+                <div style="color:var(--secondary);font-weight:700;margin-bottom:8px;font-size:0.95em"><i class="fas fa-dna"></i> Beweismittel (${linkedEv.length})</div>
+                ${evHtml}
+            </div>
+            <div>
+                <div style="color:var(--secondary);font-weight:700;margin-bottom:8px;font-size:0.95em"><i class="fas fa-exclamation-triangle"></i> Anzeigen (${linkedCh.length})</div>
+                ${chHtml}
+            </div>
+        </div>`;
+    document.getElementById('citationDetailModal').classList.add('show');
+}
+
+// ========== FALLÜBERSICHT (Unified Case View) ==========
+function openFallubersicht() {
+    renderFallubersicht();
+    document.getElementById('fallubersichtModal').classList.add('show');
+}
+
+function renderFallubersicht() {
+    const container = document.getElementById('fallubersichtContent');
+    if (!container) return;
+    // Alle einzigartigen Bürgernamen aus citations, charges und evidence sammeln
+    const subjects = new Set();
+    database.citations.forEach(c => { if (c.name) subjects.add(c.name); });
+    database.charges.forEach(c => { if (c.name) subjects.add(c.name); });
+    if (subjects.size === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary)"><i class="fas fa-folder-open" style="font-size:2em;margin-bottom:10px"></i><br>Noch keine Akten vorhanden</div>';
+        return;
+    }
+    const statusColors = { 'Offen': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Abgeschlossen': 'badge-success', 'Archiviert': 'badge-info' };
+    const cards = [...subjects].sort().map(name => {
+        const cits = database.citations.filter(c => c.name === name);
+        const chgs = database.charges.filter(c => c.name === name);
+        const evs = database.evidence.filter(ev => cits.some(c => c.aktenzeichen === ev.citationAZ));
+        const activeCount = chgs.filter(c => c.status === 'Aktiv').length;
+        const citsHtml = cits.map(c => {
+            const cStatus = c.status || 'Offen';
+            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,102,204,0.1);cursor:pointer" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCitationDetail(${c.id})">
+                <span style="font-family:monospace;font-size:0.8em;color:var(--info);flex-shrink:0">${escapeHtml(c.aktenzeichen)}</span>
+                <span class="badge badge-info" style="font-size:0.7em">${escapeHtml(c.type)}</span>
+                <span class="badge ${statusColors[cStatus] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(cStatus)}</span>
+                <span style="margin-left:auto;font-size:0.75em;color:var(--text-secondary)">${new Date(c.date).toLocaleDateString('de-DE')}</span>
+            </div>`;
+        }).join('');
+        const chgsHtml = chgs.map(c => {
+            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,51,51,0.1);cursor:pointer" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCharge(${c.id})">
+                <span style="font-family:monospace;font-size:0.8em;color:var(--danger);flex-shrink:0">${escapeHtml(c.chargeNumber)}</span>
+                <span class="badge badge-danger" style="font-size:0.7em">${escapeHtml(c.type)}</span>
+                <span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}" style="font-size:0.7em">${escapeHtml(c.status || 'Aktiv')}</span>
+                <span style="margin-left:auto;font-size:0.75em;color:var(--text-secondary)">${new Date(c.date).toLocaleDateString('de-DE')}</span>
+            </div>`;
+        }).join('');
+        return `<div style="background:rgba(15,25,50,0.6);border:1px solid rgba(0,102,204,0.25);border-radius:8px;padding:14px;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+                <i class="fas fa-user-shield" style="color:var(--secondary)"></i>
+                <strong style="font-size:1em">${escapeHtml(name)}</strong>
+                ${activeCount > 0 ? `<span class="badge badge-danger">${activeCount} aktive Anzeige${activeCount !== 1 ? 'n' : ''}</span>` : ''}
+                <div style="margin-left:auto;display:flex;gap:8px;font-size:0.8em;color:var(--text-secondary)">
+                    <span title="Strafakten"><i class="fas fa-gavel"></i> ${cits.length}</span>
+                    <span title="Anzeigen"><i class="fas fa-exclamation-triangle"></i> ${chgs.length}</span>
+                    <span title="Beweismittel"><i class="fas fa-dna"></i> ${evs.length}</span>
+                </div>
+            </div>
+            ${cits.length ? `<div style="margin-bottom:8px"><div style="font-size:0.75em;color:var(--secondary);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Strafakten</div>${citsHtml}</div>` : ''}
+            ${chgs.length ? `<div><div style="font-size:0.75em;color:var(--danger);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Anzeigen</div>${chgsHtml}</div>` : ''}
+        </div>`;
+    }).join('');
+    container.innerHTML = cards;
 }
 
 
@@ -2027,6 +2218,23 @@ function filterRanksModal() { makeSearchFilter('ranksModalSearch', 'ranksViewTab
 function filterEmployeesModal() { makeSearchFilter('employeesModalSearch', 'employeesViewTableBody', [0, 1, 2]); }
 function filterCitizensModal() { makeSearchFilter('citizensModalSearch', 'citizensViewTableBody', [0, 1, 2]); }
 function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'evidenceViewTableBody', [0, 1, 2, 3, 4]); }
+
+function filterFallubersicht() {
+    const search = (document.getElementById('fallubersichtSearch')?.value || '').toLowerCase();
+    if (!search) { renderFallubersicht(); return; }
+    const allSubjects = new Set([
+        ...database.citations.map(c => c.name),
+        ...database.charges.map(c => c.name)
+    ].filter(Boolean));
+    // Temporarily filter and re-render
+    const origCits = database.citations;
+    const origChgs = database.charges;
+    database.citations = origCits.filter(c => (c.name || '').toLowerCase().includes(search) || (c.aktenzeichen || '').toLowerCase().includes(search));
+    database.charges = origChgs.filter(c => (c.name || '').toLowerCase().includes(search) || (c.chargeNumber || '').toLowerCase().includes(search));
+    renderFallubersicht();
+    database.citations = origCits;
+    database.charges = origChgs;
+}
 function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'trainingViewTableBody', [0, 1, 2, 3]); }
 function filterApplicationsModal() { makeSearchFilter('applicationsModalSearch', 'applicationsViewTableBody', [0, 1, 2]); }
 function filterCitationsModal() { makeSearchFilter('citationsModalSearch', 'citationsViewTableBody', [0, 1]); }
@@ -2084,6 +2292,12 @@ function updateCounts() {
     set('chargesCount', database.charges.length);
     set('pressCount', database.press.length);
     set('requestsCount', (database.requests || []).length);
+    // Anzahl einzigartiger Personen in den Akten (Fallübersicht)
+    const subjects = new Set([
+        ...database.citations.map(c => c.name),
+        ...database.charges.map(c => c.name)
+    ].filter(Boolean));
+    set('fallCount', subjects.size);
     renderOverviewStats();
 }
 
@@ -2120,6 +2334,7 @@ function refreshUI() {
         { id: 'chargesViewModal',      render: renderChargesView,      filter: filterChargesModal },
         { id: 'pressViewModal',        render: renderPressArticles,    filter: filterPressModal },
         { id: 'requestsViewModal',     render: renderRequestsView,     filter: filterRequestsModal },
+        { id: 'fallubersichtModal',    render: renderFallubersicht,    filter: () => {} },
     ];
     viewModals.forEach(({ id, render, filter }) => {
         const el = document.getElementById(id);

@@ -151,6 +151,16 @@
 </div>
 </div>
 
+<div class="card" data-permission="citations">
+<i class="fas fa-folder-open card-icon"></i>
+<div class="card-title">Fallübersicht</div>
+<div class="card-count" id="fallCount">0</div>
+<div class="card-subtitle">Alle Fälle im Überblick</div>
+<div class="card-actions">
+<button class="btn btn-primary btn-small" onclick="openFallubersicht()"><i class="fas fa-folder-open"></i> Öffnen</button>
+</div>
+</div>
+
 <div class="card" data-permission="admin">
 <i class="fas fa-download card-icon"></i>
 <div class="card-title">Export</div>
@@ -393,6 +403,7 @@
 <form onsubmit="addCitation(event)">
 <div class="form-group"><label>Bürger Name</label><input type="text" id="citName" required></div>
 <div class="form-group"><label>Strafart</label><select id="citType" required><option>Verwarnung</option><option>Ordnungswidrigkeit</option><option>Vergehen</option><option>Verbrechen</option></select></div>
+<div class="form-group"><label>Status</label><select id="citStatus"><option value="Offen">Offen</option><option value="In Bearbeitung">In Bearbeitung</option><option value="Abgeschlossen">Abgeschlossen</option><option value="Archiviert">Archiviert</option></select></div>
 <div class="form-group"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><label for="citDesc">Beschreibung</label><button type="button" class="btn btn-small" onclick="improveTextLegal('citDesc')" title="Text rechtssicherer formulieren" style="font-size:0.8em;padding:2px 8px">🤖 KI verbessern</button></div><textarea id="citDesc" required></textarea></div>
 <div class="form-group"><label>Beamte(r)</label><input type="text" id="citOfficer" required></div>
 <button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
@@ -401,10 +412,10 @@
 </div>
 
 <div id="citationsViewModal" class="modal">
-<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
+<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
 <div class="modal-header"><h2>Strafakten</h2><button class="modal-close" onclick="closeViewModal('citations')">×</button></div>
 <div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citationsModalSearch" placeholder="Nach AZ oder Bürger suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterCitationsModal()"></div>
-<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Art</th><th>Beamte</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="citationsViewTableBody"></tbody></table></div>
+<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Art</th><th>Status</th><th>Beamte</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="citationsViewTableBody"></tbody></table></div>
 </div>
 </div>
 
@@ -451,6 +462,21 @@
     <button class="btn btn-primary" onclick="addChargeNote()" style="align-self:flex-end">➕ Hinzufügen</button>
   </div>
 </div>
+</div>
+</div>
+
+<div id="citationDetailModal" class="modal">
+<div class="modal-content" style="max-width:750px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-gavel"></i> Strafakte – Details</h2><button class="modal-close" onclick="document.getElementById('citationDetailModal').classList.remove('show')">×</button></div>
+<div id="citationDetailContent" style="padding:10px 0"></div>
+</div>
+</div>
+
+<div id="fallubersichtModal" class="modal">
+<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-folder-open"></i> Fallübersicht</h2><button class="modal-close" onclick="document.getElementById('fallubersichtModal').classList.remove('show')">×</button></div>
+<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="fallubersichtSearch" placeholder="Nach Bürger suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterFallubersicht()"></div>
+<div id="fallubersichtContent" style="padding:10px 0"></div>
 </div>
 </div>
 
