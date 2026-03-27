@@ -557,19 +557,45 @@ const VERGEHEN_LIST = [
     'Fahren unter Einfluss', 'Sachbeschädigung', 'Erpressung'
 ];
 
-function renderVergehenCheckboxes(containerId, selected = []) {
+const VERGEHEN_TAG_STYLES = {
+    active:   { background: 'rgba(0,102,204,0.55)', borderColor: 'var(--secondary)', color: '#fff', fontWeight: '600' },
+    inactive: { background: 'rgba(0,102,204,0.08)', borderColor: 'rgba(0,102,204,0.35)', color: 'var(--text-primary)', fontWeight: '' }
+};
+
+function _applyVergehenTagStyle(el, active) {
+    const s = active ? VERGEHEN_TAG_STYLES.active : VERGEHEN_TAG_STYLES.inactive;
+    el.style.background = s.background;
+    el.style.borderColor = s.borderColor;
+    el.style.color = s.color;
+    el.style.fontWeight = s.fontWeight;
+}
+
+function renderVergehenTags(containerId, selected = []) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = VERGEHEN_LIST.map(v => {
-        const checked = selected.includes(v) ? 'checked' : '';
-        return `<label style="display:flex;align-items:center;gap:4px;font-size:0.85em;cursor:pointer"><input type="checkbox" value="${v}" ${checked} style="accent-color:var(--secondary)"> ${v}</label>`;
+        const isSelected = selected.includes(v);
+        const s = isSelected ? VERGEHEN_TAG_STYLES.active : VERGEHEN_TAG_STYLES.inactive;
+        const inlineStyle = `display:inline-block;padding:4px 11px;border-radius:12px;font-size:0.82em;cursor:pointer;border:1px solid;user-select:none;transition:all 0.15s;margin:2px;background:${s.background};border-color:${s.borderColor};color:${s.color};font-weight:${s.fontWeight}`;
+        return `<span class="vergehen-tag${isSelected ? ' selected' : ''}" role="checkbox" aria-checked="${isSelected}" tabindex="0" onclick="toggleVergehenTag(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleVergehenTag(this)}" style="${inlineStyle}">${escapeHtml(v)}</span>`;
     }).join('');
+}
+
+function toggleVergehenTag(el) {
+    el.classList.toggle('selected');
+    const active = el.classList.contains('selected');
+    el.setAttribute('aria-checked', active);
+    _applyVergehenTagStyle(el, active);
+    const kiModal = document.getElementById('kiImproveModal');
+    if (kiModal && kiModal.classList.contains('show')) {
+        updateKiPreview();
+    }
 }
 
 function getSelectedVergehen(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return [];
-    return Array.from(container.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+    return Array.from(container.querySelectorAll('.vergehen-tag.selected')).map(el => el.textContent);
 }
 
 function populateEvidenceModal() {
@@ -582,7 +608,7 @@ function populateEvidenceModal() {
         opt.textContent = `${c.aktenzeichen} – ${c.name}`;
         sel.appendChild(opt);
     });
-    renderVergehenCheckboxes('evVergehen');
+    renderVergehenTags('evVergehen');
 }
 
 function populateChargeModal() {
@@ -595,7 +621,7 @@ function populateChargeModal() {
         opt.textContent = `${c.aktenzeichen} – ${c.name}`;
         sel.appendChild(opt);
     });
-    renderVergehenCheckboxes('chargeVergehen');
+    renderVergehenTags('chargeVergehen');
     const box = document.getElementById('chargeLinkedEvidenceBox');
     if (box) box.style.display = 'none';
 }
@@ -625,12 +651,38 @@ function improveTextLegal(fieldId) {
         showToast('⚠️ Hinweis', 'Bitte zuerst eine Beschreibung eingeben.', 'error');
         return;
     }
-    const original = field.value.trim();
-    field.value = formatLegalText(original);
+    const modal = document.getElementById('kiImproveModal');
+    if (!modal) return;
+    modal.dataset.fieldId = fieldId;
+    renderVergehenTags('kiImproveVergehen');
+    updateKiPreview();
+    modal.classList.add('show');
+}
+
+function updateKiPreview() {
+    const modal = document.getElementById('kiImproveModal');
+    if (!modal) return;
+    const fieldId = modal.dataset.fieldId;
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    const selectedVergehen = getSelectedVergehen('kiImproveVergehen');
+    const preview = document.getElementById('kiImprovePreview');
+    if (preview) preview.textContent = formatLegalText(field.value.trim(), selectedVergehen);
+}
+
+function applyKiImprovement() {
+    const modal = document.getElementById('kiImproveModal');
+    if (!modal) return;
+    const fieldId = modal.dataset.fieldId;
+    const field = document.getElementById(fieldId);
+    if (!field) return;
+    const selectedVergehen = getSelectedVergehen('kiImproveVergehen');
+    field.value = formatLegalText(field.value.trim(), selectedVergehen);
+    modal.classList.remove('show');
     showToast('🤖 KI', 'Text wurde rechtssicherer formuliert.', 'success');
 }
 
-function formatLegalText(text) {
+function formatLegalText(text, vergehen = []) {
     let t = text.replace(/([.!?]\s+)([a-zäöüß])/g, (m, p1, p2) => p1 + p2.toUpperCase());
     t = t.charAt(0).toUpperCase() + t.slice(1);
     if (!/[.!?]$/.test(t.trim())) t = t.trim() + '.';
@@ -665,6 +717,12 @@ function formatLegalText(text) {
         const date = new Date().toLocaleDateString('de-DE');
         t = `Am ${date} wurde Folgendes festgestellt: ${t}`;
     }
+
+    if (vergehen.length > 0) {
+        const vergehenText = vergehen.join(', ');
+        t += ` Dem Beschuldigten werden folgende Vergehen zur Last gelegt: ${vergehenText}.`;
+    }
+
     return t;
 }
 
@@ -1329,7 +1387,7 @@ function editCharge(id) {
         updateLinkedEvidence();
     }
     if (c.vergehen && c.vergehen.length) {
-        renderVergehenCheckboxes('chargeVergehen', c.vergehen);
+        renderVergehenTags('chargeVergehen', c.vergehen);
     }
     
     document.getElementById('addChargeModal').querySelector('form').onsubmit = ((e) => {
