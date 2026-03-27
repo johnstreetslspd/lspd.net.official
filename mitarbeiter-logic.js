@@ -91,14 +91,25 @@ function filterDashboardCards() {
 }
 
 // ========== LOGIN ==========
+const SESSION_KEY = 'lspd_session';
+const REMEMBER_KEY = 'lspd_remember';
+const SESSION_TTL_MS = ONE_WEEK_MS; // Sitzung läuft nach 7 Tagen ab
+
 function handleLogin(e) {
     e.preventDefault();
     const u = document.getElementById('username').value;
     const p = document.getElementById('password').value;
+    const remember = document.getElementById('rememberPassword').checked;
+    const stayIn = document.getElementById('stayLoggedIn').checked;
     const usr = database.users.find(x => x.username === u && x.password === p);
-    
+
     if (usr) {
-        currentUser = { username: u, role: usr.role };
+        if (remember) {
+            localStorage.setItem(REMEMBER_KEY, u);
+        } else {
+            localStorage.removeItem(REMEMBER_KEY);
+        }
+        currentUser = { username: u, role: usr.role, stayLoggedIn: stayIn };
         loginSuccess();
     } else {
         document.getElementById('loginError').style.display = 'block';
@@ -107,6 +118,13 @@ function handleLogin(e) {
 }
 
 function loginSuccess() {
+    if (currentUser.stayLoggedIn) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+            username: currentUser.username,
+            role: currentUser.role,
+            expires: Date.now() + SESSION_TTL_MS
+        }));
+    }
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
     document.getElementById('currentUser').textContent = currentUser.username;
@@ -125,12 +143,45 @@ function loginSuccess() {
 }
 
 function handleLogout() {
+    localStorage.removeItem(SESSION_KEY);
     currentUser = null;
     stopAutoSync();
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('mainApp').classList.add('hidden');
-    document.getElementById('username').value = '';
+    // Behalte gespeicherten Benutzernamen falls "Benutzernamen merken" aktiv war
+    const savedUsername = localStorage.getItem(REMEMBER_KEY);
+    document.getElementById('username').value = savedUsername || '';
     document.getElementById('password').value = '';
+    if (savedUsername) {
+        document.getElementById('rememberPassword').checked = true;
+    }
+}
+
+function tryAutoLogin() {
+    // Gespeicherte Sitzung wiederherstellen
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (raw) {
+        try {
+            const session = JSON.parse(raw);
+            if (session && session.username && session.expires && Date.now() < session.expires) {
+                const usr = database.users.find(x => x.username === session.username);
+                if (usr) {
+                    currentUser = { username: usr.username, role: usr.role, stayLoggedIn: true };
+                    loginSuccess();
+                    return true;
+                }
+            }
+        } catch (_) { /* ungültige Sitzungsdaten */ }
+        // Sitzung abgelaufen oder ungültig - entfernen
+        localStorage.removeItem(SESSION_KEY);
+    }
+    // Gespeicherten Benutzernamen vorausfüllen
+    const savedUsername = localStorage.getItem(REMEMBER_KEY);
+    if (savedUsername) {
+        document.getElementById('username').value = savedUsername;
+        document.getElementById('rememberPassword').checked = true;
+    }
+    return false;
 }
 
 // ========== MODALS ==========
