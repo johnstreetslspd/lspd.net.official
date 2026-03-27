@@ -10,6 +10,7 @@ const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 let activeChargesTab = 'all';
 let currentChargeId = null;
+let currentCitizenId = null;
 let activeAdminTab = 'roles'; // Aktiver Tab im Admin-Panel
 
 // Rückwärtskompatibilität: getAllRoles gibt Rollennamen zurück
@@ -486,6 +487,7 @@ function addCitizen(e) {
     document.getElementById('addCitizenModal').querySelector('form').reset();
     showToast('✅ Bürger hinzugefügt', c.name, 'success');
     updateCounts();
+    renderCitizensView();
 }
 
 function renderCitizensView() {
@@ -508,7 +510,7 @@ function renderCitizensView() {
             <td>${escapeHtml(c.address)}</td>
             <td>${statusBadge}</td>
             <td>${linkedBadge}</td>
-            <td style="white-space:nowrap"><button class="btn btn-small btn-primary" onclick="viewCitizen(${c.id})" title="Bürgerakte öffnen"><i class="fas fa-eye"></i></button> <button class="btn btn-small" onclick="deleteCitizen(${c.id})" style="background:rgba(255,51,51,0.1);color:var(--danger)">×</button></td>
+            <td style="white-space:nowrap"><button class="btn btn-small btn-primary" onclick="viewCitizen(${c.id})" title="Bürgerakte öffnen"><i class="fas fa-eye"></i></button> <button class="btn btn-small" onclick="editCitizen(${c.id})" title="Bearbeiten" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3)">✎</button> <button class="btn btn-small" onclick="deleteCitizen(${c.id})" style="background:rgba(255,51,51,0.1);color:var(--danger)">×</button></td>
         </tr>`;
     }).join('');
 }
@@ -520,6 +522,30 @@ function deleteCitizen(id) {
         renderCitizensView();
         updateCounts();
     }
+}
+
+function editCitizen(id) {
+    const c = database.citizens.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('ctName').value = c.name;
+    document.getElementById('ctPhone').value = c.phone;
+    document.getElementById('ctAddress').value = c.address;
+    document.getElementById('ctStatus').value = c.status;
+    const form = document.getElementById('addCitizenModal').querySelector('form');
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        c.name = document.getElementById('ctName').value;
+        c.phone = document.getElementById('ctPhone').value;
+        c.address = document.getElementById('ctAddress').value;
+        c.status = document.getElementById('ctStatus').value;
+        saveDatabase();
+        closeModal('addCitizen');
+        form.reset();
+        form.onsubmit = null;
+        showToast('✅ Bürger aktualisiert', c.name, 'success');
+        renderCitizensView();
+    };
+    openModal('addCitizen');
 }
 
 // ========== CITIZEN AUTOCOMPLETE ==========
@@ -565,6 +591,7 @@ function showCitizenSuggestions(inputEl, dropdownId, hiddenId) {
 function viewCitizen(id) {
     const citizen = database.citizens.find(c => c.id === id);
     if (!citizen) return;
+    currentCitizenId = id;
 
     const linkedCitations = database.citations.filter(c =>
         (c.citizenId && c.citizenId === id) || (!c.citizenId && c.name === citizen.name)
@@ -645,6 +672,47 @@ function viewCitizen(id) {
         </div>`;
 
     document.getElementById('citizenDetailModal').classList.add('show');
+    renderCitizenNotes(citizen);
+}
+
+function renderCitizenNotes(citizen) {
+    const list = document.getElementById('citizenNotesList');
+    if (!list) return;
+    const notes = citizen.notes || [];
+    if (notes.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-secondary);font-size:0.9em;margin:0">Noch keine Notizen vorhanden.</p>';
+        return;
+    }
+    list.innerHTML = notes.map((n, i) => `
+        <div style="background:rgba(0,102,204,0.08);border:1px solid rgba(0,102,204,0.2);border-radius:6px;padding:10px;display:flex;gap:10px;align-items:flex-start">
+            <div style="flex:1">
+                <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-user"></i> ${escapeHtml(n.author)} · ${new Date(n.date).toLocaleString('de-DE')}</div>
+                <div style="line-height:1.5;white-space:pre-wrap">${escapeHtml(n.text)}</div>
+            </div>
+            <button class="btn btn-small" onclick="deleteCitizenNote(${i})" style="background:rgba(255,51,51,0.15);color:var(--danger);border:1px solid rgba(255,51,51,0.3);flex-shrink:0" title="Notiz löschen">×</button>
+        </div>`).join('');
+}
+
+function addCitizenNote() {
+    const citizen = database.citizens.find(x => x.id === currentCitizenId);
+    if (!citizen) return;
+    const input = document.getElementById('citizenNoteInput');
+    const text = input.value.trim();
+    if (!text) return;
+    if (!citizen.notes) citizen.notes = [];
+    citizen.notes.push({ text, author: currentUser?.username || 'Unbekannt', date: new Date().toISOString() });
+    saveDatabase();
+    input.value = '';
+    renderCitizenNotes(citizen);
+    showToast('✅ Notiz hinzugefügt', '', 'success');
+}
+
+function deleteCitizenNote(index) {
+    const citizen = database.citizens.find(x => x.id === currentCitizenId);
+    if (!citizen || !citizen.notes) return;
+    citizen.notes.splice(index, 1);
+    saveDatabase();
+    renderCitizenNotes(citizen);
 }
 
 // ========== EVIDENCE ==========
@@ -668,6 +736,7 @@ function addEvidence(e) {
     document.getElementById('addEvidenceModal').querySelector('form').reset();
     showToast('✅ Beweismittel hinzugefügt', ev.aktenzeichen, 'success');
     updateCounts();
+    renderEvidenceView();
 }
 
 const EVIDENCE_TYPE_ICON = { Waffe: '🔫', Drogen: '💊', Sonstiges: '📦' };
@@ -943,6 +1012,7 @@ function addTraining(e) {
     document.getElementById('addTrainingModal').querySelector('form').reset();
     showToast('✅ Schulung erstellt', t.title, 'success');
     updateCounts();
+    renderTrainingView();
 }
 
 function populateTrainingRankDropdown() {
