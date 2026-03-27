@@ -1604,21 +1604,23 @@ function openFallubersicht() {
     document.getElementById('fallubersichtModal').classList.add('show');
 }
 
-function renderFallubersicht() {
+function renderFallubersicht(filteredCitations, filteredCharges) {
     const container = document.getElementById('fallubersichtContent');
     if (!container) return;
-    // Alle einzigartigen Bürgernamen aus citations, charges und evidence sammeln
+    const citations = filteredCitations !== undefined ? filteredCitations : database.citations;
+    const charges = filteredCharges !== undefined ? filteredCharges : database.charges;
+    // Alle einzigartigen Bürgernamen aus citations und charges sammeln
     const subjects = new Set();
-    database.citations.forEach(c => { if (c.name) subjects.add(c.name); });
-    database.charges.forEach(c => { if (c.name) subjects.add(c.name); });
+    citations.forEach(c => { if (c.name) subjects.add(c.name); });
+    charges.forEach(c => { if (c.name) subjects.add(c.name); });
     if (subjects.size === 0) {
         container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary)"><i class="fas fa-folder-open" style="font-size:2em;margin-bottom:10px"></i><br>Noch keine Akten vorhanden</div>';
         return;
     }
     const statusColors = { 'Offen': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Abgeschlossen': 'badge-success', 'Archiviert': 'badge-info' };
     const cards = [...subjects].sort().map(name => {
-        const cits = database.citations.filter(c => c.name === name);
-        const chgs = database.charges.filter(c => c.name === name);
+        const cits = citations.filter(c => c.name === name);
+        const chgs = charges.filter(c => c.name === name);
         const evs = database.evidence.filter(ev => cits.some(c => c.aktenzeichen === ev.citationAZ));
         const activeCount = chgs.filter(c => c.status === 'Aktiv').length;
         const citsHtml = cits.map(c => {
@@ -1631,10 +1633,11 @@ function renderFallubersicht() {
             </div>`;
         }).join('');
         const chgsHtml = chgs.map(c => {
+            const chargeStatusColors = { 'Aktiv': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Eingestellt': 'badge-info', 'Verurteilt': 'badge-success', 'Freigesprochen': 'badge-success' };
             return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,51,51,0.1);cursor:pointer" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCharge(${c.id})">
                 <span style="font-family:monospace;font-size:0.8em;color:var(--danger);flex-shrink:0">${escapeHtml(c.chargeNumber)}</span>
                 <span class="badge badge-danger" style="font-size:0.7em">${escapeHtml(c.type)}</span>
-                <span class="badge ${c.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}" style="font-size:0.7em">${escapeHtml(c.status || 'Aktiv')}</span>
+                <span class="badge ${chargeStatusColors[c.status] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(c.status || 'Aktiv')}</span>
                 <span style="margin-left:auto;font-size:0.75em;color:var(--text-secondary)">${new Date(c.date).toLocaleDateString('de-DE')}</span>
             </div>`;
         }).join('');
@@ -2222,18 +2225,13 @@ function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'eviden
 function filterFallubersicht() {
     const search = (document.getElementById('fallubersichtSearch')?.value || '').toLowerCase();
     if (!search) { renderFallubersicht(); return; }
-    const allSubjects = new Set([
-        ...database.citations.map(c => c.name),
-        ...database.charges.map(c => c.name)
-    ].filter(Boolean));
-    // Temporarily filter and re-render
-    const origCits = database.citations;
-    const origChgs = database.charges;
-    database.citations = origCits.filter(c => (c.name || '').toLowerCase().includes(search) || (c.aktenzeichen || '').toLowerCase().includes(search));
-    database.charges = origChgs.filter(c => (c.name || '').toLowerCase().includes(search) || (c.chargeNumber || '').toLowerCase().includes(search));
-    renderFallubersicht();
-    database.citations = origCits;
-    database.charges = origChgs;
+    const filteredCitations = database.citations.filter(c =>
+        (c.name || '').toLowerCase().includes(search) || (c.aktenzeichen || '').toLowerCase().includes(search)
+    );
+    const filteredCharges = database.charges.filter(c =>
+        (c.name || '').toLowerCase().includes(search) || (c.chargeNumber || '').toLowerCase().includes(search)
+    );
+    renderFallubersicht(filteredCitations, filteredCharges);
 }
 function filterTrainingModal() { makeSearchFilter('trainingModalSearch', 'trainingViewTableBody', [0, 1, 2, 3]); }
 function filterApplicationsModal() { makeSearchFilter('applicationsModalSearch', 'applicationsViewTableBody', [0, 1, 2]); }
