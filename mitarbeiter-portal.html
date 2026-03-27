@@ -208,7 +208,7 @@
 
 <div id="citizensSection" class="table-container hidden">
 <div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citizensSearch" placeholder="Nach Name oder Telefon suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCitizens()"></div>
-<table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citizensTableBody"></tbody></table>
+<table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Akten</th><th>Aktion</th></tr></thead><tbody id="citizensTableBody"></tbody></table>
 </div>
 
 <div id="evidenceSection" class="table-container hidden">
@@ -355,7 +355,14 @@
 <div class="modal-content" style="max-width:700px">
 <div class="modal-header"><h2>Bürger</h2><button class="modal-close" onclick="closeViewModal('citizens')">×</button></div>
 <div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citizensModalSearch" placeholder="Nach Name, Telefon oder Adresse suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterCitizensModal()"></div>
-<div class="table-container"><table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citizensViewTableBody"></tbody></table></div>
+<div class="table-container"><table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Akten</th><th>Aktion</th></tr></thead><tbody id="citizensViewTableBody"></tbody></table></div>
+</div>
+</div>
+
+<div id="citizenDetailModal" class="modal">
+<div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-user-shield"></i> Bürgerakte</h2><button class="modal-close" onclick="document.getElementById('citizenDetailModal').classList.remove('show')">×</button></div>
+<div id="citizenDetailContent" style="padding:10px 0"></div>
 </div>
 </div>
 
@@ -412,7 +419,7 @@
 <div class="modal-content">
 <div class="modal-header"><h2>Strafakte erstellen</h2><button class="modal-close" onclick="closeModal('addCitation')">×</button></div>
 <form onsubmit="addCitation(event)">
-<div class="form-group"><label>Bürger Name</label><input type="text" id="citName" required></div>
+<div class="form-group"><label>Bürger Name</label><div style="position:relative"><input type="text" id="citName" required autocomplete="off" oninput="showCitizenSuggestions(this,'citNameDropdown','citNameCitizenId')" onblur="setTimeout(()=>{const d=document.getElementById('citNameDropdown');if(d)d.style.display='none';},180)" placeholder="Name eingeben oder tippen…"><input type="hidden" id="citNameCitizenId"><div id="citNameDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(10,20,45,0.98);border:1px solid rgba(0,102,204,0.4);border-top:none;border-radius:0 0 6px 6px;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.4)"></div></div></div>
 <div class="form-group"><label>Strafart</label><select id="citType" required><option>Verwarnung</option><option>Ordnungswidrigkeit</option><option>Vergehen</option><option>Verbrechen</option></select></div>
 <div class="form-group"><label>Status</label><select id="citStatus"><option value="Offen">Offen</option><option value="In Bearbeitung">In Bearbeitung</option><option value="Abgeschlossen">Abgeschlossen</option><option value="Archiviert">Archiviert</option></select></div>
 <div class="form-group"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><label for="citDesc">Beschreibung</label><button type="button" class="btn btn-small" onclick="improveTextLegal('citDesc')" title="Text rechtssicherer formulieren" style="font-size:0.8em;padding:2px 8px">🤖 KI verbessern</button></div><textarea id="citDesc" required></textarea></div>
@@ -434,7 +441,7 @@
 <div class="modal-content" style="max-width:600px;max-height:90vh;overflow-y:auto">
 <div class="modal-header"><h2>Anzeige erstellen</h2><button class="modal-close" onclick="closeModal('addCharge')">×</button></div>
 <form onsubmit="addCharge(event)">
-<div class="form-group"><label>Bürger Name</label><input type="text" id="chargeName" required></div>
+<div class="form-group"><label>Bürger Name</label><div style="position:relative"><input type="text" id="chargeName" required autocomplete="off" oninput="showCitizenSuggestions(this,'chargeNameDropdown','chargeNameCitizenId')" onblur="setTimeout(()=>{const d=document.getElementById('chargeNameDropdown');if(d)d.style.display='none';},180)" placeholder="Name eingeben oder tippen…"><input type="hidden" id="chargeNameCitizenId"><div id="chargeNameDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(10,20,45,0.98);border:1px solid rgba(0,102,204,0.4);border-top:none;border-radius:0 0 6px 6px;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.4)"></div></div></div>
 <div class="form-group"><label>Zugehörige Strafakte (AZ)</label><select id="chargeAktenzeichen" onchange="updateLinkedEvidence()"><option value="">-- Keine Strafakte --</option></select></div>
 <div id="chargeLinkedEvidenceBox" style="display:none;margin-bottom:10px;padding:8px;background:rgba(0,102,204,0.07);border:1px solid rgba(0,102,204,0.2);border-radius:4px;font-size:0.85em"><strong>🔍 Zugehörige Beweismittel:</strong><div id="chargeLinkedEvidence" style="margin-top:4px"></div></div>
 <div class="form-group"><label>Hauptvorwurf</label><select id="chargeType" required><option>Raub</option><option>Diebstahl</option><option>Körperverletzung</option><option>Mord</option><option>Betrug</option><option>Drogenhandel</option><option>Sonstiges</option></select></div>

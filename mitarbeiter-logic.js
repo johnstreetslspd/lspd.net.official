@@ -490,9 +490,27 @@ function addCitizen(e) {
 
 function renderCitizensView() {
     const b = document.getElementById('citizensViewTableBody');
-    b.innerHTML = database.citizens.map(c => 
-        `<tr><td>${c.name}</td><td>${c.phone}</td><td>${c.address}</td><td>${c.status}</td><td><button class="btn btn-small" onclick="deleteCitizen(${c.id})">×</button></td></tr>`
-    ).join('');
+    if (database.citizens.length === 0) {
+        b.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Bürger erfasst</td></tr>';
+        return;
+    }
+    b.innerHTML = database.citizens.map(c => {
+        const linkedCit = database.citations.filter(ci => (ci.citizenId && ci.citizenId === c.id) || (!ci.citizenId && ci.name === c.name)).length;
+        const linkedChg = database.charges.filter(ch => (ch.citizenId && ch.citizenId === c.id) || (!ch.citizenId && ch.name === c.name)).length;
+        const linkedTotal = linkedCit + linkedChg;
+        const linkedBadge = linkedTotal > 0
+            ? `<span class="badge badge-info" title="${linkedCit} Strafakte(n), ${linkedChg} Anzeige(n)" style="cursor:default">🔗${linkedTotal}</span>`
+            : '<span style="color:var(--text-secondary);font-size:0.85em">–</span>';
+        const statusBadge = `<span class="badge ${c.status === 'Aktiv' ? 'badge-success' : 'badge-warning'}">${escapeHtml(c.status)}</span>`;
+        return `<tr>
+            <td><strong>${escapeHtml(c.name)}</strong></td>
+            <td>${escapeHtml(c.phone)}</td>
+            <td>${escapeHtml(c.address)}</td>
+            <td>${statusBadge}</td>
+            <td>${linkedBadge}</td>
+            <td style="white-space:nowrap"><button class="btn btn-small btn-primary" onclick="viewCitizen(${c.id})" title="Bürgerakte öffnen"><i class="fas fa-eye"></i></button> <button class="btn btn-small" onclick="deleteCitizen(${c.id})" style="background:rgba(255,51,51,0.1);color:var(--danger)">×</button></td>
+        </tr>`;
+    }).join('');
 }
 
 function deleteCitizen(id) {
@@ -502,6 +520,131 @@ function deleteCitizen(id) {
         renderCitizensView();
         updateCounts();
     }
+}
+
+// ========== CITIZEN AUTOCOMPLETE ==========
+function showCitizenSuggestions(inputEl, dropdownId, hiddenId) {
+    const query = inputEl.value.trim().toLowerCase();
+    const dropdown = document.getElementById(dropdownId);
+    const hidden = document.getElementById(hiddenId);
+    if (hidden) hidden.value = '';
+    if (!dropdown) return;
+    if (!query) { dropdown.style.display = 'none'; return; }
+
+    const matches = database.citizens
+        .filter(c => c.name.toLowerCase().includes(query))
+        .sort((a, b) => {
+            const aStarts = a.name.toLowerCase().startsWith(query) ? 0 : 1;
+            const bStarts = b.name.toLowerCase().startsWith(query) ? 0 : 1;
+            return aStarts - bStarts || a.name.localeCompare(b.name, 'de');
+        })
+        .slice(0, 8);
+
+    if (!matches.length) { dropdown.style.display = 'none'; return; }
+
+    dropdown.innerHTML = '';
+    dropdown.style.display = 'block';
+    matches.forEach(c => {
+        const item = document.createElement('div');
+        item.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(0,102,204,0.1);display:flex;align-items:center;gap:8px;color:var(--text-primary);font-size:0.9em';
+        item.innerHTML = `<i class="fas fa-user" style="color:var(--secondary);font-size:0.85em;flex-shrink:0"></i><strong>${escapeHtml(c.name)}</strong><span style="color:var(--text-secondary);font-size:0.8em;margin-left:auto">${escapeHtml(c.status || '')}</span>`;
+        item.onmouseover = () => { item.style.background = 'rgba(0,102,204,0.2)'; };
+        item.onmouseout = () => { item.style.background = ''; };
+        item.onmousedown = (ev) => { ev.preventDefault(); };
+        item.onclick = () => {
+            inputEl.value = c.name;
+            if (hidden) hidden.value = c.id;
+            dropdown.style.display = 'none';
+            inputEl.focus();
+        };
+        dropdown.appendChild(item);
+    });
+}
+
+// ========== CITIZEN DETAIL VIEW ==========
+function viewCitizen(id) {
+    const citizen = database.citizens.find(c => c.id === id);
+    if (!citizen) return;
+
+    const linkedCitations = database.citations.filter(c =>
+        (c.citizenId && c.citizenId === id) || (!c.citizenId && c.name === citizen.name)
+    );
+    const linkedCharges = database.charges.filter(c =>
+        (c.citizenId && c.citizenId === id) || (!c.citizenId && c.name === citizen.name)
+    );
+    const linkedEvidence = database.evidence.filter(ev =>
+        linkedCitations.some(c => c.aktenzeichen === ev.citationAZ)
+    );
+
+    const statusColors = { 'Offen': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Abgeschlossen': 'badge-success', 'Archiviert': 'badge-info' };
+    const chargeStatusColors = { 'Aktiv': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Eingestellt': 'badge-info', 'Verurteilt': 'badge-success', 'Freigesprochen': 'badge-success' };
+    const citizenStatusClass = citizen.status === 'Aktiv' ? 'badge-success' : 'badge-warning';
+
+    const citsHtml = linkedCitations.length
+        ? linkedCitations.map(c => {
+            const cStatus = c.status || 'Offen';
+            return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(0,102,204,0.1);cursor:pointer" onclick="document.getElementById('citizenDetailModal').classList.remove('show');viewCitationDetail(${c.id})">
+                <span style="font-family:monospace;font-size:0.8em;color:var(--info);flex-shrink:0">${escapeHtml(c.aktenzeichen)}</span>
+                <span class="badge badge-info" style="font-size:0.7em">${escapeHtml(c.type)}</span>
+                <span class="badge ${statusColors[cStatus] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(cStatus)}</span>
+                <span style="margin-left:auto;font-size:0.75em;color:var(--text-secondary)">${new Date(c.date).toLocaleDateString('de-DE')}</span>
+            </div>`;
+        }).join('')
+        : '<em style="color:var(--text-secondary);font-size:0.9em">Keine Strafakten vorhanden</em>';
+
+    const chgsHtml = linkedCharges.length
+        ? linkedCharges.map(c => `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,51,51,0.1);cursor:pointer" onclick="document.getElementById('citizenDetailModal').classList.remove('show');viewCharge(${c.id})">
+                <span style="font-family:monospace;font-size:0.8em;color:var(--danger);flex-shrink:0">${escapeHtml(c.chargeNumber)}</span>
+                <span class="badge badge-danger" style="font-size:0.7em">${escapeHtml(c.type)}</span>
+                <span class="badge ${chargeStatusColors[c.status] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(c.status || 'Aktiv')}</span>
+                <span style="margin-left:auto;font-size:0.75em;color:var(--text-secondary)">${new Date(c.date).toLocaleDateString('de-DE')}</span>
+            </div>`).join('')
+        : '<em style="color:var(--text-secondary);font-size:0.9em">Keine Anzeigen vorhanden</em>';
+
+    document.getElementById('citizenDetailContent').innerHTML = `
+        <div style="display:grid;gap:16px">
+            <div style="background:rgba(0,102,204,0.1);padding:16px;border-radius:8px;display:flex;align-items:center;gap:16px">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(0,102,204,0.25);display:flex;align-items:center;justify-content:center;font-size:1.6em;flex-shrink:0">🧑</div>
+                <div>
+                    <div style="font-size:1.2em;font-weight:700">${escapeHtml(citizen.name)}</div>
+                    <div style="margin-top:4px"><span class="badge ${citizenStatusClass}">${escapeHtml(citizen.status)}</span></div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-phone"></i> Telefon</div>
+                    <div style="font-weight:600">${escapeHtml(citizen.phone)}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-home"></i> Adresse</div>
+                    <div style="font-weight:600">${escapeHtml(citizen.address)}</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px">
+                <div style="flex:1;background:rgba(0,102,204,0.07);padding:10px;border-radius:6px;text-align:center">
+                    <div style="font-size:1.4em;font-weight:700;color:var(--info)">${linkedCitations.length}</div>
+                    <div style="font-size:0.75em;color:var(--text-secondary)"><i class="fas fa-gavel"></i> Strafakten</div>
+                </div>
+                <div style="flex:1;background:rgba(0,102,204,0.07);padding:10px;border-radius:6px;text-align:center">
+                    <div style="font-size:1.4em;font-weight:700;color:var(--danger)">${linkedCharges.length}</div>
+                    <div style="font-size:0.75em;color:var(--text-secondary)"><i class="fas fa-exclamation-triangle"></i> Anzeigen</div>
+                </div>
+                <div style="flex:1;background:rgba(0,102,204,0.07);padding:10px;border-radius:6px;text-align:center">
+                    <div style="font-size:1.4em;font-weight:700;color:var(--warning)">${linkedEvidence.length}</div>
+                    <div style="font-size:0.75em;color:var(--text-secondary)"><i class="fas fa-dna"></i> Beweismittel</div>
+                </div>
+            </div>
+            <div style="background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:8px;padding:14px">
+                <div style="font-size:0.75em;color:var(--secondary);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px"><i class="fas fa-gavel"></i> Strafakten</div>
+                ${citsHtml}
+            </div>
+            <div style="background:rgba(255,51,51,0.04);border:1px solid rgba(255,51,51,0.2);border-radius:8px;padding:14px">
+                <div style="font-size:0.75em;color:var(--danger);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px"><i class="fas fa-exclamation-triangle"></i> Anzeigen</div>
+                ${chgsHtml}
+            </div>
+        </div>`;
+
+    document.getElementById('citizenDetailModal').classList.add('show');
 }
 
 // ========== EVIDENCE ==========
@@ -1166,6 +1309,7 @@ function addCitation(e) {
         id: Date.now(),
         aktenzeichen: `CA-${Date.now().toString().slice(-6)}`,
         name: document.getElementById('citName').value,
+        citizenId: document.getElementById('citNameCitizenId').value ? Number(document.getElementById('citNameCitizenId').value) : null,
         type: document.getElementById('citType').value,
         status: (document.getElementById('citStatus') || {}).value || 'Offen',
         description: document.getElementById('citDesc').value,
@@ -1231,6 +1375,7 @@ function editCitation(id) {
         return;
     }
     document.getElementById('citName').value = c.name;
+    document.getElementById('citNameCitizenId').value = c.citizenId || '';
     document.getElementById('citType').value = c.type;
     document.getElementById('citDesc').value = c.description;
     document.getElementById('citOfficer').value = c.officer;
@@ -1240,6 +1385,7 @@ function editCitation(id) {
     document.getElementById('addCitationModal').querySelector('form').onsubmit = ((e) => {
         e.preventDefault();
         c.name = document.getElementById('citName').value;
+        c.citizenId = document.getElementById('citNameCitizenId').value ? Number(document.getElementById('citNameCitizenId').value) : (c.citizenId || null);
         c.type = document.getElementById('citType').value;
         c.description = document.getElementById('citDesc').value;
         c.officer = document.getElementById('citOfficer').value;
@@ -1280,6 +1426,7 @@ function addCharge(e) {
         id: Date.now(),
         chargeNumber: `AZ-${Date.now().toString().slice(-6)}`,
         name: document.getElementById('chargeName').value,
+        citizenId: document.getElementById('chargeNameCitizenId').value ? Number(document.getElementById('chargeNameCitizenId').value) : null,
         type: document.getElementById('chargeType').value,
         vergehen: vergehen,
         aktenzeichen: aktenzeichen,
@@ -1379,6 +1526,7 @@ function editCharge(id) {
     }
     populateChargeModal();
     document.getElementById('chargeName').value = c.name;
+    document.getElementById('chargeNameCitizenId').value = c.citizenId || '';
     document.getElementById('chargeType').value = c.type;
     document.getElementById('chargeDesc').value = c.description;
     document.getElementById('chargeOfficer').value = c.officer;
@@ -1394,6 +1542,7 @@ function editCharge(id) {
         e.preventDefault();
         const vergehen = getSelectedVergehen('chargeVergehen');
         c.name = document.getElementById('chargeName').value;
+        c.citizenId = document.getElementById('chargeNameCitizenId').value ? Number(document.getElementById('chargeNameCitizenId').value) : (c.citizenId || null);
         c.type = document.getElementById('chargeType').value;
         c.vergehen = vergehen;
         c.aktenzeichen = document.getElementById('chargeAktenzeichen').value;
@@ -1681,6 +1830,14 @@ function renderFallubersicht(filteredCitations, filteredCharges) {
         const chgs = charges.filter(c => c.name === name);
         const evs = database.evidence.filter(ev => cits.some(c => c.aktenzeichen === ev.citationAZ));
         const activeCount = chgs.filter(c => c.status === 'Aktiv').length;
+        // Find registered citizen by citizenId (from first linked record) or by name
+        const firstCitWithId = cits.find(c => c.citizenId) || chgs.find(c => c.citizenId);
+        const registeredCitizen = firstCitWithId
+            ? database.citizens.find(cz => cz.id === firstCitWithId.citizenId)
+            : database.citizens.find(cz => cz.name === name);
+        const citizenBtn = registeredCitizen
+            ? `<button class="btn btn-small btn-primary" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCitizen(${registeredCitizen.id})" title="Bürgerakte öffnen" style="font-size:0.75em;padding:2px 8px"><i class="fas fa-user-shield"></i> Bürgerakte</button>`
+            : '';
         const citsHtml = cits.map(c => {
             const cStatus = c.status || 'Offen';
             return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,102,204,0.1);cursor:pointer" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCitationDetail(${c.id})">
@@ -1704,6 +1861,7 @@ function renderFallubersicht(filteredCitations, filteredCharges) {
                 <i class="fas fa-user-shield" style="color:var(--secondary)"></i>
                 <strong style="font-size:1em">${escapeHtml(name)}</strong>
                 ${activeCount > 0 ? `<span class="badge badge-danger">${activeCount} aktive Anzeige${activeCount !== 1 ? 'n' : ''}</span>` : ''}
+                ${citizenBtn}
                 <div style="margin-left:auto;display:flex;gap:8px;font-size:0.8em;color:var(--text-secondary)">
                     <span title="Strafakten"><i class="fas fa-gavel"></i> ${cits.length}</span>
                     <span title="Anzeigen"><i class="fas fa-exclamation-triangle"></i> ${chgs.length}</span>
