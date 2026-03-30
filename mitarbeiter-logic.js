@@ -1676,8 +1676,8 @@ function handlePressImageFile(event) {
         document.getElementById('pressImage').value = dataUrl;
         document.getElementById('pressImagePreview').innerHTML =
             '<div style="position:relative;display:inline-block;margin-top:4px">' +
-            '<img src="' + dataUrl + '" style="max-width:100%;max-height:150px;border-radius:6px;border:1px solid rgba(0,102,204,0.3);display:block">' +
-            '<button type="button" onclick="removePressImage()" style="position:absolute;top:4px;right:4px;background:rgba(255,51,51,0.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>' +
+            '<img src="' + dataUrl + '" alt="Bildvorschau" style="max-width:100%;max-height:150px;border-radius:6px;border:1px solid rgba(0,102,204,0.3);display:block">' +
+            '<button type="button" onclick="removePressImage()" aria-label="Bild entfernen" style="position:absolute;top:4px;right:4px;background:rgba(255,51,51,0.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>' +
             '</div>';
     }).catch(function() {
         showToast('⚠️ Fehler', 'Bild konnte nicht verarbeitet werden', 'error');
@@ -1743,8 +1743,8 @@ function editPressArticle(id) {
     if (p.image) {
         preview.innerHTML =
             '<div style="position:relative;display:inline-block;margin-top:4px">' +
-            '<img src="' + escapeHtml(p.image) + '" style="max-width:100%;max-height:150px;border-radius:6px;border:1px solid rgba(0,102,204,0.3);display:block">' +
-            '<button type="button" onclick="removePressImage()" style="position:absolute;top:4px;right:4px;background:rgba(255,51,51,0.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>' +
+            '<img src="' + escapeHtml(p.image) + '" alt="Bildvorschau" style="max-width:100%;max-height:150px;border-radius:6px;border:1px solid rgba(0,102,204,0.3);display:block">' +
+            '<button type="button" onclick="removePressImage()" aria-label="Bild entfernen" style="position:absolute;top:4px;right:4px;background:rgba(255,51,51,0.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>' +
             '</div>';
     } else {
         preview.innerHTML = '';
