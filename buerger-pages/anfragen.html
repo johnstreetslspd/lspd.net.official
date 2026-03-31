@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - Anfragen & Beschwerden</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../buerger-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../buerger-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield"></i> LSPD BÜRGERDIENSTE</div>
+<div class="header-nav">
+<a href="../bürger-portal.html"><i class="fas fa-arrow-left"></i> Zurück</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+</div>
+</div>
+</div>
+<h1>📧 Anfragen & Beschwerden</h1>
+<p>Stellen Sie Ihre Anfrage an die LSPD</p>
+</header>
+
+<div class="container">
+<div class="content-card">
+<h2 style="color:var(--secondary);margin-bottom:20px">📧 Neue Anfrage einreichen</h2>
+<form onsubmit="submitRequest(event)">
+<div class="form-group">
+    <label>Name</label>
+    <input type="text" id="reqName" required>
+</div>
+<div class="form-group">
+    <label>E-Mail</label>
+    <input type="email" id="reqEmail" required>
+</div>
+<div class="form-group">
+    <label>Betreff</label>
+    <input type="text" id="reqSubject" required>
+</div>
+<div class="form-group">
+    <label>Nachricht</label>
+    <textarea id="reqMessage" required></textarea>
+</div>
+<button type="submit" class="btn btn-success" style="width:100%">✅ Anfrage absenden</button>
+</form>
+</div>
+
+<div class="section-title" style="font-size:1.4em;margin-top:40px">📋 Eingereichte Anfragen</div>
+<div class="table-container">
+<table>
+<thead><tr><th>Anfrage ID</th><th>Betreff</th><th>Status</th><th>Datum</th></tr></thead>
+<tbody id="requestsTableBody">
+<tr><td colspan="4" style="text-align:center;padding:40px;">Laden...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<script>
+function submitRequest(e) {
+    e.preventDefault();
+    const id = 'REQ-' + Date.now().toString().slice(-6);
+    const req = {
+        id: id,
+        name: document.getElementById('reqName').value,
+        email: document.getElementById('reqEmail').value,
+        subject: document.getElementById('reqSubject').value,
+        message: document.getElementById('reqMessage').value,
+        status: 'Eingereicht',
+        date: new Date().toISOString()
+    };
+    database.requests.push(req);
+    saveDatabase();
+    showToast('✅ Erfolg!', 'Anfrage eingereicht. Sie erhalten in Kürze eine Antwort.', 'success');
+    renderRequestsTable();
+    e.target.reset();
+}
+
+function renderRequestsTable() {
+    const tbody = document.getElementById('requestsTableBody');
+    if (!tbody) return;
+    const reqs = database.requests || [];
+    if (reqs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-secondary);">Keine Anfragen vorhanden</td></tr>';
+        return;
+    }
+    tbody.innerHTML = [...reqs].reverse().map(r => '<tr>' +
+        '<td>' + escapeHtml(r.id || '') + '</td>' +
+        '<td>' + escapeHtml(r.subject || '') + '</td>' +
+        '<td><span class="badge badge-' + (r.status === 'Eingereicht' ? 'warning' : r.status === 'Beantwortet' ? 'success' : 'danger') + '">' + escapeHtml(r.status || '') + '</span></td>' +
+        '<td>' + (r.date ? new Date(r.date).toLocaleDateString('de-DE') : '') + '</td>' +
+        '</tr>').join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initBuergerApp(() => {
+            renderRequestsTable();
+        });
+    }, 200);
+});
+</script>
+</body>
+</html>

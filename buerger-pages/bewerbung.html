@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - Online Bewerbung</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../buerger-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../buerger-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield"></i> LSPD BÜRGERDIENSTE</div>
+<div class="header-nav">
+<a href="../bürger-portal.html"><i class="fas fa-arrow-left"></i> Zurück</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+</div>
+</div>
+</div>
+<h1>📝 Online Bewerbung</h1>
+<p>Bewerben Sie sich einfach online bei der LSPD</p>
+</header>
+
+<div class="container">
+<div class="content-card">
+<h2 style="color:var(--secondary);margin-bottom:20px">📝 Neue Bewerbung einreichen</h2>
+<form onsubmit="submitApplication(event)">
+<div class="form-group">
+    <label>Vollständiger Name</label>
+    <input type="text" id="appName" required>
+</div>
+<div class="form-group">
+    <label>E-Mail Adresse</label>
+    <input type="email" id="appEmail" required>
+</div>
+<div class="form-group">
+    <label>Telefonnummer</label>
+    <input type="tel" id="appPhone" required>
+</div>
+<div class="form-group">
+    <label>Bildungsgrad</label>
+    <input type="text" id="appEducation" placeholder="z.B. Abitur, Bachelor" required>
+</div>
+<div class="form-group">
+    <label>Erfahrung</label>
+    <textarea id="appExperience" placeholder="Ihre bisherige Erfahrung..." required></textarea>
+</div>
+<button type="submit" class="btn btn-success" style="width:100%">✅ Bewerbung absenden</button>
+</form>
+</div>
+
+<div class="section-title" style="font-size:1.4em;margin-top:40px">📋 Eingereichte Bewerbungen</div>
+<div class="table-container">
+<table>
+<thead><tr><th>Application Code</th><th>Name</th><th>Status</th><th>Eingereicht</th></tr></thead>
+<tbody id="applicationsTableBody">
+<tr><td colspan="4" style="text-align:center;padding:40px;">Laden...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<script>
+function submitApplication(e) {
+    e.preventDefault();
+    const code = 'APP-' + new Date().toISOString().split('T')[0].replace(/-/g, '') + '-' +
+                 Math.random().toString(36).substring(2, 8).toUpperCase();
+    const app = {
+        id: Date.now(),
+        code: code,
+        name: document.getElementById('appName').value,
+        email: document.getElementById('appEmail').value,
+        phone: document.getElementById('appPhone').value,
+        education: document.getElementById('appEducation').value,
+        experience: document.getElementById('appExperience').value,
+        status: 'Eingereicht',
+        date: new Date().toISOString()
+    };
+    database.applications.push(app);
+    saveDatabase();
+    showToast('✅ Erfolg!', 'Bewerbung eingereicht. Code: ' + code, 'success');
+    renderApplicationsTable();
+    e.target.reset();
+}
+
+function renderApplicationsTable() {
+    const tbody = document.getElementById('applicationsTableBody');
+    if (!tbody) return;
+    const apps = database.applications || [];
+    if (apps.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-secondary);">Keine Bewerbungen vorhanden</td></tr>';
+        return;
+    }
+    tbody.innerHTML = [...apps].reverse().map(a => '<tr>' +
+        '<td>' + escapeHtml(a.code || '') + '</td>' +
+        '<td>' + escapeHtml(a.name || '') + '</td>' +
+        '<td><span class="badge badge-' + (a.status === 'Eingereicht' ? 'warning' : a.status === 'Angenommen' ? 'success' : 'danger') + '">' + escapeHtml(a.status || '') + '</span></td>' +
+        '<td>' + (a.date ? new Date(a.date).toLocaleDateString('de-DE') : '') + '</td>' +
+        '</tr>').join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initBuergerApp(() => {
+            renderApplicationsTable();
+        });
+    }, 200);
+});
+</script>
+</body>
+</html>

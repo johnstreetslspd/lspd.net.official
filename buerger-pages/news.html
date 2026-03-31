@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - News & Nachrichten</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../buerger-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../buerger-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield"></i> LSPD BÜRGERDIENSTE</div>
+<div class="header-nav">
+<a href="../bürger-portal.html"><i class="fas fa-arrow-left"></i> Zurück</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+</div>
+</div>
+</div>
+<h1>📰 News & Nachrichten</h1>
+<p>Aktuelle Meldungen der LSPD</p>
+</header>
+
+<div class="container">
+<div id="newsContent">
+<p style="text-align:center;color:var(--text-secondary);padding:40px">Laden...</p>
+</div>
+</div>
+
+<script>
+function displayNews() {
+    const newsDiv = document.getElementById('newsContent');
+    const articles = [...(database.press || [])].sort((a, b) => new Date(b.date) - new Date(a.date));
+    if (articles.length === 0) {
+        newsDiv.innerHTML = '<div class="content-card"><p style="text-align:center;color:var(--text-secondary);">Keine News vorhanden</p></div>';
+        return;
+    }
+
+    newsDiv.innerHTML = articles.map(p =>
+        '<div class="content-card" style="margin-bottom:20px">' +
+        (p.image ? '<img src="' + escapeHtml(p.image) + '" alt="' + escapeHtml(p.title) + '" style="width:100%;max-height:240px;object-fit:cover;display:block;border-radius:8px;margin-bottom:16px">' : '') +
+        '<h3 style="color:var(--secondary);margin-bottom:6px">' + escapeHtml(p.title) + '</h3>' +
+        (p.subtitle ? '<p style="color:rgba(255,255,255,0.7);font-size:0.9em;margin-bottom:10px">' + escapeHtml(p.subtitle) + '</p>' : '') +
+        '<p style="color:var(--text-secondary);line-height:1.6;margin-bottom:12px">' + escapeHtml(p.content) + '</p>' +
+        '<p style="font-size:0.85em;color:rgba(255,255,255,0.5)">' +
+        (p.author ? '<i class="fas fa-user-circle"></i> ' + escapeHtml(p.author) + ' &nbsp;' : '') +
+        '<i class="fas fa-calendar"></i> ' + new Date(p.date).toLocaleDateString('de-DE') +
+        '</p></div>'
+    ).join('');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initBuergerApp(() => {
+            displayNews();
+        });
+    }, 200);
+});
+</script>
+</body>
+</html>
