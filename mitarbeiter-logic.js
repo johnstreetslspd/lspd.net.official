@@ -119,13 +119,12 @@ function handleLogin(e) {
 }
 
 function loginSuccess() {
-    if (currentUser.stayLoggedIn) {
-        localStorage.setItem(SESSION_KEY, JSON.stringify({
-            username: currentUser.username,
-            role: currentUser.role,
-            expires: Date.now() + SESSION_TTL_MS
-        }));
-    }
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+        username: currentUser.username,
+        role: currentUser.role,
+        expires: Date.now() + SESSION_TTL_MS,
+        stayLoggedIn: !!currentUser.stayLoggedIn
+    }));
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
     document.getElementById('currentUser').textContent = currentUser.username;
@@ -146,13 +145,12 @@ function loginSuccess() {
             // Rolle aus aktuellen Firestore-Daten übernehmen (könnte sich geändert haben)
             currentUser.role = freshUser.role;
             // Sitzung mit aktualisierten Daten und erneuerter TTL speichern
-            if (currentUser.stayLoggedIn) {
-                localStorage.setItem(SESSION_KEY, JSON.stringify({
-                    username: currentUser.username,
-                    role: currentUser.role,
-                    expires: Date.now() + SESSION_TTL_MS
-                }));
-            }
+            localStorage.setItem(SESSION_KEY, JSON.stringify({
+                username: currentUser.username,
+                role: currentUser.role,
+                expires: Date.now() + SESSION_TTL_MS,
+                stayLoggedIn: !!currentUser.stayLoggedIn
+            }));
             document.getElementById('userRole').textContent = `(${currentUser.role})`;
             filterDashboardCards();
             updateCounts();
@@ -198,7 +196,7 @@ function tryAutoLogin() {
             if (session && session.username && session.role && session.expires && Date.now() < session.expires) {
                 // Sitzungsdaten vertrauen – Firestore-Daten werden erst nach dem Login geladen.
                 // Die Validierung des Nutzers erfolgt in loginSuccess() nach dem Laden.
-                currentUser = { username: session.username, role: session.role, stayLoggedIn: true };
+                currentUser = { username: session.username, role: session.role, stayLoggedIn: !!session.stayLoggedIn };
                 loginSuccess();
                 return true;
             }
@@ -2756,7 +2754,7 @@ function initSubPage(initCallback) {
             window.location.href = getPortalUrl();
             return;
         }
-        currentUser = { username: session.username, role: session.role, stayLoggedIn: true };
+        currentUser = { username: session.username, role: session.role, stayLoggedIn: !!session.stayLoggedIn };
 
         // Header aktualisieren
         const userEl = document.getElementById('currentUser');

@@ -228,6 +228,13 @@
             line-height: 1.6;
         }
 
+        .card-count {
+            font-size: 1.6em;
+            font-weight: 900;
+            color: var(--info);
+            margin-bottom: 6px;
+        }
+
         .card-actions {
             display: flex;
             gap: 10px;
@@ -318,9 +325,14 @@
             color: var(--success);
         }
 
-        .badge-pending {
+        .badge-pending, .badge-warning {
             background: rgba(255, 170, 0, 0.2);
             color: var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(255, 51, 51, 0.2);
+            color: var(--danger);
         }
 
         /* MODAL */
@@ -595,6 +607,7 @@
             <div class="card">
                 <div class="card-icon"><i class="fas fa-file-alt"></i></div>
                 <div class="card-title">📝 Online Bewerbungen</div>
+                <div class="card-count" id="applicationsCount">0</div>
                 <div class="card-subtitle">Bewerben Sie sich einfach online bei der LSPD</div>
                 <div class="card-actions">
                     <button class="btn btn-success btn-small" onclick="openModal('application')">➕ Neue Bewerbung</button>
@@ -615,6 +628,7 @@
             <div class="card">
                 <div class="card-icon"><i class="fas fa-envelope"></i></div>
                 <div class="card-title">📧 Anfragen & Beschwerden</div>
+                <div class="card-count" id="requestsCount">0</div>
                 <div class="card-subtitle">Stellen Sie Ihre Anfrage an die LSPD</div>
                 <div class="card-actions">
                     <button class="btn btn-success btn-small" onclick="openModal('request')">➕ Neue Anfrage</button>
@@ -656,6 +670,7 @@
             <div class="card">
                 <div class="card-icon"><i class="fas fa-gavel"></i></div>
                 <div class="card-title">⚖️ Strafanzeige stellen</div>
+                <div class="card-count" id="chargesCount">0</div>
                 <div class="card-subtitle">Erstatten Sie eine Anzeige gegen eine Person</div>
                 <div class="card-actions">
                     <button class="btn btn-success btn-small" onclick="openModal('strafanzeige')">➕ Anzeige erstatten</button>
@@ -663,9 +678,14 @@
             </div>
         </div>
 
+        <!-- OVERVIEW STATISTICS -->
+        <div class="section-title"><i class="fas fa-chart-line"></i> Übersicht</div>
+        <div id="overviewStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+        </div>
+
         <!-- APPLICATIONS TABLE -->
-        <div id="applicationsSection" class="hidden">
-            <div class="section-title">📝 Ihre Bewerbungen</div>
+        <div id="applicationsSection">
+            <div class="section-title">📝 Eingereichte Bewerbungen</div>
             <div class="table-container">
                 <table id="applicationsTable">
                     <thead>
@@ -674,19 +694,18 @@
                             <th>Name</th>
                             <th>Status</th>
                             <th>Eingereicht</th>
-                            <th>Aktionen</th>
                         </tr>
                     </thead>
                     <tbody id="applicationsTableBody">
-                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Laden...</td></tr>
+                        <tr><td colspan="4" style="text-align: center; padding: 40px;">Laden...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
         <!-- REQUESTS TABLE -->
-        <div id="requestsSection" class="hidden">
-            <div class="section-title">📧 Ihre Anfragen</div>
+        <div id="requestsSection">
+            <div class="section-title">📧 Eingereichte Anfragen</div>
             <div class="table-container">
                 <table id="requestsTable">
                     <thead>
@@ -695,11 +714,10 @@
                             <th>Betreff</th>
                             <th>Status</th>
                             <th>Datum</th>
-                            <th>Aktionen</th>
                         </tr>
                     </thead>
                     <tbody id="requestsTableBody">
-                        <tr><td colspan="5" style="text-align: center; padding: 40px;">Laden...</td></tr>
+                        <tr><td colspan="4" style="text-align: center; padding: 40px;">Laden...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1042,9 +1060,86 @@
         }
 
         // UPDATE COUNTERS
+        function updateCounts() {
+            const newsEl = document.getElementById('newsCount');
+            if (newsEl) newsEl.textContent = (database.press || []).length;
+
+            const appEl = document.getElementById('applicationsCount');
+            if (appEl) appEl.textContent = (database.applications || []).length;
+
+            const reqEl = document.getElementById('requestsCount');
+            if (reqEl) reqEl.textContent = (database.requests || []).length;
+
+            const chargeEl = document.getElementById('chargesCount');
+            if (chargeEl) chargeEl.textContent = (database.charges || []).filter(c => c.source === 'citizen').length;
+
+            renderOverviewStats();
+            renderApplicationsTable();
+            renderRequestsTable();
+        }
+
         function updateNewsCount() {
-            const el = document.getElementById('newsCount');
-            if (el) el.textContent = (database.press || []).length;
+            updateCounts();
+        }
+
+        // OVERVIEW STATS
+        function renderOverviewStats() {
+            const statsEl = document.getElementById('overviewStats');
+            if (!statsEl) return;
+            const appCount = (database.applications || []).length;
+            const reqCount = (database.requests || []).length;
+            const chargeCount = (database.charges || []).filter(c => c.source === 'citizen').length;
+            const newsCount = (database.press || []).length;
+
+            statsEl.innerHTML = [
+                { label: 'Bewerbungen', count: appCount, icon: 'fa-file-alt', color: 'var(--success)' },
+                { label: 'Anfragen', count: reqCount, icon: 'fa-envelope', color: 'var(--info)' },
+                { label: 'Anzeigen', count: chargeCount, icon: 'fa-gavel', color: 'var(--warning)' },
+                { label: 'News', count: newsCount, icon: 'fa-newspaper', color: 'var(--primary-bright)' }
+            ].map(s => `
+                <div style="background:var(--card-bg);border:1px solid rgba(0,102,204,0.3);border-radius:10px;padding:16px;text-align:center;">
+                    <i class="fas ${s.icon}" style="font-size:1.4em;color:${s.color};margin-bottom:6px;display:block;"></i>
+                    <div style="font-size:1.6em;font-weight:700;color:${s.color};">${s.count}</div>
+                    <div style="font-size:0.85em;color:var(--text-secondary);">${s.label}</div>
+                </div>
+            `).join('');
+        }
+
+        // TABLE RENDERING
+        function renderApplicationsTable() {
+            const tbody = document.getElementById('applicationsTableBody');
+            if (!tbody) return;
+            const apps = database.applications || [];
+            if (apps.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-secondary);">Keine Bewerbungen vorhanden</td></tr>';
+                return;
+            }
+            tbody.innerHTML = [...apps].reverse().map(a => `
+                <tr>
+                    <td>${escapeHtml(a.code || '')}</td>
+                    <td>${escapeHtml(a.name || '')}</td>
+                    <td><span class="badge badge-${a.status === 'Eingereicht' ? 'warning' : a.status === 'Angenommen' ? 'success' : 'danger'}">${escapeHtml(a.status || '')}</span></td>
+                    <td>${a.date ? new Date(a.date).toLocaleDateString('de-DE') : ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderRequestsTable() {
+            const tbody = document.getElementById('requestsTableBody');
+            if (!tbody) return;
+            const reqs = database.requests || [];
+            if (reqs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-secondary);">Keine Anfragen vorhanden</td></tr>';
+                return;
+            }
+            tbody.innerHTML = [...reqs].reverse().map(r => `
+                <tr>
+                    <td>${escapeHtml(r.id || '')}</td>
+                    <td>${escapeHtml(r.subject || '')}</td>
+                    <td><span class="badge badge-${r.status === 'Eingereicht' ? 'warning' : r.status === 'Beantwortet' ? 'success' : 'danger'}">${escapeHtml(r.status || '')}</span></td>
+                    <td>${r.date ? new Date(r.date).toLocaleDateString('de-DE') : ''}</td>
+                </tr>
+            `).join('');
         }
 
         // APPLICATIONS
@@ -1069,6 +1164,7 @@
             saveDatabase();
             closeModal('application');
             showToast('✅ Erfolg!', `Bewerbung eingereicht. Code: ${code}`, 'success');
+            updateCounts();
             e.target.reset();
         }
 
@@ -1125,6 +1221,7 @@
             saveDatabase();
             closeModal('request');
             showToast('✅ Erfolg!', 'Anfrage eingereicht. Sie erhalten in Kürze eine Antwort.', 'success');
+            updateCounts();
             e.target.reset();
         }
 
@@ -1151,6 +1248,7 @@
             saveDatabase();
             closeModal('strafanzeige');
             showToast('✅ Anzeige erstattet', `Ihre Anzeige wurde eingereicht. Aktenzeichen: ${nr}`, 'success');
+            updateCounts();
             e.target.reset();
         }
 
