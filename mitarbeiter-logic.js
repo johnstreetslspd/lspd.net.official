@@ -1637,6 +1637,59 @@ function editCharge(id) {
 }
 
 // ========== PRESS ARTICLES ==========
+function compressPressImage(file) {
+    return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = new Image();
+            img.onload = function() {
+                var canvas = document.createElement('canvas');
+                var maxW = 800, maxH = 600;
+                var w = img.width, h = img.height;
+                if (w > maxW || h > maxH) {
+                    var ratio = Math.min(maxW / w, maxH / h);
+                    w = Math.round(w * ratio);
+                    h = Math.round(h * ratio);
+                }
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+            img.onerror = function() { reject(new Error('Bild konnte nicht geladen werden')); };
+            img.src = e.target.result;
+        };
+        reader.onerror = function() { reject(new Error('Datei konnte nicht gelesen werden')); };
+        reader.readAsDataURL(file);
+    });
+}
+
+function handlePressImageFile(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+        showToast('⚠️ Bild zu groß', 'Maximal 2MB erlaubt', 'error');
+        event.target.value = '';
+        return;
+    }
+    compressPressImage(file).then(function(dataUrl) {
+        document.getElementById('pressImage').value = dataUrl;
+        document.getElementById('pressImagePreview').innerHTML =
+            '<div style="position:relative;display:inline-block;margin-top:4px">' +
+            '<img src="' + dataUrl + '" alt="Bildvorschau" style="max-width:100%;max-height:150px;border-radius:6px;border:1px solid rgba(0,102,204,0.3);display:block">' +
+            '<button type="button" onclick="removePressImage()" aria-label="Bild entfernen" style="position:absolute;top:4px;right:4px;background:rgba(255,51,51,0.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>' +
+            '</div>';
+    }).catch(function() {
+        showToast('⚠️ Fehler', 'Bild konnte nicht verarbeitet werden', 'error');
+    });
+}
+
+function removePressImage() {
+    document.getElementById('pressImage').value = '';
+    document.getElementById('pressImageFile').value = '';
+    document.getElementById('pressImagePreview').innerHTML = '';
+}
+
 function addPressArticle(e) {
     e.preventDefault();
     const p = {
@@ -1654,6 +1707,7 @@ function addPressArticle(e) {
     saveDatabase();
     closeModal('addPress');
     document.getElementById('addPressModal').querySelector('form').reset();
+    document.getElementById('pressImagePreview').innerHTML = '';
     showToast('✅ Nachricht veröffentlicht', p.title, 'success');
     updateCounts();
     renderPressArticles();
@@ -1681,8 +1735,20 @@ function editPressArticle(id) {
     document.getElementById('pressTitle').value = p.title;
     document.getElementById('pressSubtitle').value = p.subtitle;
     document.getElementById('pressContent').value = p.content;
-    document.getElementById('pressImage').value = p.image;
+    document.getElementById('pressImage').value = p.image || '';
     document.getElementById('pressAuthor').value = p.author;
+    
+    // Show existing image preview
+    var preview = document.getElementById('pressImagePreview');
+    if (p.image) {
+        preview.innerHTML =
+            '<div style="position:relative;display:inline-block;margin-top:4px">' +
+            '<img src="' + escapeHtml(p.image) + '" alt="Bildvorschau" style="max-width:100%;max-height:150px;border-radius:6px;border:1px solid rgba(0,102,204,0.3);display:block">' +
+            '<button type="button" onclick="removePressImage()" aria-label="Bild entfernen" style="position:absolute;top:4px;right:4px;background:rgba(255,51,51,0.8);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">×</button>' +
+            '</div>';
+    } else {
+        preview.innerHTML = '';
+    }
     
     const pressForm = document.getElementById('addPressModal').querySelector('form');
     const originalPressOnsubmit = pressForm.onsubmit;
@@ -1696,6 +1762,7 @@ function editPressArticle(id) {
         saveDatabase();
         closeModal('addPress');
         pressForm.reset();
+        document.getElementById('pressImagePreview').innerHTML = '';
         pressForm.onsubmit = originalPressOnsubmit;
         showToast('✅ Nachricht aktualisiert', p.title, 'success');
         renderPressArticles();

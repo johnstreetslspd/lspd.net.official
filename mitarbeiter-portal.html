@@ -513,7 +513,7 @@
 <div class="form-group"><label>Titel (Headline)</label><input type="text" id="pressTitle" required></div>
 <div class="form-group"><label>Untertitel</label><input type="text" id="pressSubtitle" placeholder="z.B. Polizei meldet..."></div>
 <div class="form-group"><label>Inhalt</label><textarea id="pressContent" required style="min-height:120px"></textarea></div>
-<div class="form-group"><label>Bild-URL (Discord/Web)</label><input type="url" id="pressImage" placeholder="https://..." ></div>
+<div class="form-group"><label>Bild hochladen</label><input type="file" id="pressImageFile" accept="image/*" onchange="handlePressImageFile(event)" style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:6px;width:100%;cursor:pointer"><input type="hidden" id="pressImage"><div id="pressImagePreview" style="margin-top:8px"></div><small style="color:var(--text-secondary);font-size:0.8em">Bild wird dauerhaft gespeichert (max. 2MB, wird automatisch komprimiert)</small></div>
 <div class="form-group"><label>Autor</label><input type="text" id="pressAuthor" required placeholder="Name des Beamten"></div>
 <button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Veröffentlichen</button>
 </form>
