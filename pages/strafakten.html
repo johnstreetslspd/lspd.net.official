@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - Strafakten</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../shared-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../db.js"></script>
+<script src="../mitarbeiter-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+<nav class="header-nav">
+<a href="../mitarbeiter-portal.html"><i class="fas fa-arrow-left"></i> Dashboard</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i></a>
+</nav>
+</div>
+<div class="header-right">
+<div class="user-info">
+<div style="color:var(--secondary);font-weight:700;font-size:0.9em" id="currentUser">-</div>
+<div class="user-role" id="userRole">-</div>
+</div>
+<button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</div>
+<h1>Strafakten</h1>
+<p>Strafakten erstellen, bearbeiten und verwalten</p>
+</header>
+
+<div class="container">
+<div class="page-toolbar">
+  <div class="search-box">
+    <i class="fas fa-search" style="color:var(--secondary)"></i>
+    <input type="text" id="citationsModalSearch" placeholder="Nach AZ oder Bürger suchen..." oninput="filterCitationsModal()">
+  </div>
+  <button class="btn btn-success" onclick="openModal('addCitation')"><i class="fas fa-plus"></i> Strafakte erstellen</button>
+</div>
+<div class="table-container">
+  <table>
+    <thead><tr><th>AZ</th><th>Bürger</th><th>Art</th><th>Status</th><th>Beamte</th><th>Datum</th><th>Aktion</th></tr></thead>
+    <tbody id="citationsViewTableBody"></tbody>
+  </table>
+</div>
+</div>
+
+<div id="addCitationModal" class="modal">
+<div class="modal-content">
+<div class="modal-header"><h2>Strafakte erstellen</h2><button class="modal-close" onclick="closeModal('addCitation')">×</button></div>
+<form onsubmit="addCitation(event)">
+<div class="form-group"><label>Bürger Name</label><div style="position:relative"><input type="text" id="citName" required autocomplete="off" oninput="showCitizenSuggestions(this,'citNameDropdown','citNameCitizenId')" onblur="setTimeout(()=>{const d=document.getElementById('citNameDropdown');if(d)d.style.display='none';},180)" placeholder="Name eingeben oder tippen…"><input type="hidden" id="citNameCitizenId"><div id="citNameDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(10,20,45,0.98);border:1px solid rgba(0,102,204,0.4);border-top:none;border-radius:0 0 6px 6px;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.4)"></div></div></div>
+<div class="form-group"><label>Strafart</label><select id="citType" required><option>Verwarnung</option><option>Ordnungswidrigkeit</option><option>Vergehen</option><option>Verbrechen</option></select></div>
+<div class="form-group"><label>Status</label><select id="citStatus"><option value="Offen">Offen</option><option value="In Bearbeitung">In Bearbeitung</option><option value="Abgeschlossen">Abgeschlossen</option><option value="Archiviert">Archiviert</option></select></div>
+<div class="form-group"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><label for="citDesc">Beschreibung</label><button type="button" class="btn btn-small" onclick="improveTextLegal('citDesc')" title="Text rechtssicherer formulieren" style="font-size:0.8em;padding:2px 8px">🤖 KI verbessern</button></div><textarea id="citDesc" required></textarea></div>
+<div class="form-group"><label>Beamte(r)</label><input type="text" id="citOfficer" required></div>
+<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
+</form>
+</div>
+</div>
+
+<div id="citationDetailModal" class="modal">
+<div class="modal-content" style="max-width:750px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-gavel"></i> Strafakte – Details</h2><button class="modal-close" onclick="document.getElementById('citationDetailModal').classList.remove('show')">×</button></div>
+<div id="citationDetailContent" style="padding:10px 0"></div>
+</div>
+</div>
+
+<div id="kiImproveModal" class="modal">
+<div class="modal-content" style="max-width:600px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2>🤖 KI Text verbessern</h2><button class="modal-close" onclick="document.getElementById('kiImproveModal').classList.remove('show')">×</button></div>
+<div class="form-group"><label>Vergehen auswählen (optional, Mehrfachauswahl):</label><div id="kiImproveVergehen" style="display:flex;flex-wrap:wrap;gap:2px;padding:8px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px;min-height:40px"></div></div>
+<div class="form-group"><label>Vorschau:</label><div id="kiImprovePreview" style="white-space:pre-wrap;background:rgba(0,102,204,0.07);border:1px solid rgba(0,102,204,0.2);border-radius:4px;padding:10px;font-size:0.9em;min-height:60px;color:var(--text-primary)"></div></div>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button type="button" class="btn btn-success" onclick="applyKiImprovement()" style="flex:1">✅ Anwenden</button>
+<button type="button" class="btn" onclick="document.getElementById('kiImproveModal').classList.remove('show')" style="flex:1;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">Abbrechen</button>
+</div>
+</div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initSubPage(() => {
+            renderCitationsView();
+        });
+        subPageRefreshCallback = () => { renderCitationsView(); };
+    }, 1000);
+});
+window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.classList.remove('show'); };
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LSPD Mitarbeiterportal</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<style>:root{--primary:#0066cc;--primary-bright:#0088ff;--primary-dark:#004a99;--secondary:#00ff88;--dark:#0a0e27;--darkler:#050812;--card-bg:rgba(15,25,50,0.7);--text-primary:#fff;--text-secondary:#b0b8d0;--success:#00ff88;--warning:#ffaa00;--danger:#ff3333;--info:#00ddff}*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--dark) 0%,var(--darkler) 100%);color:var(--text-primary);overflow-x:hidden}body{background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.03) 2px,rgba(0,255,136,0.03) 4px),repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(0,255,136,0.03) 2px,rgba(0,255,136,0.03) 4px);animation:scanLines 8s linear infinite}@keyframes scanLines{0%{background-position:0 0}100%{background-position:0 10px}}@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes fadeIn{from{opacity:0}to{opacity:1}}header{background:linear-gradient(90deg,var(--dark) 0%,var(--primary-dark) 50%,var(--dark) 100%);padding:20px 16px;text-align:center;border-bottom:2px solid var(--primary);box-shadow:0 0 30px rgba(0,102,204,0.3);animation:headerGlow 3s ease-in-out infinite;position:sticky;top:0;z-index:100}@keyframes headerGlow{0%,100%{box-shadow:0 0 30px rgba(0,102,204,0.3)}50%{box-shadow:0 0 50px rgba(0,136,255,0.5)}}.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px}.header-left{display:flex;gap:15px;align-items:center;flex-wrap:wrap}.logo{font-size:1.5em;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}.header-nav{display:flex;gap:8px;flex-wrap:wrap}.header-nav a{background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-secondary);padding:6px 12px;border-radius:6px;text-decoration:none;font-size:0.8em;cursor:pointer;transition:all 0.3s;white-space:nowrap}.header-nav a:hover{background:rgba(0,102,204,0.25);border-color:var(--secondary);color:var(--secondary)}.header-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.user-info{text-align:right;font-size:0.9em}.user-role{font-size:0.8em;color:var(--text-secondary)}.logout-btn{background:var(--danger);color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;transition:all 0.3s;font-size:0.8em}.logout-btn:hover{transform:translateY(-2px);box-shadow:0 0 15px rgba(255,51,51,0.3)}header h1{font-size:1.3em;margin:10px 0 5px;color:var(--text-secondary)}header p{color:var(--text-secondary);font-size:0.75em}.login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}.login-box{background:var(--card-bg);backdrop-filter:blur(20px);border:1px solid rgba(0,102,204,0.3);border-radius:12px;padding:24px;max-width:400px;width:100%;animation:slideIn 0.6s}.login-logo{font-size:2.2em;font-weight:900;margin-bottom:16px;text-align:center;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}.form-group{margin-bottom:15px}.form-group label{display:block;margin-bottom:6px;color:var(--text-secondary);font-weight:600;font-size:0.85em}.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);border-radius:6px;color:var(--text-primary);font-size:0.95em;font-family:inherit;transition:all 0.3s}.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:0;background:rgba(0,102,204,0.2);border-color:var(--primary-bright);box-shadow:0 0 10px rgba(0,102,204,0.3)}.form-group select{cursor:pointer}.form-group select option{background:var(--dark);color:var(--text-primary)}.form-group textarea{min-height:80px;resize:vertical}.login-btn{width:100%;padding:12px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;transition:all 0.3s;font-size:0.95em;margin-top:10px}.login-btn:hover{box-shadow:0 0 20px rgba(0,102,204,0.5);transform:translateY(-2px)}.login-error{background:rgba(255,51,51,0.2);color:var(--danger);padding:10px;border-radius:6px;margin-bottom:15px;display:none;font-size:0.9em}.container{max-width:1400px;margin:0 auto;padding:20px 16px;animation:fadeIn 0.6s}.section-title{font-size:1.5em;font-weight:900;margin:20px 0 15px;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;display:flex;align-items:center;gap:10px}.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:20px}.card{background:var(--card-bg);backdrop-filter:blur(20px);border:2px solid rgba(0,102,204,0.2);border-radius:12px;padding:16px;transition:all 0.4s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden;animation:slideIn 0.6s ease-out;display:flex;flex-direction:column}.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--primary),var(--secondary));transform:scaleX(0);transform-origin:left;transition:transform 0.4s}.card:hover{border-color:rgba(0,136,255,0.6);transform:translateY(-6px);box-shadow:0 15px 35px rgba(0,102,204,0.2)}.card:hover::before{transform:scaleX(1)}.card.hidden{display:none}.card-icon{font-size:1.8em;margin-bottom:10px;background:linear-gradient(90deg,var(--primary),var(--secondary));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}.card-title{font-size:1em;font-weight:700;margin-bottom:8px;color:var(--secondary)}.card-count{font-size:1.6em;font-weight:900;color:var(--info);margin-bottom:6px}.card-subtitle{color:var(--text-secondary);font-size:0.8em;margin-bottom:12px;flex-grow:1}.card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}.btn{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.75em;transition:all 0.3s}.btn-primary{background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:#fff}.btn-primary:hover{box-shadow:0 0 15px rgba(0,102,204,0.4);transform:translateY(-2px)}.btn-success{background:var(--success);color:var(--dark);font-weight:700}.btn-success:hover{box-shadow:0 0 12px rgba(0,255,136,0.3);transform:translateY(-2px)}.btn-small{padding:5px 10px;font-size:0.7em}.table-container{background:var(--card-bg);backdrop-filter:blur(20px);border:1px solid rgba(0,102,204,0.2);border-radius:12px;overflow:auto;margin-bottom:20px;animation:slideIn 0.6s ease-out}table{width:100%;border-collapse:collapse;font-size:0.85em}table th{background:rgba(0,102,204,0.25);padding:10px;text-align:left;font-weight:700;color:var(--secondary);border-bottom:2px solid rgba(0,102,204,0.3)}table td{padding:8px 10px;border-bottom:1px solid rgba(0,102,204,0.1);color:var(--text-secondary)}table tr:hover{background:rgba(0,102,204,0.1)}.badge{display:inline-block;padding:4px 8px;border-radius:20px;font-size:0.7em;font-weight:700}.badge-success{background:rgba(0,255,136,0.2);color:var(--success)}.badge-warning{background:rgba(255,170,0,0.2);color:var(--warning)}.badge-danger{background:rgba(255,51,51,0.2);color:var(--danger)}.badge-info{background:rgba(0,221,255,0.2);color:var(--info)}.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:1500;opacity:0;visibility:hidden;transition:all 0.3s;overflow-y:auto}.modal.show{opacity:1;visibility:visible}.modal-content{background:rgba(15,25,50,0.95);backdrop-filter:blur(20px);border:1px solid rgba(0,102,204,0.3);border-radius:12px;padding:20px;max-width:600px;width:90%;max-height:90vh;overflow-y:auto;animation:slideIn 0.3s;margin:auto}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;border-bottom:1px solid rgba(0,102,204,0.2);padding-bottom:10px}.modal-header h2{font-size:1.1em;color:var(--secondary)}.modal-close{cursor:pointer;font-size:1.2em;color:var(--text-secondary);transition:all 0.3s;background:rgba(255,51,51,0.1);border:none;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center}.modal-close:hover{color:var(--danger);background:rgba(255,51,51,0.2);transform:scale(1.1)}.toast{position:fixed;bottom:20px;right:16px;background:var(--card-bg);border:2px solid;backdrop-filter:blur(20px);padding:12px 16px;border-radius:8px;box-shadow:0 0 30px rgba(0,0,0,0.5);animation:slideIn 0.3s;z-index:2000;max-width:280px;font-size:0.85em}.toast.success{border-color:var(--success);color:var(--success)}.toast.error{border-color:var(--danger);color:var(--danger)}.toast.info{border-color:var(--info);color:var(--info)}.hidden{display:none!important}@media (max-width:480px){.cards-grid{grid-template-columns:1fr;gap:12px}.header-top{flex-direction:column;gap:8px}.header-left,.header-right{width:100%;justify-content:center}.header-nav{width:100%;justify-content:center}.logo{font-size:1.2em}.card{padding:12px;min-height:auto}.card-icon{font-size:1.5em}.card-title{font-size:0.9em}.card-count{font-size:1.3em}.btn{padding:5px 10px;font-size:0.7em}.section-title{font-size:1.2em;margin:15px 0}.modal-content{padding:16px}.table{font-size:0.75em}table th,table td{padding:6px}}@media (min-width:481px) and (max-width:768px){.cards-grid{grid-template-columns:repeat(2,1fr);gap:12px}.section-title{font-size:1.3em}header h1{font-size:1.2em}}@media (min-width:769px){.cards-grid{grid-template-columns:repeat(3,1fr);gap:16px}header h1{font-size:1.4em}header{padding:24px 20px}}</style>
+<link rel="stylesheet" href="shared-styles.css"/>
 <!--Firebase SDK v9 Compat (Browser-kompatibel)-->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -54,111 +54,93 @@
 <div class="section-title"><i class="fas fa-chart-line"></i> Dashboard</div>
 <div class="cards-grid">
 <div class="card" data-permission="users">
+<a href="pages/nutzer.html" class="card-link">
 <i class="fas fa-users card-icon"></i>
 <div class="card-title">Nutzer</div>
 <div class="card-count" id="userCount">0</div>
-<div class="card-subtitle">Verwalten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addUser')" title="Nutzer hinzufügen"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('users')"><i class="fas fa-list"></i></button>
-</div>
+<div class="card-subtitle">Benutzerkonten verwalten</div>
+</a>
 </div>
 
 <div class="card" data-permission="ranks">
+<a href="pages/raenge.html" class="card-link">
 <i class="fas fa-award card-icon"></i>
 <div class="card-title">Ränge</div>
 <div class="card-count" id="rankCount">0</div>
 <div class="card-subtitle">Dienstgrade verwalten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addRank')"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('ranks')"><i class="fas fa-list"></i></button>
+</a>
 </div>
-</div>
-
 
 <div class="card" data-permission="citizens">
+<a href="pages/buerger.html" class="card-link">
 <i class="fas fa-user-circle card-icon"></i>
 <div class="card-title">Bürger</div>
 <div class="card-count" id="citizenCount">0</div>
-<div class="card-subtitle">Verwalten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addCitizen')"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('citizens')"><i class="fas fa-list"></i></button>
-</div>
+<div class="card-subtitle">Bürgerdatenbank verwalten</div>
+</a>
 </div>
 
 <div class="card" data-permission="evidence">
+<a href="pages/beweise.html" class="card-link">
 <i class="fas fa-dna card-icon"></i>
 <div class="card-title">Beweise</div>
 <div class="card-count" id="evidenceCount">0</div>
-<div class="card-subtitle">Verwalten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addEvidence')"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('evidence')"><i class="fas fa-list"></i></button>
-</div>
+<div class="card-subtitle">Beweismittel verwalten</div>
+</a>
 </div>
 
 <div class="card">
+<a href="pages/schulungen.html" class="card-link">
 <i class="fas fa-book card-icon"></i>
 <div class="card-title">Schulungen</div>
 <div class="card-count" id="trainingCount">0</div>
 <div class="card-subtitle">Schulungen & Ausbildung</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" id="trainingAddBtn" onclick="openModal('addTraining')" style="display:none"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('training')"><i class="fas fa-list"></i></button>
-</div>
+</a>
 </div>
 
 <div class="card" data-permission="applications">
+<a href="pages/bewerbungen.html" class="card-link">
 <i class="fas fa-file-alt card-icon"></i>
 <div class="card-title">Bewerbungen</div>
 <div class="card-count" id="applicationsCount">0</div>
-<div class="card-subtitle">Bearbeiten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('applications')"><i class="fas fa-list"></i></button>
-</div>
+<div class="card-subtitle">Bewerbungen bearbeiten</div>
+</a>
 </div>
 
 <div class="card" data-permission="requests">
+<a href="pages/sonstiges.html" class="card-link">
 <i class="fas fa-envelope card-icon"></i>
 <div class="card-title">Sonstiges</div>
 <div class="card-count" id="requestsCount">0</div>
 <div class="card-subtitle">Anfragen & Beschwerden</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('requests')"><i class="fas fa-list"></i></button>
-</div>
+</a>
 </div>
 
 <div class="card" data-permission="citations">
+<a href="pages/strafakten.html" class="card-link">
 <i class="fas fa-gavel card-icon"></i>
 <div class="card-title">Strafakten</div>
 <div class="card-count" id="citationsCount">0</div>
-<div class="card-subtitle">Verwalten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addCitation')"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('citations')"><i class="fas fa-list"></i></button>
-</div>
+<div class="card-subtitle">Strafakten verwalten</div>
+</a>
 </div>
 
 <div class="card" data-permission="charges">
+<a href="pages/anzeigen.html" class="card-link">
 <i class="fas fa-exclamation-triangle card-icon"></i>
 <div class="card-title">Anzeigen</div>
 <div class="card-count" id="chargesCount">0</div>
-<div class="card-subtitle">Verwalten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addCharge')"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('charges')"><i class="fas fa-list"></i></button>
-</div>
+<div class="card-subtitle">Anzeigen verwalten</div>
+</a>
 </div>
 
 <div class="card" data-permission="citations">
+<a href="pages/falluebersicht.html" class="card-link">
 <i class="fas fa-folder-open card-icon"></i>
 <div class="card-title">Fallübersicht</div>
 <div class="card-count" id="fallCount">0</div>
 <div class="card-subtitle">Alle Fälle im Überblick</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openFallubersicht()"><i class="fas fa-folder-open"></i> Öffnen</button>
-</div>
+</a>
 </div>
 
 <div class="card" data-permission="admin">
@@ -166,449 +148,31 @@
 <div class="card-title">Export</div>
 <div class="card-subtitle">Daten & Backup</div>
 <div class="card-actions">
-<button class="btn btn-success btn-small" onclick="downloadJSON()"><i class="fas fa-file"></i></button>
-<button class="btn btn-success btn-small" onclick="downloadCSV()"><i class="fas fa-table"></i></button>
+<button class="btn btn-success btn-small" onclick="downloadJSON()"><i class="fas fa-file"></i> JSON</button>
+<button class="btn btn-success btn-small" onclick="downloadCSV()"><i class="fas fa-table"></i> CSV</button>
 </div>
 </div>
 
 <div class="card" data-permission="press">
+<a href="pages/presse.html" class="card-link">
 <i class="fas fa-newspaper card-icon"></i>
 <div class="card-title">Presseabteilung</div>
 <div class="card-count" id="pressCount">0</div>
-<div class="card-subtitle">Nachrichten</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openModal('addPress')"><i class="fas fa-plus"></i></button>
-<button class="btn btn-primary btn-small" onclick="openModal('press')"><i class="fas fa-list"></i></button>
-</div>
+<div class="card-subtitle">Nachrichten verwalten</div>
+</a>
 </div>
 
 <div class="card" data-permission="admin">
+<a href="pages/admin.html" class="card-link">
 <i class="fas fa-cog card-icon"></i>
 <div class="card-title">Admin</div>
 <div class="card-subtitle">Rollen, Ränge & System</div>
-<div class="card-actions">
-<button class="btn btn-primary btn-small" onclick="openAdminPanel()"><i class="fas fa-sliders-h"></i></button>
-</div>
+</a>
 </div>
 </div>
 
 <div class="section-title"><i class="fas fa-users-cog"></i> Übersicht</div>
 <div id="overviewStatsPanel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px"></div>
-<div id="usersSection" class="table-container hidden">
-<table><thead><tr><th>ID</th><th>Benutzer</th><th>Rolle</th><th>Rang</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="usersTableBody"></tbody></table>
-</div>
-
-<div id="ranksSection" class="table-container hidden">
-<table><thead><tr><th>Name</th><th>Farbe</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody id="ranksTableBody"></tbody></table>
-</div>
-
-<div id="employeesSection" class="table-container hidden">
-<table><thead><tr><th>Name</th><th>Rolle</th><th>Dept</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="employeesTableBody"></tbody></table>
-</div>
-
-<div id="citizensSection" class="table-container hidden">
-<div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citizensSearch" placeholder="Nach Name oder Telefon suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCitizens()"></div>
-<table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Akten</th><th>Aktion</th></tr></thead><tbody id="citizensTableBody"></tbody></table>
-</div>
-
-<div id="evidenceSection" class="table-container hidden">
-<table><thead><tr><th>AZ</th><th>Typ</th><th>Bezeichnung</th><th>Ort</th><th>Strafakte</th><th>Aktion</th></tr></thead><tbody id="evidenceTableBody"></tbody></table>
-</div>
-
-<div id="trainingSection" class="table-container hidden">
-<table><thead><tr><th>Titel</th><th>Ersteller</th><th>Min. Rang</th><th>Datum</th><th>Teilnehmer</th><th>Aktion</th></tr></thead><tbody id="trainingTableBody"></tbody></table>
-</div>
-<div id="applicationsSection" class="table-container hidden">
-<table><thead><tr><th>Name</th><th>Code</th><th>Email</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsInlineTableBody"></tbody></table>
-</div>
-
-<div id="citationsSection" class="table-container hidden">
-<div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citationSearch" placeholder="Nach Name oder AZ suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCitations()"></div>
-<table><thead><tr><th>Aktenzeichen</th><th>Bürger</th><th>Art</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="citationsInlineTableBody"></tbody></table>
-</div>
-
-<div id="chargesSection" class="table-container hidden">
-<div style="padding:12px;background:rgba(0,102,204,0.1);border-bottom:1px solid rgba(0,102,204,0.2);display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesSearch" placeholder="Nach Name oder Vorwurf suchen..." style="background:rgba(0,102,204,0.2);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" onkeyup="filterCharges()"></div>
-<table><thead><tr><th>Anzeige-Nr</th><th>Bürger</th><th>Vorwurf</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="chargesInlineTableBody"></tbody></table>
-</div>
-
-<div id="requestsSection" class="table-container hidden">
-<table><thead><tr><th>ID</th><th>Name</th><th>Betreff</th><th>Status</th><th>Datum</th></tr></thead><tbody id="requestsInlineTableBody"></tbody></table>
-</div></div>
-
-<!-- MODALS -->
-<div id="addUserModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h2>Nutzer hinzufügen</h2><button class="modal-close" onclick="closeModal('addUser')">×</button></div>
-<form onsubmit="addUser(event)">
-<div class="form-group"><label>Benutzername</label><input type="text" id="newUsername" required></div>
-<div class="form-group"><label>Rolle</label><select id="newRole" required></select></div>
-<div class="form-group"><label>Rang</label><select id="newJobRank"></select></div>
-<div class="form-group"><label>Passwort</label><div style="display:flex;gap:8px"><input type="text" id="newPassword" readonly style="flex:1"><button type="button" class="btn btn-primary btn-small" onclick="generateNewPassword()">Generieren</button></div></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
-</form>
-</div>
-</div>
-
-<div id="addRankModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h2><i class="fas fa-award"></i> Rang hinzufügen</h2><button class="modal-close" onclick="closeModal('addRank')">×</button></div>
-<form onsubmit="addRank(event)">
-<div class="form-group"><label>Name</label><input type="text" id="rankName" required placeholder="z.B. Sergeant"></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-<div class="form-group"><label>Kürzel</label><input type="text" id="rankAbbreviation" placeholder="z.B. SGT" maxlength="6"></div>
-<div class="form-group"><label>Priorität (0–100)</label><input type="number" id="rankPriority" value="0" min="0" max="100"></div>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-<div class="form-group"><label>Farbe</label><input type="color" id="rankColor" value="#0066cc" required></div>
-<div class="form-group"><label>Icon (Font Awesome)</label><input type="text" id="rankIcon" value="fas fa-award" placeholder="fas fa-award"></div>
-</div>
-<div class="form-group"><label>Abteilung</label><select id="rankDepartment"><option value="">– Keine Abteilung –</option></select></div>
-<div class="form-group"><label>Beschreibung</label><textarea id="rankDesc" placeholder="Beschreibung des Rangs..."></textarea></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
-</form>
-</div>
-</div>
-
-<div id="addEmployeeModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h2>Mitarbeiter hinzufügen</h2><button class="modal-close" onclick="closeModal('addEmployee')">×</button></div>
-<form onsubmit="addEmployee(event)">
-<div class="form-group"><label>Name</label><input type="text" id="empName" required></div>
-<div class="form-group"><label>Rolle</label><select id="empRole" required><option>Trainee</option><option>Mitarbeiter</option><option>Ausbilder</option></select></div>
-<div class="form-group"><label>Abteilung</label><input type="text" id="empDept" required></div>
-<div class="form-group"><label>Status</label><select id="empStatus"><option>Aktiv</option><option>Urlaub</option><option>Inaktiv</option></select></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
-</form>
-</div>
-</div>
-
-<div id="addCitizenModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h2>Bürger hinzufügen</h2><button class="modal-close" onclick="closeModal('addCitizen')">×</button></div>
-<form onsubmit="addCitizen(event)">
-<div class="form-group"><label>Name</label><input type="text" id="ctName" required></div>
-<div class="form-group"><label>Telefon</label><input type="tel" id="ctPhone" required></div>
-<div class="form-group"><label>Adresse</label><input type="text" id="ctAddress" required></div>
-<div class="form-group"><label>Status</label><select id="ctStatus"><option>Aktiv</option><option>Inaktiv</option></select></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
-</form>
-</div>
-</div>
-
-<div id="addEvidenceModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h2>Beweismittel hinzufügen</h2><button class="modal-close" onclick="closeModal('addEvidence')">×</button></div>
-<form onsubmit="addEvidence(event)">
-<div class="form-group"><label>Beweismittelart</label><select id="evType" required><option value="Waffe">🔫 Waffe</option><option value="Drogen">💊 Drogen</option><option value="Sonstiges">📦 Sonstiges</option></select></div>
-<div class="form-group"><label>Bezeichnung</label><input type="text" id="evName" required placeholder="z.B. Glock 17, Kokain, Mobiltelefon..."></div>
-<div class="form-group"><label>Beschreibung</label><textarea id="evDesc" required></textarea></div>
-<div class="form-group"><label>Ort / Fundort</label><input type="text" id="evLocation" required></div>
-<div class="form-group"><label>Zugehörige Strafakte (AZ)</label><select id="evCitationAZ"><option value="">-- Keine Strafakte zuordnen --</option></select></div>
-<div class="form-group"><label>Vergehen</label><div id="evVergehen" style="display:flex;flex-wrap:wrap;gap:2px;max-height:150px;overflow-y:auto;padding:6px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px"></div></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
-</form>
-</div>
-</div>
-
-<div id="addTrainingModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h2><i class="fas fa-book"></i> Schulung erstellen</h2><button class="modal-close" onclick="closeModal('addTraining')">×</button></div>
-<form onsubmit="addTraining(event)">
-<div class="form-group"><label>Titel der Schulung</label><input type="text" id="trainTitle" required placeholder="z.B. Grundausbildung Streifendienst"></div>
-<div class="form-group"><label>Ab welchem Rang</label><select id="trainMinRank" required></select></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-<div class="form-group"><label>Datum (optional)</label><input type="date" id="trainDate"></div>
-<div class="form-group"><label>Uhrzeit (optional)</label><input type="time" id="trainTime"></div>
-</div>
-<div class="form-group"><label>Google Docs Link (optional)</label><input type="url" id="trainGoogleDocs" placeholder="https://docs.google.com/document/d/..."></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Schulung erstellen</button>
-</form>
-</div>
-</div>
-
-<div id="usersViewModal" class="modal">
-<div class="modal-content" style="max-width:700px">
-<div class="modal-header"><h2>Benutzer</h2><button class="modal-close" onclick="closeViewModal('users')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="usersModalSearch" placeholder="Nach Benutzer, Rolle oder Rang suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterUsersModal()"></div>
-<div class="table-container"><table><thead><tr><th>Benutzer</th><th>Rolle</th><th>Rang</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="usersViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="ranksViewModal" class="modal">
-<div class="modal-content" style="max-width:900px">
-<div class="modal-header"><h2><i class="fas fa-award"></i> Ränge / Dienstgrade</h2><button class="modal-close" onclick="closeViewModal('ranks')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="ranksModalSearch" placeholder="Nach Name, Abteilung oder Beschreibung suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterRanksModal()"></div>
-<div class="table-container"><table><thead><tr><th>Rang</th><th>Farbe</th><th>Abteilung</th><th>Prio</th><th>Beschreibung</th><th>Aktion</th></tr></thead><tbody id="ranksViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="employeesViewModal" class="modal">
-<div class="modal-content" style="max-width:700px">
-<div class="modal-header"><h2>Mitarbeiter</h2><button class="modal-close" onclick="closeViewModal('employees')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="employeesModalSearch" placeholder="Nach Name, Rolle oder Abteilung suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterEmployeesModal()"></div>
-<div class="table-container"><table><thead><tr><th>Name</th><th>Rolle</th><th>Dept</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="employeesViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="citizensViewModal" class="modal">
-<div class="modal-content" style="max-width:700px">
-<div class="modal-header"><h2>Bürger</h2><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-primary btn-small" onclick="openModal('addCitizen')" title="Neuen Bürger hinzufügen"><i class="fas fa-plus"></i></button><button class="modal-close" onclick="closeViewModal('citizens')">×</button></div></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citizensModalSearch" placeholder="Nach Name, Telefon oder Adresse suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterCitizensModal()"></div>
-<div class="table-container"><table><thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Akten</th><th>Aktion</th></tr></thead><tbody id="citizensViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="citizenDetailModal" class="modal">
-<div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-user-shield"></i> Bürgerakte</h2><button class="modal-close" onclick="document.getElementById('citizenDetailModal').classList.remove('show')">×</button></div>
-<div id="citizenDetailContent" style="padding:10px 0"></div>
-<div style="margin-top:20px;border-top:1px solid rgba(0,102,204,0.2);padding-top:16px">
-  <div style="font-size:1em;font-weight:700;color:var(--secondary);margin-bottom:10px"><i class="fas fa-clipboard-list"></i> Notizen</div>
-  <div id="citizenNotesList" style="margin-bottom:10px;display:grid;gap:8px"></div>
-  <div style="display:flex;gap:8px">
-    <textarea id="citizenNoteInput" placeholder="Notiz hinzufügen..." style="flex:1;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;font-size:0.9em;resize:vertical;min-height:60px"></textarea>
-    <button class="btn btn-primary" onclick="addCitizenNote()" style="align-self:flex-end">➕ Hinzufügen</button>
-  </div>
-</div>
-</div>
-</div>
-
-<div id="evidenceViewModal" class="modal">
-<div class="modal-content" style="max-width:700px">
-<div class="modal-header"><h2>Beweismittel</h2><button class="modal-close" onclick="closeViewModal('evidence')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="evidenceModalSearch" placeholder="Nach AZ, Beschreibung oder Ort suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterEvidenceModal()"></div>
-<div class="table-container"><table><thead><tr><th>AZ</th><th>Typ</th><th>Bezeichnung</th><th>Ort</th><th>Strafakte</th><th>Vergehen</th><th>Aktion</th></tr></thead><tbody id="evidenceViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="trainingViewModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-book"></i> Schulungen</h2><button class="modal-close" onclick="closeViewModal('training')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="trainingModalSearch" placeholder="Nach Titel, Ersteller oder Rang suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterTrainingModal()"></div>
-<div class="table-container"><table><thead><tr><th>Titel</th><th>Ersteller</th><th>Min. Rang</th><th>Datum</th><th>Teilnehmer</th><th>Aktion</th></tr></thead><tbody id="trainingViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="trainingDetailModal" class="modal">
-<div class="modal-content" style="max-width:800px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-book-open"></i> Schulung – Details</h2><button class="modal-close" onclick="document.getElementById('trainingDetailModal').classList.remove('show')">×</button></div>
-<div id="trainingDetailContent" style="padding:10px 0"></div>
-</div>
-</div>
-
-<div id="applicationsViewModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-file-alt"></i> Bewerbungen <span id="pendingAppsBadge" style="font-size:0.75em;background:rgba(255,170,0,0.25);color:var(--warning);padding:3px 10px;border-radius:12px;margin-left:8px"></span></h2><button class="modal-close" onclick="closeViewModal('applications')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-<div style="flex:1;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="applicationsSearch" placeholder="Nach Name, Code oder E-Mail suchen..." style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px 12px;border-radius:6px;flex:1;font-size:0.9em" onkeyup="filterApplications()"></div>
-<select id="applicationsFilter" onchange="filterApplications()" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:6px;font-size:0.85em">
-<option value="">Alle Status</option>
-<option value="Eingereicht">Eingereicht</option>
-<option value="Akzeptiert">Akzeptiert</option>
-<option value="Abgelehnt">Abgelehnt</option>
-</select>
-</div>
-<div class="table-container" style="margin:0"><table><thead><tr><th>Name</th><th>Code</th><th>E-Mail</th><th>Telefon</th><th>Datum</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="applicationsViewTableBody"></tbody></table></div>
-</div>
-</div>
-<div id="kiImproveModal" class="modal">
-<div class="modal-content" style="max-width:600px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2>🤖 KI Text verbessern</h2><button class="modal-close" onclick="document.getElementById('kiImproveModal').classList.remove('show')">×</button></div>
-<div class="form-group"><label>Vergehen auswählen (optional, Mehrfachauswahl):</label><div id="kiImproveVergehen" style="display:flex;flex-wrap:wrap;gap:2px;padding:8px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px;min-height:40px"></div></div>
-<div class="form-group"><label>Vorschau:</label><div id="kiImprovePreview" style="white-space:pre-wrap;background:rgba(0,102,204,0.07);border:1px solid rgba(0,102,204,0.2);border-radius:4px;padding:10px;font-size:0.9em;min-height:60px;color:var(--text-primary)"></div></div>
-<div style="display:flex;gap:8px;margin-top:10px">
-<button type="button" class="btn btn-success" onclick="applyKiImprovement()" style="flex:1">✅ Anwenden</button>
-<button type="button" class="btn" onclick="document.getElementById('kiImproveModal').classList.remove('show')" style="flex:1;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">Abbrechen</button>
-</div>
-</div>
-</div>
-<div id="addCitationModal" class="modal">
-<div class="modal-content">
-<div class="modal-header"><h2>Strafakte erstellen</h2><button class="modal-close" onclick="closeModal('addCitation')">×</button></div>
-<form onsubmit="addCitation(event)">
-<div class="form-group"><label>Bürger Name</label><div style="position:relative"><input type="text" id="citName" required autocomplete="off" oninput="showCitizenSuggestions(this,'citNameDropdown','citNameCitizenId')" onblur="setTimeout(()=>{const d=document.getElementById('citNameDropdown');if(d)d.style.display='none';},180)" placeholder="Name eingeben oder tippen…"><input type="hidden" id="citNameCitizenId"><div id="citNameDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(10,20,45,0.98);border:1px solid rgba(0,102,204,0.4);border-top:none;border-radius:0 0 6px 6px;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.4)"></div></div></div>
-<div class="form-group"><label>Strafart</label><select id="citType" required><option>Verwarnung</option><option>Ordnungswidrigkeit</option><option>Vergehen</option><option>Verbrechen</option></select></div>
-<div class="form-group"><label>Status</label><select id="citStatus"><option value="Offen">Offen</option><option value="In Bearbeitung">In Bearbeitung</option><option value="Abgeschlossen">Abgeschlossen</option><option value="Archiviert">Archiviert</option></select></div>
-<div class="form-group"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><label for="citDesc">Beschreibung</label><button type="button" class="btn btn-small" onclick="improveTextLegal('citDesc')" title="Text rechtssicherer formulieren" style="font-size:0.8em;padding:2px 8px">🤖 KI verbessern</button></div><textarea id="citDesc" required></textarea></div>
-<div class="form-group"><label>Beamte(r)</label><input type="text" id="citOfficer" required></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
-</form>
-</div>
-</div>
-
-<div id="citationsViewModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2>Strafakten</h2><button class="modal-close" onclick="closeViewModal('citations')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="citationsModalSearch" placeholder="Nach AZ oder Bürger suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterCitationsModal()"></div>
-<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Art</th><th>Status</th><th>Beamte</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="citationsViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="addChargeModal" class="modal">
-<div class="modal-content" style="max-width:600px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2>Anzeige erstellen</h2><button class="modal-close" onclick="closeModal('addCharge')">×</button></div>
-<form onsubmit="addCharge(event)">
-<div class="form-group"><label>Bürger Name</label><div style="position:relative"><input type="text" id="chargeName" required autocomplete="off" oninput="showCitizenSuggestions(this,'chargeNameDropdown','chargeNameCitizenId')" onblur="setTimeout(()=>{const d=document.getElementById('chargeNameDropdown');if(d)d.style.display='none';},180)" placeholder="Name eingeben oder tippen…"><input type="hidden" id="chargeNameCitizenId"><div id="chargeNameDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:rgba(10,20,45,0.98);border:1px solid rgba(0,102,204,0.4);border-top:none;border-radius:0 0 6px 6px;z-index:9999;max-height:200px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.4)"></div></div></div>
-<div class="form-group"><label>Zugehörige Strafakte (AZ)</label><select id="chargeAktenzeichen" onchange="updateLinkedEvidence()"><option value="">-- Keine Strafakte --</option></select></div>
-<div id="chargeLinkedEvidenceBox" style="display:none;margin-bottom:10px;padding:8px;background:rgba(0,102,204,0.07);border:1px solid rgba(0,102,204,0.2);border-radius:4px;font-size:0.85em"><strong>🔍 Zugehörige Beweismittel:</strong><div id="chargeLinkedEvidence" style="margin-top:4px"></div></div>
-<div class="form-group"><label>Hauptvorwurf</label><select id="chargeType" required><option>Raub</option><option>Diebstahl</option><option>Körperverletzung</option><option>Mord</option><option>Betrug</option><option>Drogenhandel</option><option>Sonstiges</option></select></div>
-<div class="form-group"><label>Vergehen (Mehrfachauswahl)</label><div id="chargeVergehen" style="display:flex;flex-wrap:wrap;gap:2px;max-height:140px;overflow-y:auto;padding:6px;background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:4px"></div></div>
-<div class="form-group"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><label for="chargeDesc">Beschreibung / Sachverhalt</label><button type="button" class="btn btn-small" onclick="improveTextLegal('chargeDesc')" title="Text rechtssicherer formulieren" style="font-size:0.8em;padding:2px 8px">🤖 KI verbessern</button></div><textarea id="chargeDesc" required></textarea></div>
-<div class="form-group"><label>Beamte(r)</label><input type="text" id="chargeOfficer" required></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Anzeige erstellen &amp; Bericht generieren</button>
-</form>
-</div>
-</div>
-
-<div id="chargesViewModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-exclamation-triangle"></i> Anzeigen</h2><button class="modal-close" onclick="closeViewModal('charges')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-  <div style="display:flex;gap:4px">
-    <button id="chargesTabAll" class="btn btn-primary btn-small" onclick="setChargesTab('all')" style="border-radius:4px 0 0 4px">Alle</button>
-    <button id="chargesTabPolizei" class="btn btn-small" onclick="setChargesTab('polizei')" style="border-radius:0;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">Von Polizei</button>
-    <button id="chargesTabBuerger" class="btn btn-small" onclick="setChargesTab('buerger')" style="border-radius:0 4px 4px 0;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">Von Bürgern</button>
-  </div>
-  <div style="flex:1;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="chargesModalSearch" placeholder="Nach AZ, Bürger oder Vorwurf suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterChargesModal()"></div>
-</div>
-<div class="table-container"><table><thead><tr><th>AZ</th><th>Bürger</th><th>Vorwurf</th><th>Quelle</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="chargesViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="chargeDetailModal" class="modal">
-<div class="modal-content" style="max-width:750px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-exclamation-triangle"></i> Anzeige – Details</h2><button class="modal-close" onclick="document.getElementById('chargeDetailModal').classList.remove('show')">×</button></div>
-<div id="chargeDetailContent" style="padding:10px 0"></div>
-<div style="margin-top:20px;border-top:1px solid rgba(0,102,204,0.2);padding-top:16px">
-  <div style="font-size:1em;font-weight:700;color:var(--secondary);margin-bottom:10px"><i class="fas fa-clipboard-list"></i> Notizen & Ermittlungen</div>
-  <div id="chargeNotesList" style="margin-bottom:10px;display:grid;gap:8px"></div>
-  <div style="display:flex;gap:8px">
-    <textarea id="chargeNoteInput" placeholder="Notiz / Ermittlungsschritt hinzufügen..." style="flex:1;background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;font-size:0.9em;resize:vertical;min-height:60px"></textarea>
-    <button class="btn btn-primary" onclick="addChargeNote()" style="align-self:flex-end">➕ Hinzufügen</button>
-  </div>
-</div>
-</div>
-</div>
-
-<div id="citationDetailModal" class="modal">
-<div class="modal-content" style="max-width:750px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-gavel"></i> Strafakte – Details</h2><button class="modal-close" onclick="document.getElementById('citationDetailModal').classList.remove('show')">×</button></div>
-<div id="citationDetailContent" style="padding:10px 0"></div>
-</div>
-</div>
-
-<div id="fallubersichtModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-folder-open"></i> Fallübersicht</h2><button class="modal-close" onclick="document.getElementById('fallubersichtModal').classList.remove('show')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="fallubersichtSearch" placeholder="Nach Bürger suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterFallubersicht()"></div>
-<div id="fallubersichtContent" style="padding:10px 0"></div>
-</div>
-</div>
-
-<div id="addPressModal" class="modal">
-<div class="modal-content" style="max-width:700px">
-<div class="modal-header"><h2>Nachricht erstellen</h2><button class="modal-close" onclick="closeModal('addPress')">×</button></div>
-<form onsubmit="addPressArticle(event)">
-<div class="form-group"><label>Titel (Headline)</label><input type="text" id="pressTitle" required></div>
-<div class="form-group"><label>Untertitel</label><input type="text" id="pressSubtitle" placeholder="z.B. Polizei meldet..."></div>
-<div class="form-group"><label>Inhalt</label><textarea id="pressContent" required style="min-height:120px"></textarea></div>
-<div class="form-group"><label>Bild hochladen</label><input type="file" id="pressImageFile" accept="image/*" onchange="handlePressImageFile(event)" style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:6px;width:100%;cursor:pointer"><input type="hidden" id="pressImage"><div id="pressImagePreview" style="margin-top:8px"></div><small style="color:var(--text-secondary);font-size:0.8em">Bild wird dauerhaft gespeichert (max. 2MB, wird automatisch komprimiert)</small></div>
-<div class="form-group"><label>Autor</label><input type="text" id="pressAuthor" required placeholder="Name des Beamten"></div>
-<button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Veröffentlichen</button>
-</form>
-</div>
-</div>
-
-<div id="pressViewModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2>Presseabteilung - Nachrichten</h2><button class="modal-close" onclick="closeViewModal('press')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="pressModalSearch" placeholder="Nach Titel, Inhalt oder Autor suchen..." style="background:rgba(0,102,204,0.1);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:4px;flex:1;font-size:0.9em" oninput="filterPressModal()"></div>
-<div id="pressArticlesContainer" style="display:grid;gap:20px;padding:10px"></div>
-</div>
-</div>
-
-<div id="userPermissionsModal" class="modal">
-<div class="modal-content" style="max-width:500px">
-<div class="modal-header"><h2 id="userPermissionsTitle">🔑 Berechtigungen</h2><button class="modal-close" onclick="closeViewModal('userPermissions')">×</button></div>
-<div id="userPermissionsBody" style="padding:8px 0"></div>
-</div>
-</div>
-
-<div id="adminPanelModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-cog"></i> Admin Panel – Modulare Verwaltung</h2><button class="modal-close" onclick="closeViewModal('admin')">×</button></div>
-<div style="padding:10px 0">
-
-<!-- Tab-Navigation -->
-<div style="display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid rgba(0,102,204,0.2);padding-bottom:10px">
-<button id="adminTab_roles" class="btn btn-primary btn-small" onclick="setAdminTab('roles')" style="border-radius:4px">🎭 Rollen</button>
-<button id="adminTab_ranks" class="btn btn-small" onclick="setAdminTab('ranks')" style="border-radius:4px;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">🏅 Ränge</button>
-<button id="adminTab_departments" class="btn btn-small" onclick="setAdminTab('departments')" style="border-radius:4px;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">🏢 Abteilungen</button>
-<button id="adminTab_stats" class="btn btn-small" onclick="setAdminTab('stats')" style="border-radius:4px;background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary)">📊 Statistiken</button>
-</div>
-
-<!-- Tab: Rollen -->
-<div id="adminPanel_roles" style="display:block">
-<h3 style="color:var(--secondary);margin:0 0 10px 0">🎭 Rollen & Berechtigungen</h3>
-<div id="roleEditorPanel" style="margin-bottom:20px;font-size:0.85em;background:rgba(0,102,204,0.1);padding:15px;border-radius:8px"></div>
-</div>
-
-<!-- Tab: Ränge -->
-<div id="adminPanel_ranks" style="display:none">
-<h3 style="color:var(--secondary);margin:0 0 10px 0">🏅 Dienstgrade verwalten</h3>
-<div id="adminRanksPanel" style="margin-bottom:20px;font-size:0.85em;background:rgba(0,102,204,0.1);padding:15px;border-radius:8px"></div>
-</div>
-
-<!-- Tab: Abteilungen -->
-<div id="adminPanel_departments" style="display:none">
-<h3 style="color:var(--secondary);margin:0 0 10px 0">🏢 Abteilungen verwalten</h3>
-<div id="adminDepartmentsPanel" style="margin-bottom:20px;font-size:0.85em;background:rgba(0,102,204,0.1);padding:15px;border-radius:8px"></div>
-</div>
-
-<!-- Tab: Statistiken -->
-<div id="adminPanel_stats" style="display:none">
-<h3 style="color:var(--secondary);margin:0 0 10px 0">📊 Statistiken</h3>
-<div id="statsPanel" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px"></div>
-</div>
-
-<div style="border-top:1px solid rgba(0,102,204,0.2);padding-top:12px;margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn btn-success" onclick="exportAdminData()">💾 Export</button>
-<button class="btn btn-primary" onclick="closeViewModal('admin')">✓ Fertig</button>
-</div>
-</div>
-</div>
-</div>
-
-<div id="applicationDetailModal" class="modal">
-<div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-user-check"></i> Bewerbungsdetails</h2><button class="modal-close" onclick="document.getElementById('applicationDetailModal').classList.remove('show')">×</button></div>
-<div id="applicationDetailContent" style="padding:10px 0"></div>
-<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap" id="applicationDetailActions"></div>
-</div>
-</div>
-
-<div id="requestsViewModal" class="modal">
-<div class="modal-content" style="max-width:900px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-envelope"></i> Sonstiges – Anfragen &amp; Beschwerden <span id="pendingRequestsBadge" style="font-size:0.75em;background:rgba(255,170,0,0.25);color:var(--warning);padding:3px 10px;border-radius:12px;margin-left:8px"></span></h2><button class="modal-close" onclick="closeViewModal('requests')">×</button></div>
-<div style="padding:10px 0 8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-<div style="flex:1;display:flex;gap:8px;align-items:center"><i class="fas fa-search" style="color:var(--secondary)"></i><input type="text" id="requestsSearch" placeholder="Nach Name, Betreff oder E-Mail suchen..." style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px 12px;border-radius:6px;flex:1;font-size:0.9em" onkeyup="filterRequestsModal()"></div>
-<select id="requestsFilter" onchange="filterRequestsModal()" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:6px;font-size:0.85em">
-<option value="">Alle Status</option>
-<option value="Eingereicht">Eingereicht</option>
-<option value="In Bearbeitung">In Bearbeitung</option>
-<option value="Abgeschlossen">Abgeschlossen</option>
-</select>
-</div>
-<div class="table-container" style="margin:0"><table><thead><tr><th>ID</th><th>Name</th><th>E-Mail</th><th>Betreff</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead><tbody id="requestsViewTableBody"></tbody></table></div>
-</div>
-</div>
-
-<div id="requestDetailModal" class="modal">
-<div class="modal-content" style="max-width:650px;max-height:90vh;overflow-y:auto">
-<div class="modal-header"><h2><i class="fas fa-envelope-open"></i> Anfrage Details</h2><button class="modal-close" onclick="document.getElementById('requestDetailModal').classList.remove('show')">×</button></div>
-<div id="requestDetailContent" style="padding:10px 0"></div>
-</div>
 </div>
 
 <div id="toast" class="toast hidden"></div>
@@ -624,15 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Lade die Datenbank und migriere auf neues System
         loadDatabase();
         migrateDataIfNeeded();
-        populateJobRankDropdown();
-        populateRankDepartmentDropdown();
         updateCounts();
         // Automatisch einloggen falls Sitzung gespeichert, sonst Felder vorausfüllen
         tryAutoLogin();
         console.log('✅ Mitarbeiterportal initialisiert (Modulares System)');
-        console.log('🎭 Rollen:', getAvailableRoles().map(r => r.name).join(', '));
-        console.log('🏅 Ränge:', database.jobRanks.map(r => r.name).join(', '));
-        console.log('🏢 Abteilungen:', getAvailableDepartments().map(d => d.name).join(', '));
         console.log('🔥 Firebase Status: ' + (firebaseEnabled ? '✓ Aktiviert' : '⚠️ Nur lokal'));
     }, 1000);
 });

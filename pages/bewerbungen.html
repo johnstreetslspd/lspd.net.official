@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - Bewerbungen</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../shared-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../db.js"></script>
+<script src="../mitarbeiter-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+<nav class="header-nav">
+<a href="../mitarbeiter-portal.html"><i class="fas fa-arrow-left"></i> Dashboard</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i></a>
+</nav>
+</div>
+<div class="header-right">
+<div class="user-info">
+<div style="color:var(--secondary);font-weight:700;font-size:0.9em" id="currentUser">-</div>
+<div class="user-role" id="userRole">-</div>
+</div>
+<button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</div>
+<h1>Bewerbungen</h1>
+<p>Eingegangene Bewerbungen prüfen und bearbeiten</p>
+</header>
+
+<div class="container">
+<div class="page-toolbar">
+  <div class="search-box">
+    <i class="fas fa-search" style="color:var(--secondary)"></i>
+    <input type="text" id="applicationsSearch" placeholder="Nach Name, Code oder E-Mail suchen..." onkeyup="filterApplications()">
+  </div>
+  <select id="applicationsFilter" onchange="filterApplications()" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:6px;font-size:0.85em">
+    <option value="">Alle Status</option>
+    <option value="Eingereicht">Eingereicht</option>
+    <option value="Akzeptiert">Akzeptiert</option>
+    <option value="Abgelehnt">Abgelehnt</option>
+  </select>
+</div>
+<div class="table-container">
+  <table>
+    <thead><tr><th>Name</th><th>Code</th><th>E-Mail</th><th>Telefon</th><th>Datum</th><th>Status</th><th>Aktion</th></tr></thead>
+    <tbody id="applicationsViewTableBody"></tbody>
+  </table>
+</div>
+</div>
+
+<div id="applicationDetailModal" class="modal">
+<div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-user-check"></i> Bewerbungsdetails</h2><button class="modal-close" onclick="document.getElementById('applicationDetailModal').classList.remove('show')">×</button></div>
+<div id="applicationDetailContent" style="padding:10px 0"></div>
+<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap" id="applicationDetailActions"></div>
+</div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initSubPage(() => {
+            renderApplicationsView();
+            cleanupOldApplications();
+        });
+        subPageRefreshCallback = () => { renderApplicationsView(); };
+    }, 1000);
+});
+window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.classList.remove('show'); };
+</script>
+</body>
+</html>

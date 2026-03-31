@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - Anfragen & Beschwerden</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../shared-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../db.js"></script>
+<script src="../mitarbeiter-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+<nav class="header-nav">
+<a href="../mitarbeiter-portal.html"><i class="fas fa-arrow-left"></i> Dashboard</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i></a>
+</nav>
+</div>
+<div class="header-right">
+<div class="user-info">
+<div style="color:var(--secondary);font-weight:700;font-size:0.9em" id="currentUser">-</div>
+<div class="user-role" id="userRole">-</div>
+</div>
+<button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+</div>
+</div>
+<h1>Anfragen & Beschwerden</h1>
+<p>Bürgeranfragen und Beschwerden bearbeiten</p>
+</header>
+
+<div class="container">
+<div class="page-toolbar">
+  <div class="search-box">
+    <i class="fas fa-search" style="color:var(--secondary)"></i>
+    <input type="text" id="requestsSearch" placeholder="Nach Name, Betreff oder E-Mail suchen..." onkeyup="filterRequestsModal()">
+  </div>
+  <select id="requestsFilter" onchange="filterRequestsModal()" style="background:rgba(0,102,204,0.15);border:1px solid rgba(0,102,204,0.3);color:var(--text-primary);padding:8px;border-radius:6px;font-size:0.85em">
+    <option value="">Alle Status</option>
+    <option value="Eingereicht">Eingereicht</option>
+    <option value="In Bearbeitung">In Bearbeitung</option>
+    <option value="Abgeschlossen">Abgeschlossen</option>
+  </select>
+</div>
+<div class="table-container">
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>E-Mail</th><th>Betreff</th><th>Status</th><th>Datum</th><th>Aktion</th></tr></thead>
+    <tbody id="requestsViewTableBody"></tbody>
+  </table>
+</div>
+</div>
+
+<div id="requestDetailModal" class="modal">
+<div class="modal-content" style="max-width:650px;max-height:90vh;overflow-y:auto">
+<div class="modal-header"><h2><i class="fas fa-envelope-open"></i> Anfrage Details</h2><button class="modal-close" onclick="document.getElementById('requestDetailModal').classList.remove('show')">×</button></div>
+<div id="requestDetailContent" style="padding:10px 0"></div>
+</div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initSubPage(() => {
+            renderRequestsView();
+        });
+        subPageRefreshCallback = () => { renderRequestsView(); };
+    }, 1000);
+});
+window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.classList.remove('show'); };
+</script>
+</body>
+</html>
