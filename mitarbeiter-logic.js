@@ -166,15 +166,27 @@ function handleLogout() {
     localStorage.removeItem(SESSION_KEY);
     currentUser = null;
     stopAutoSync();
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('mainApp').classList.add('hidden');
-    // Behalte gespeicherten Benutzernamen falls "Benutzernamen merken" aktiv war
-    const savedUsername = localStorage.getItem(REMEMBER_KEY);
-    document.getElementById('username').value = savedUsername || '';
-    document.getElementById('password').value = '';
-    if (savedUsername) {
-        document.getElementById('rememberPassword').checked = true;
+    const loginScreen = document.getElementById('loginScreen');
+    const mainApp = document.getElementById('mainApp');
+    if (loginScreen && mainApp) {
+        // Auf der Hauptportal-Seite
+        loginScreen.classList.remove('hidden');
+        mainApp.classList.add('hidden');
+        // Behalte gespeicherten Benutzernamen falls "Benutzernamen merken" aktiv war
+        const savedUsername = localStorage.getItem(REMEMBER_KEY);
+        document.getElementById('username').value = savedUsername || '';
+        document.getElementById('password').value = '';
+        if (savedUsername) {
+            document.getElementById('rememberPassword').checked = true;
+        }
+    } else {
+        // Auf einer Unterseite - zurück zum Portal
+        window.location.href = getPortalUrl();
     }
+}
+
+function getPortalUrl() {
+    return window.location.pathname.includes('/pages/') ? '../mitarbeiter-portal.html' : 'mitarbeiter-portal.html';
 }
 
 function tryAutoLogin() {
@@ -277,6 +289,7 @@ function closeViewModal(t) {
 // ========== DROPDOWNS ==========
 function populateJobRankDropdown() {
     const s = document.getElementById('newJobRank');
+    if (!s) return;
     s.innerHTML = '';
     // Ränge nach Priorität sortiert
     const sortedRanks = [...database.jobRanks].sort((a, b) => (b.priority || 0) - (a.priority || 0));
@@ -287,6 +300,7 @@ function populateJobRankDropdown() {
         s.appendChild(opt);
     });
     const r = document.getElementById('newRole');
+    if (!r) return;
     r.innerHTML = '';
     getAvailableRoles().forEach(role => {
         const opt = document.createElement('option');
@@ -1953,7 +1967,8 @@ function viewCitationDetail(id) {
 // ========== FALLÜBERSICHT (Unified Case View) ==========
 function openFallubersicht() {
     renderFallubersicht();
-    document.getElementById('fallubersichtModal').classList.add('show');
+    const modal = document.getElementById('fallubersichtModal');
+    if (modal) modal.classList.add('show');
 }
 
 function renderFallubersicht(filteredCitations, filteredCharges) {
@@ -2048,7 +2063,8 @@ function openAdminPanel() {
         showToast('🚫 Zugriff verweigert', 'Nur Admins dürfen das Admin Panel öffnen', 'error');
         return;
     }
-    document.getElementById('adminPanelModal').classList.add('show');
+    const modal = document.getElementById('adminPanelModal');
+    if (modal) modal.classList.add('show');
     setAdminTab(activeAdminTab);
 }
 
@@ -2677,10 +2693,18 @@ function renderOverviewStats() {
 }
 
 // ========== LIVE UI REFRESH (called by auto-sync every 5 s) ==========
+let subPageRefreshCallback = null;
+
 function refreshUI() {
     if (!currentUser) return;
     cleanupOldApplications();
     updateCounts();
+
+    // Sub-Page Refresh
+    if (typeof subPageRefreshCallback === 'function') {
+        subPageRefreshCallback();
+    }
+
     const viewModals = [
         { id: 'usersViewModal',        render: renderUsersView,        filter: filterUsersModal },
         { id: 'ranksViewModal',        render: renderRanksView,        filter: filterRanksModal },
@@ -2710,6 +2734,57 @@ window.onclick = function(e) {
     if (e.target.classList.contains('modal'))
         e.target.classList.remove('show');
 };
+
+// ========== SUB-PAGE INITIALIZATION ==========
+function initSubPage(initCallback) {
+    loadDatabase();
+    migrateDataIfNeeded();
+
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) {
+        window.location.href = getPortalUrl();
+        return;
+    }
+
+    try {
+        const session = JSON.parse(raw);
+        if (!session || !session.username || !session.role || !session.expires || Date.now() >= session.expires) {
+            localStorage.removeItem(SESSION_KEY);
+            window.location.href = getPortalUrl();
+            return;
+        }
+        currentUser = { username: session.username, role: session.role, stayLoggedIn: true };
+
+        // Header aktualisieren
+        const userEl = document.getElementById('currentUser');
+        const roleEl = document.getElementById('userRole');
+        if (userEl) userEl.textContent = currentUser.username;
+        if (roleEl) roleEl.textContent = '(' + currentUser.role + ')';
+
+        // Erste Initialisierung mit lokalen Daten
+        if (initCallback) initCallback();
+
+        // Firebase laden und erneut initialisieren
+        if (firebaseEnabled) {
+            loadFromFirestore().then(() => {
+                const freshUser = database.users.find(x => x.username === currentUser.username);
+                if (!freshUser) {
+                    showToast('⚠️ Konto nicht gefunden', 'Bitte erneut anmelden', 'error');
+                    handleLogout();
+                    return;
+                }
+                currentUser.role = freshUser.role;
+                if (userEl) userEl.textContent = currentUser.username;
+                if (roleEl) roleEl.textContent = '(' + currentUser.role + ')';
+                if (initCallback) initCallback();
+            }).catch(e => console.warn('Firestore load failed:', e));
+            startAutoSync();
+        }
+    } catch (_) {
+        localStorage.removeItem(SESSION_KEY);
+        window.location.href = getPortalUrl();
+    }
+}
 
 // ========== INITIALIZATION ==========
 console.log('✅ mitarbeiter-logic.js geladen');
