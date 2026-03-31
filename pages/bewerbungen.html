@@ -74,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         subPageRefreshCallback = () => { renderApplicationsView(); };
     }, 1000);
 });
-window.addEventListener('beforeunload', () => { stopAutoSync(); });
 window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.classList.remove('show'); };
 </script>
 </body>

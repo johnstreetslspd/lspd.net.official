@@ -2740,6 +2740,9 @@ function initSubPage(initCallback) {
     loadDatabase();
     migrateDataIfNeeded();
 
+    // Auto-Sync bei Seitenwechsel stoppen
+    window.addEventListener('beforeunload', () => { stopAutoSync(); });
+
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) {
         window.location.href = getPortalUrl();
