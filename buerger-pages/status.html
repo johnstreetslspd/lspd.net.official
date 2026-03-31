@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - Bewerbungsstatus</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../buerger-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../buerger-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield"></i> LSPD BÜRGERDIENSTE</div>
+<div class="header-nav">
+<a href="../bürger-portal.html"><i class="fas fa-arrow-left"></i> Zurück</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+</div>
+</div>
+</div>
+<h1>🔍 Bewerbungsstatus</h1>
+<p>Überprüfen Sie den Status Ihrer Bewerbung</p>
+</header>
+
+<div class="container">
+<div class="content-card">
+<h2 style="color:var(--secondary);margin-bottom:20px">🔍 Status überprüfen</h2>
+<form onsubmit="checkStatus(event)">
+<div class="form-group">
+    <label>Ihren Bewerbungscode eingeben:</label>
+    <input type="text" id="statusCode" placeholder="APP-..." required>
+</div>
+<button type="submit" class="btn btn-primary" style="width:100%">🔎 Status suchen</button>
+</form>
+<div id="statusResult" style="margin-top:20px;"></div>
+</div>
+</div>
+
+<script>
+function checkStatus(e) {
+    e.preventDefault();
+    const code = document.getElementById('statusCode').value;
+    const resultDiv = document.getElementById('statusResult');
+
+    const doCheck = () => {
+        const app = database.applications.find(a => a.code === code);
+        if (app) {
+            resultDiv.innerHTML =
+                '<div style="background:rgba(0,255,136,0.15);border:2px solid var(--secondary);padding:20px;border-radius:8px;color:var(--secondary);">' +
+                '<h3>✅ Bewerbung gefunden!</h3>' +
+                '<p><strong>Name:</strong> ' + escapeHtml(app.name) + '</p>' +
+                '<p><strong>Status:</strong> <span class="badge badge-success">' + escapeHtml(app.status) + '</span></p>' +
+                '<p><strong>Eingereicht:</strong> ' + new Date(app.date).toLocaleDateString('de-DE') + '</p>' +
+                '</div>';
+        } else {
+            resultDiv.innerHTML =
+                '<div style="background:rgba(255,51,51,0.15);border:2px solid var(--danger);padding:20px;border-radius:8px;color:var(--danger);">' +
+                '<h3>❌ Bewerbung nicht gefunden</h3>' +
+                '<p>Der eingegebene Code ist ungültig. Überprüfen Sie Ihre Eingabe.</p>' +
+                '</div>';
+        }
+    };
+
+    if (firebaseEnabled) {
+        loadFromFirestore().then(() => doCheck()).catch(() => doCheck());
+    } else {
+        doCheck();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initBuergerApp();
+    }, 200);
+});
+</script>
+</body>
+</html>

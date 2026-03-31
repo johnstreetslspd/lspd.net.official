@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LSPD - Strafanzeige erstatten</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="../buerger-styles.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../buerger-logic.js"></script>
+</head>
+<body>
+<header>
+<div class="header-top">
+<div class="header-left">
+<div class="logo"><i class="fas fa-shield"></i> LSPD BÜRGERDIENSTE</div>
+<div class="header-nav">
+<a href="../bürger-portal.html"><i class="fas fa-arrow-left"></i> Zurück</a>
+<a href="../portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+</div>
+</div>
+</div>
+<h1>⚖️ Strafanzeige erstatten</h1>
+<p>Erstatten Sie eine Anzeige gegen eine Person</p>
+</header>
+
+<div class="container">
+<div class="content-card">
+<h2 style="color:var(--secondary);margin-bottom:20px">⚖️ Strafanzeige einreichen</h2>
+<form onsubmit="submitComplaint(event)">
+<div class="form-group">
+    <label>Ihr Name (Anzeigeerstatter)</label>
+    <input type="text" id="complainantName" required>
+</div>
+<div class="form-group">
+    <label>Ihre E-Mail</label>
+    <input type="email" id="complainantEmail" required>
+</div>
+<div class="form-group">
+    <label>Name der beschuldigten Person</label>
+    <input type="text" id="accusedName" required>
+</div>
+<div class="form-group">
+    <label>Art des Vergehens</label>
+    <select id="complaintType" required>
+        <option value="">-- Bitte wählen --</option>
+        <option>Körperverletzung</option>
+        <option>Diebstahl</option>
+        <option>Raub</option>
+        <option>Betrug</option>
+        <option>Sachbeschädigung</option>
+        <option>Nötigung / Bedrohung</option>
+        <option>Sonstiges</option>
+    </select>
+</div>
+<div class="form-group">
+    <label>Sachverhalt (Beschreibung)</label>
+    <textarea id="complaintDesc" placeholder="Beschreiben Sie den Vorfall so genau wie möglich..." required style="min-height:100px"></textarea>
+</div>
+<button type="submit" class="btn btn-success" style="width:100%">✅ Anzeige erstatten</button>
+</form>
+</div>
+</div>
+
+<script>
+function submitComplaint(e) {
+    e.preventDefault();
+    const nr = 'ANZ-' + Date.now().toString().slice(-6);
+    const complaint = {
+        id: Date.now(),
+        chargeNumber: nr,
+        name: document.getElementById('accusedName').value,
+        complainant: document.getElementById('complainantName').value,
+        email: document.getElementById('complainantEmail').value,
+        type: document.getElementById('complaintType').value,
+        description: document.getElementById('complaintDesc').value,
+        officer: 'Bürgerdienst',
+        status: 'Aktiv',
+        source: 'citizen',
+        date: new Date().toISOString(),
+        editUntil: Date.now() + 30 * 60000,
+        notes: []
+    };
+    database.charges.push(complaint);
+    saveDatabase();
+    showToast('✅ Anzeige erstattet', 'Ihre Anzeige wurde eingereicht. Aktenzeichen: ' + nr, 'success');
+    e.target.reset();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        initBuergerApp();
+    }, 200);
+});
+</script>
+</body>
+</html>
