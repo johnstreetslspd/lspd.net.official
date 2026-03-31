@@ -505,6 +505,7 @@ function addCitizen(e) {
 
 function renderCitizensView() {
     const b = document.getElementById('citizensViewTableBody');
+    if (!b) return;
     if (database.citizens.length === 0) {
         b.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Bürger erfasst</td></tr>';
         return;
@@ -603,8 +604,17 @@ function showCitizenSuggestions(inputEl, dropdownId, hiddenId) {
 
 // ========== CITIZEN DETAIL VIEW ==========
 function viewCitizen(id) {
+    const basePath = window.location.pathname.includes('/pages/') ? '' : 'pages/';
+    window.location.href = basePath + 'buerger-detail.html?id=' + id;
+}
+
+function renderCitizenDetailPage(id) {
     const citizen = database.citizens.find(c => c.id === id);
-    if (!citizen) return;
+    if (!citizen) {
+        const el = document.getElementById('citizenDetailContent');
+        if (el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary)">Bürger nicht gefunden.</div>';
+        return;
+    }
     currentCitizenId = id;
 
     const linkedCitations = database.citations.filter(c =>
@@ -624,7 +634,7 @@ function viewCitizen(id) {
     const citsHtml = linkedCitations.length
         ? linkedCitations.map(c => {
             const cStatus = c.status || 'Offen';
-            return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(0,102,204,0.1);cursor:pointer" onclick="document.getElementById('citizenDetailModal').classList.remove('show');viewCitationDetail(${c.id})">
+            return `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(0,102,204,0.1);cursor:pointer" onclick="viewCitationDetail(${c.id})">
                 <span style="font-family:monospace;font-size:0.8em;color:var(--info);flex-shrink:0">${escapeHtml(c.aktenzeichen)}</span>
                 <span class="badge badge-info" style="font-size:0.7em">${escapeHtml(c.type)}</span>
                 <span class="badge ${statusColors[cStatus] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(cStatus)}</span>
@@ -634,7 +644,7 @@ function viewCitizen(id) {
         : '<em style="color:var(--text-secondary);font-size:0.9em">Keine Strafakten vorhanden</em>';
 
     const chgsHtml = linkedCharges.length
-        ? linkedCharges.map(c => `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,51,51,0.1);cursor:pointer" onclick="document.getElementById('citizenDetailModal').classList.remove('show');viewCharge(${c.id})">
+        ? linkedCharges.map(c => `<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid rgba(255,51,51,0.1);cursor:pointer" onclick="viewCharge(${c.id})">
                 <span style="font-family:monospace;font-size:0.8em;color:var(--danger);flex-shrink:0">${escapeHtml(c.chargeNumber)}</span>
                 <span class="badge badge-danger" style="font-size:0.7em">${escapeHtml(c.type)}</span>
                 <span class="badge ${chargeStatusColors[c.status] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(c.status || 'Aktiv')}</span>
@@ -685,7 +695,6 @@ function viewCitizen(id) {
             </div>
         </div>`;
 
-    document.getElementById('citizenDetailModal').classList.add('show');
     renderCitizenNotes(citizen);
 }
 
@@ -1412,6 +1421,7 @@ function addCitation(e) {
 
 function renderCitationsView() {
     const b = document.getElementById('citationsViewTableBody');
+    if (!b) return;
     const isAdmin = canAccess('admin') || canAccess('citations');
     const statusColors = { 'Offen': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Abgeschlossen': 'badge-success', 'Archiviert': 'badge-info' };
     b.innerHTML = database.citations.map(c => {
@@ -1545,6 +1555,7 @@ function addCharge(e) {
 
 function renderChargesView() {
     const b = document.getElementById('chargesViewTableBody');
+    if (!b) return;
     const search = (document.getElementById('chargesModalSearch')?.value || '').toLowerCase();
     const isAdmin = canAccess('admin');
 
@@ -1794,8 +1805,17 @@ function deletePressArticle(id) {
 
 // ========== CHARGE DETAIL & NOTES ==========
 function viewCharge(id) {
+    const basePath = window.location.pathname.includes('/pages/') ? '' : 'pages/';
+    window.location.href = basePath + 'anzeige-detail.html?id=' + id;
+}
+
+function renderChargeDetailPage(id) {
     const c = database.charges.find(x => x.id === id);
-    if (!c) return;
+    if (!c) {
+        const el = document.getElementById('chargeDetailContent');
+        if (el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary)">Anzeige nicht gefunden.</div>';
+        return;
+    }
     currentChargeId = id;
     const sourceLabel = c.source === 'citizen' ? '🧑 Bürger' : '👮 Polizei';
     const linkedCitation = c.aktenzeichen ? database.citations.find(x => x.aktenzeichen === c.aktenzeichen) : null;
@@ -1805,7 +1825,7 @@ function viewCharge(id) {
     const CHARGE_STATUSES = ['Aktiv', 'In Bearbeitung', 'Eingestellt', 'Verurteilt', 'Freigesprochen'];
     const statusOpts = CHARGE_STATUSES.map(s => `<option value="${s}" ${c.status === s ? 'selected' : ''}>${s}</option>`).join('');
     const citationHtml = linkedCitation
-        ? `<a style="color:var(--info);cursor:pointer;text-decoration:underline" onclick="document.getElementById('chargeDetailModal').classList.remove('show');viewCitationDetail(${linkedCitation.id})">${escapeHtml(linkedCitation.aktenzeichen)} – ${escapeHtml(linkedCitation.name)}</a>`
+        ? `<a style="color:var(--info);cursor:pointer;text-decoration:underline" onclick="viewCitationDetail(${linkedCitation.id})">${escapeHtml(linkedCitation.aktenzeichen)} – ${escapeHtml(linkedCitation.name)}</a>`
         : (c.aktenzeichen ? `<span style="color:var(--text-secondary)">${escapeHtml(c.aktenzeichen)}</span>` : '<span style="color:var(--text-secondary)">–</span>');
     const evidenceHtml = linkedEvidence.length
         ? linkedEvidence.map(ev => `<div style="padding:4px 6px;background:rgba(0,102,204,0.07);border-radius:4px;margin-bottom:3px;font-size:0.85em">${EVIDENCE_TYPE_ICON[ev.type] || '📦'} <strong>${escapeHtml(ev.name || ev.description)}</strong> – ${escapeHtml(ev.location)}</div>`).join('')
@@ -1849,7 +1869,6 @@ function viewCharge(id) {
             </div>` : ''}
         </div>`;
     renderChargeNotes(c);
-    document.getElementById('chargeDetailModal').classList.add('show');
 }
 
 function renderChargeNotes(c) {
@@ -1913,8 +1932,17 @@ function changeCitationStatus(id, newStatus) {
 
 // ========== STRAFAKTEN DETAIL (Akte anzeigen) ==========
 function viewCitationDetail(id) {
+    const basePath = window.location.pathname.includes('/pages/') ? '' : 'pages/';
+    window.location.href = basePath + 'strafakte-detail.html?id=' + id;
+}
+
+function renderCitationDetailPage(id) {
     const c = database.citations.find(x => x.id === id);
-    if (!c) return;
+    if (!c) {
+        const el = document.getElementById('citationDetailContent');
+        if (el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary)">Strafakte nicht gefunden.</div>';
+        return;
+    }
     const linkedEv = database.evidence.filter(e => e.citationAZ === c.aktenzeichen);
     const linkedCh = database.charges.filter(ch => ch.aktenzeichen === c.aktenzeichen);
     const statusColors = { 'Offen': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Abgeschlossen': 'badge-success', 'Archiviert': 'badge-info' };
@@ -1924,7 +1952,7 @@ function viewCitationDetail(id) {
         ? linkedEv.map(ev => `<div style="padding:6px 8px;background:rgba(0,102,204,0.07);border-radius:4px;margin-bottom:4px;font-size:0.85em">${EVIDENCE_TYPE_ICON[ev.type] || '📦'} <strong>${escapeHtml(ev.name || ev.description)}</strong> <span class="badge badge-info">${escapeHtml(ev.aktenzeichen)}</span> – ${escapeHtml(ev.location)}</div>`).join('')
         : '<div style="color:var(--text-secondary);font-size:0.85em;padding:4px 0">Keine Beweismittel erfasst</div>';
     const chHtml = linkedCh.length
-        ? linkedCh.map(ch => `<div style="padding:6px 8px;background:rgba(255,51,51,0.07);border-radius:4px;margin-bottom:4px;font-size:0.85em;cursor:pointer" onclick="document.getElementById('citationDetailModal').classList.remove('show');viewCharge(${ch.id})"><span class="badge badge-danger">${escapeHtml(ch.type)}</span> <strong>${escapeHtml(ch.chargeNumber)}</strong> – ${escapeHtml(ch.name)} <span class="badge ${ch.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${escapeHtml(ch.status || 'Aktiv')}</span></div>`).join('')
+        ? linkedCh.map(ch => `<div style="padding:6px 8px;background:rgba(255,51,51,0.07);border-radius:4px;margin-bottom:4px;font-size:0.85em;cursor:pointer" onclick="viewCharge(${ch.id})"><span class="badge badge-danger">${escapeHtml(ch.type)}</span> <strong>${escapeHtml(ch.chargeNumber)}</strong> – ${escapeHtml(ch.name)} <span class="badge ${ch.status === 'Aktiv' ? 'badge-danger' : 'badge-success'}">${escapeHtml(ch.status || 'Aktiv')}</span></div>`).join('')
         : '<div style="color:var(--text-secondary);font-size:0.85em;padding:4px 0">Keine Anzeigen vorhanden</div>';
     document.getElementById('citationDetailContent').innerHTML = `
         <div style="display:grid;gap:12px">
@@ -1959,7 +1987,6 @@ function viewCitationDetail(id) {
                 ${chHtml}
             </div>
         </div>`;
-    document.getElementById('citationDetailModal').classList.add('show');
 }
 
 // ========== FALLÜBERSICHT (Unified Case View) ==========
@@ -1994,11 +2021,11 @@ function renderFallubersicht(filteredCitations, filteredCharges) {
             ? database.citizens.find(cz => cz.id === firstCitWithId.citizenId)
             : database.citizens.find(cz => cz.name === name);
         const citizenBtn = registeredCitizen
-            ? `<button class="btn btn-small btn-primary" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCitizen(${registeredCitizen.id})" title="Bürgerakte öffnen" style="font-size:0.75em;padding:2px 8px"><i class="fas fa-user-shield"></i> Bürgerakte</button>`
+            ? `<button class="btn btn-small btn-primary" onclick="viewCitizen(${registeredCitizen.id})" title="Bürgerakte öffnen" style="font-size:0.75em;padding:2px 8px"><i class="fas fa-user-shield"></i> Bürgerakte</button>`
             : '';
         const citsHtml = cits.map(c => {
             const cStatus = c.status || 'Offen';
-            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,102,204,0.1);cursor:pointer" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCitationDetail(${c.id})">
+            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(0,102,204,0.1);cursor:pointer" onclick="viewCitationDetail(${c.id})">
                 <span style="font-family:monospace;font-size:0.8em;color:var(--info);flex-shrink:0">${escapeHtml(c.aktenzeichen)}</span>
                 <span class="badge badge-info" style="font-size:0.7em">${escapeHtml(c.type)}</span>
                 <span class="badge ${statusColors[cStatus] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(cStatus)}</span>
@@ -2007,7 +2034,7 @@ function renderFallubersicht(filteredCitations, filteredCharges) {
         }).join('');
         const chgsHtml = chgs.map(c => {
             const chargeStatusColors = { 'Aktiv': 'badge-danger', 'In Bearbeitung': 'badge-warning', 'Eingestellt': 'badge-info', 'Verurteilt': 'badge-success', 'Freigesprochen': 'badge-success' };
-            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,51,51,0.1);cursor:pointer" onclick="document.getElementById('fallubersichtModal').classList.remove('show');viewCharge(${c.id})">
+            return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,51,51,0.1);cursor:pointer" onclick="viewCharge(${c.id})">
                 <span style="font-family:monospace;font-size:0.8em;color:var(--danger);flex-shrink:0">${escapeHtml(c.chargeNumber)}</span>
                 <span class="badge badge-danger" style="font-size:0.7em">${escapeHtml(c.type)}</span>
                 <span class="badge ${chargeStatusColors[c.status] || 'badge-info'}" style="font-size:0.7em">${escapeHtml(c.status || 'Aktiv')}</span>

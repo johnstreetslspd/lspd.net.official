@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>LSPD - Fallübersicht</title>
+<title>LSPD - Strafakte Details</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 <link rel="stylesheet" href="../shared-styles.css"/>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -17,7 +17,8 @@
 <div class="header-left">
 <div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
 <nav class="header-nav">
-<a href="../mitarbeiter-portal.html"><i class="fas fa-arrow-left"></i> Dashboard</a>
+<a href="strafakten.html"><i class="fas fa-arrow-left"></i> Strafakten</a>
+<a href="../mitarbeiter-portal.html"><i class="fas fa-th-large"></i> Dashboard</a>
 <a href="../portal-hub.html"><i class="fas fa-home"></i></a>
 </nav>
 </div>
@@ -29,18 +30,14 @@
 <button class="logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
 </div>
 </div>
-<h1>Fallübersicht</h1>
-<p>Alle Fälle eines Bürgers auf einen Blick</p>
+<h1><i class="fas fa-gavel"></i> Strafakte – Details</h1>
+<p>Strafakte einsehen und bearbeiten</p>
 </header>
 
 <div class="container">
-<div class="page-toolbar">
-  <div class="search-box">
-    <i class="fas fa-search" style="color:var(--secondary)"></i>
-    <input type="text" id="fallubersichtSearch" placeholder="Nach Bürger suchen..." oninput="filterFallubersicht()">
-  </div>
+<div id="citationDetailContent" style="padding:10px 0">
+<p style="text-align:center;color:var(--text-secondary);padding:40px">Laden...</p>
 </div>
-<div id="fallubersichtContent" style="padding:10px 0"></div>
 </div>
 
 <div id="toast" class="toast hidden"></div>
@@ -48,13 +45,16 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
+        const params = new URLSearchParams(window.location.search);
+        const id = Number(params.get('id'));
         initSubPage(() => {
-            renderFallubersicht();
+            if (id) renderCitationDetailPage(id);
         });
-        subPageRefreshCallback = () => { renderFallubersicht(); };
+        subPageRefreshCallback = () => {
+            if (id) renderCitationDetailPage(id);
+        };
     }, 1000);
 });
-window.onclick = function(e) { if (e.target.classList.contains('modal')) e.target.classList.remove('show'); };
 </script>
 </body>
 </html>
