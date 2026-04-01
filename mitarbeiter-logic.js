@@ -488,19 +488,37 @@ function deleteEmployee(id) {
 }
 
 // ========== CITIZENS ==========
+function calcAgeFromDateInput(dobVal) {
+    if (!dobVal) return null;
+    const dob = new Date(dobVal);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const hasBirthdayPassed = today >= new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
+    if (!hasBirthdayPassed) age -= 1;
+    return Math.max(0, age);
+}
+
 function addCitizen(e) {
     e.preventDefault();
+    const dobVal = document.getElementById('ctDateOfBirth').value;
     const c = {
         id: Date.now(),
         name: document.getElementById('ctName').value,
         phone: document.getElementById('ctPhone').value,
         address: document.getElementById('ctAddress').value,
-        status: document.getElementById('ctStatus').value
+        status: document.getElementById('ctStatus').value,
+        dateOfBirth: dobVal ? new Date(dobVal).toLocaleDateString('de-DE') : '',
+        age: calcAgeFromDateInput(dobVal),
+        gender: document.getElementById('ctGender').value,
+        fivemId: '',
+        steamId: '',
+        syncSource: 'manual',
     };
     database.citizens.push(c);
     saveDatabase();
     closeModal('addCitizen');
     document.getElementById('addCitizenModal')?.querySelector('form')?.reset();
+    document.getElementById('ctFivemInfoRow').style.display = 'none';
     showToast('✅ Bürger hinzugefügt', c.name, 'success');
     updateCounts();
     renderCitizensView();
@@ -510,7 +528,7 @@ function renderCitizensView() {
     const b = document.getElementById('citizensViewTableBody');
     if (!b) return;
     if (database.citizens.length === 0) {
-        b.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Bürger erfasst</td></tr>';
+        b.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:20px">Keine Bürger erfasst</td></tr>';
         return;
     }
     b.innerHTML = database.citizens.map(c => {
@@ -521,9 +539,14 @@ function renderCitizensView() {
             ? `<span class="badge badge-info" title="${linkedCit} Strafakte(n), ${linkedChg} Anzeige(n)" style="cursor:default">🔗${linkedTotal}</span>`
             : '<span style="color:var(--text-secondary);font-size:0.85em">–</span>';
         const statusBadge = `<span class="badge ${c.status === 'Aktiv' ? 'badge-success' : 'badge-warning'}">${escapeHtml(c.status)}</span>`;
+        const fivemBadge = c.syncSource === 'fivem'
+            ? `<span class="badge badge-info" title="FiveM-Sync: ${escapeHtml(c.fivemId || '')}" style="font-size:0.7em;margin-left:4px"><i class="fas fa-gamepad"></i></span>`
+            : '';
+        const dobDisplay = c.dateOfBirth ? escapeHtml(c.dateOfBirth) : '<span style="color:var(--text-secondary)">–</span>';
         return `<tr>
-            <td><strong>${escapeHtml(c.name)}</strong></td>
+            <td><strong>${escapeHtml(c.name)}</strong>${fivemBadge}</td>
             <td>${escapeHtml(c.phone)}</td>
+            <td>${dobDisplay}</td>
             <td>${escapeHtml(c.address)}</td>
             <td>${statusBadge}</td>
             <td>${linkedBadge}</td>
@@ -546,8 +569,33 @@ function editCitizen(id) {
     if (!c) return;
     document.getElementById('ctName').value = c.name;
     document.getElementById('ctPhone').value = c.phone;
-    document.getElementById('ctAddress').value = c.address;
+    document.getElementById('ctAddress').value = c.address || '';
     document.getElementById('ctStatus').value = c.status;
+    // Geburtsdatum: Portal speichert "TT.MM.JJJJ" → input[type=date] braucht "JJJJ-MM-TT"
+    if (c.dateOfBirth) {
+        const parts = c.dateOfBirth.split('.');
+        if (parts.length === 3) {
+            document.getElementById('ctDateOfBirth').value = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+        } else {
+            document.getElementById('ctDateOfBirth').value = '';
+        }
+    } else {
+        document.getElementById('ctDateOfBirth').value = '';
+    }
+    document.getElementById('ctGender').value = c.gender || '';
+    // FiveM-Info anzeigen falls vorhanden
+    const fivemRow = document.getElementById('ctFivemInfoRow');
+    if (fivemRow) {
+        if (c.syncSource === 'fivem' && (c.fivemId || c.steamId)) {
+            document.getElementById('ctFivemIdDisplay').textContent =
+                (c.fivemId ? 'CharID: ' + c.fivemId : '') +
+                (c.fivemId && c.steamId ? ' · ' : '') +
+                (c.steamId ? 'License: ' + c.steamId : '');
+            fivemRow.style.display = 'block';
+        } else {
+            fivemRow.style.display = 'none';
+        }
+    }
     const form = document.getElementById('addCitizenModal').querySelector('form');
     const originalCitizenOnsubmit = form.onsubmit;
     form.onsubmit = (e) => {
@@ -556,9 +604,14 @@ function editCitizen(id) {
         c.phone = document.getElementById('ctPhone').value;
         c.address = document.getElementById('ctAddress').value;
         c.status = document.getElementById('ctStatus').value;
+        c.gender = document.getElementById('ctGender').value;
+        const dobVal = document.getElementById('ctDateOfBirth').value;
+        c.dateOfBirth = dobVal ? new Date(dobVal).toLocaleDateString('de-DE') : (c.dateOfBirth || '');
+        if (dobVal) c.age = calcAgeFromDateInput(dobVal);
         saveDatabase();
         closeModal('addCitizen');
         form.reset();
+        if (fivemRow) fivemRow.style.display = 'none';
         form.onsubmit = originalCitizenOnsubmit;
         showToast('✅ Bürger aktualisiert', c.name, 'success');
         renderCitizensView();
@@ -661,19 +714,39 @@ function renderCitizenDetailPage(id) {
                 <div style="width:52px;height:52px;border-radius:50%;background:rgba(0,102,204,0.25);display:flex;align-items:center;justify-content:center;font-size:1.6em;flex-shrink:0">🧑</div>
                 <div>
                     <div style="font-size:1.2em;font-weight:700">${escapeHtml(citizen.name)}</div>
-                    <div style="margin-top:4px"><span class="badge ${citizenStatusClass}">${escapeHtml(citizen.status)}</span></div>
+                    <div style="margin-top:4px">
+                        <span class="badge ${citizenStatusClass}">${escapeHtml(citizen.status)}</span>
+                        ${citizen.syncSource === 'fivem' ? '<span class="badge badge-info" style="margin-left:6px;font-size:0.75em"><i class="fas fa-gamepad"></i> FiveM</span>' : ''}
+                    </div>
                 </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
                 <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
                     <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-phone"></i> Telefon</div>
-                    <div style="font-weight:600">${escapeHtml(citizen.phone)}</div>
+                    <div style="font-weight:600">${escapeHtml(citizen.phone || '–')}</div>
                 </div>
                 <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
                     <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-home"></i> Adresse</div>
-                    <div style="font-weight:600">${escapeHtml(citizen.address)}</div>
+                    <div style="font-weight:600">${escapeHtml(citizen.address || '–')}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-birthday-cake"></i> Geburtsdatum</div>
+                    <div style="font-weight:600">${citizen.dateOfBirth ? escapeHtml(citizen.dateOfBirth) : '–'}${citizen.age != null ? ' <span style="color:var(--text-secondary);font-weight:400">(' + citizen.age + ' J.)</span>' : ''}</div>
+                </div>
+                <div style="background:rgba(0,102,204,0.07);padding:10px;border-radius:6px">
+                    <div style="font-size:0.75em;color:var(--text-secondary);margin-bottom:4px"><i class="fas fa-venus-mars"></i> Geschlecht</div>
+                    <div style="font-weight:600">${escapeHtml(citizen.gender || '–')}</div>
                 </div>
             </div>
+            ${citizen.syncSource === 'fivem' ? `
+            <div style="background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:8px;padding:12px;font-size:0.82em">
+                <div style="font-size:0.75em;color:var(--secondary);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px"><i class="fas fa-gamepad"></i> FiveM-Synchronisation</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    ${citizen.fivemId ? `<div><span style="color:var(--text-secondary)">Charakter-ID:</span> <code style="font-size:0.9em">${escapeHtml(citizen.fivemId)}</code></div>` : ''}
+                    ${citizen.steamId ? `<div><span style="color:var(--text-secondary)">License:</span> <code style="font-size:0.9em">${escapeHtml(citizen.steamId)}</code></div>` : ''}
+                    ${citizen.lastFivemSync ? `<div style="grid-column:1/-1"><span style="color:var(--text-secondary)">Letzter Sync:</span> ${new Date(citizen.lastFivemSync).toLocaleString('de-DE')}</div>` : ''}
+                </div>
+            </div>` : ''}
             <div style="display:flex;gap:12px">
                 <div style="flex:1;background:rgba(0,102,204,0.07);padding:10px;border-radius:6px;text-align:center">
                     <div style="font-size:1.4em;font-weight:700;color:var(--info)">${linkedCitations.length}</div>
@@ -2629,7 +2702,7 @@ function makeSearchFilter(inputId, tbodyId, columns) {
 function filterUsersModal() { makeSearchFilter('usersModalSearch', 'usersViewTableBody', [0, 1, 2]); }
 function filterRanksModal() { makeSearchFilter('ranksModalSearch', 'ranksViewTableBody', [0, 2]); }
 function filterEmployeesModal() { makeSearchFilter('employeesModalSearch', 'employeesViewTableBody', [0, 1, 2]); }
-function filterCitizensModal() { makeSearchFilter('citizensModalSearch', 'citizensViewTableBody', [0, 1, 2]); }
+function filterCitizensModal() { makeSearchFilter('citizensModalSearch', 'citizensViewTableBody', [0, 1, 2, 3]); }
 function filterEvidenceModal() { makeSearchFilter('evidenceModalSearch', 'evidenceViewTableBody', [0, 1, 2, 3, 4]); }
 
 function filterFallubersicht() {
