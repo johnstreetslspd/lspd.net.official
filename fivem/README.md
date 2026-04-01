@@ -109,8 +109,9 @@ Nach der Synchronisation enthält jeder Bürger im Portal folgende Felder:
 | `dateOfBirth`   | Geburtsdatum                          | `"15.01.1990"`              |
 | `age`           | Alter (automatisch berechnet)         | `34`                        |
 | `gender`        | Geschlecht                            | `"Männlich"` / `"Weiblich"` |
-| `fivemId`       | FiveM Charakter-ID (citizenid)        | `"char_ABC123"`             |
-| `steamId`       | Steam/License Identifier              | `"steam:110000112345678"`   |
+| `pkz`           | Personenkennziffer (systemgeneriert)  | `"PKZ-A1B2C3D4"`            |
+| `fivemId`       | FiveM Charakter-ID (intern, nicht angezeigt) | `"char_ABC123"`      |
+| `steamId`       | Steam/License Identifier (intern, nicht angezeigt) | `"steam:110000112345678"` |
 | `syncSource`    | Synchronisationsquelle                | `"fivem"` / `"manual"`      |
 | `lastFivemSync` | Zeitstempel des letzten FiveM-Syncs   | `"2024-01-15T12:00:00Z"`    |
 

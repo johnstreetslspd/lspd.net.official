@@ -106,6 +106,21 @@ function getAvailableDepartments() {
         : JSON.parse(JSON.stringify(DEFAULT_DEPARTMENTS));
 }
 
+// Generiert eine eindeutige Personenkennziffer (PKZ) im Format "PKZ-XXXXXXXX"
+// Prüft gegen bestehende Bürger, um Kollisionen zu vermeiden.
+function generatePKZ() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+    const usedPKZs = new Set((database.citizens || []).map(c => c.pkz).filter(Boolean));
+    let result;
+    do {
+        result = 'PKZ-';
+        for (let i = 0; i < 8; i++) {
+            result += chars[Math.floor(Math.random() * chars.length)];
+        }
+    } while (usedPKZs.has(result));
+    return result;
+}
+
 // Migration: Konvertiert alte Datenstrukturen in das neue Format
 function migrateDataIfNeeded() {
     // Rollen migrieren
@@ -151,6 +166,12 @@ function migrateDataIfNeeded() {
             if (!rank.department) rank.department = '';
             if (!rank.abbreviation) rank.abbreviation = '';
             if (!rank.description) rank.description = '';
+        });
+    }
+    // Bürger migrieren: PKZ vergeben falls nicht vorhanden
+    if (database.citizens) {
+        database.citizens.forEach(citizen => {
+            if (!citizen.pkz) citizen.pkz = generatePKZ();
         });
     }
     // rolePermissions aus Rollen-Objekten synchronisieren (Rückwärtskompatibilität)
