@@ -503,6 +503,7 @@ function addCitizen(e) {
     const dobVal = document.getElementById('ctDateOfBirth').value;
     const c = {
         id: Date.now(),
+        pkz: generatePKZ(),
         name: document.getElementById('ctName').value,
         phone: document.getElementById('ctPhone').value,
         address: document.getElementById('ctAddress').value,
@@ -510,8 +511,6 @@ function addCitizen(e) {
         dateOfBirth: dobVal ? new Date(dobVal).toLocaleDateString('de-DE') : '',
         age: calcAgeFromDateInput(dobVal),
         gender: document.getElementById('ctGender').value,
-        fivemId: '',
-        steamId: '',
         syncSource: 'manual',
     };
     database.citizens.push(c);
@@ -540,7 +539,7 @@ function renderCitizensView() {
             : '<span style="color:var(--text-secondary);font-size:0.85em">–</span>';
         const statusBadge = `<span class="badge ${c.status === 'Aktiv' ? 'badge-success' : 'badge-warning'}">${escapeHtml(c.status)}</span>`;
         const fivemBadge = c.syncSource === 'fivem'
-            ? `<span class="badge badge-info" title="FiveM-Sync: ${escapeHtml(c.fivemId || '')}" style="font-size:0.7em;margin-left:4px"><i class="fas fa-gamepad"></i></span>`
+            ? `<span class="badge badge-info" title="FiveM-Synchronisiert" style="font-size:0.7em;margin-left:4px"><i class="fas fa-gamepad"></i></span>`
             : '';
         const dobDisplay = c.dateOfBirth ? escapeHtml(c.dateOfBirth) : '<span style="color:var(--text-secondary)">–</span>';
         return `<tr>
@@ -586,11 +585,8 @@ function editCitizen(id) {
     // FiveM-Info anzeigen falls vorhanden
     const fivemRow = document.getElementById('ctFivemInfoRow');
     if (fivemRow) {
-        if (c.syncSource === 'fivem' && (c.fivemId || c.steamId)) {
-            document.getElementById('ctFivemIdDisplay').textContent =
-                (c.fivemId ? 'CharID: ' + c.fivemId : '') +
-                (c.fivemId && c.steamId ? ' · ' : '') +
-                (c.steamId ? 'License: ' + c.steamId : '');
+        if (c.syncSource === 'fivem') {
+            document.getElementById('ctFivemIdDisplay').textContent = 'Synchronisiert';
             fivemRow.style.display = 'block';
         } else {
             fivemRow.style.display = 'none';
@@ -718,6 +714,7 @@ function renderCitizenDetailPage(id) {
                         <span class="badge ${citizenStatusClass}">${escapeHtml(citizen.status)}</span>
                         ${citizen.syncSource === 'fivem' ? '<span class="badge badge-info" style="margin-left:6px;font-size:0.75em"><i class="fas fa-gamepad"></i> FiveM</span>' : ''}
                     </div>
+                    ${citizen.pkz ? `<div style="margin-top:6px;font-size:0.78em;color:var(--text-secondary)"><i class="fas fa-id-card"></i> <span style="font-family:monospace;letter-spacing:0.5px">${escapeHtml(citizen.pkz)}</span></div>` : ''}
                 </div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -742,8 +739,6 @@ function renderCitizenDetailPage(id) {
             <div style="background:rgba(0,102,204,0.05);border:1px solid rgba(0,102,204,0.2);border-radius:8px;padding:12px;font-size:0.82em">
                 <div style="font-size:0.75em;color:var(--secondary);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px"><i class="fas fa-gamepad"></i> FiveM-Synchronisation</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-                    ${citizen.fivemId ? `<div><span style="color:var(--text-secondary)">Charakter-ID:</span> <code style="font-size:0.9em">${escapeHtml(citizen.fivemId)}</code></div>` : ''}
-                    ${citizen.steamId ? `<div><span style="color:var(--text-secondary)">License:</span> <code style="font-size:0.9em">${escapeHtml(citizen.steamId)}</code></div>` : ''}
                     ${citizen.lastFivemSync ? `<div style="grid-column:1/-1"><span style="color:var(--text-secondary)">Letzter Sync:</span> ${new Date(citizen.lastFivemSync).toLocaleString('de-DE')}</div>` : ''}
                 </div>
             </div>` : ''}

@@ -25,6 +25,28 @@ local function generatePortalId()
     return os.time() * 1000 + _idCounter
 end
 
+--- Generiert eine Personenkennziffer (PKZ) im Format "PKZ-XXXXXXXX".
+--- @param existingCitizens table  Liste der bestehenden Bürger (zur Kollisionsprüfung)
+local function generatePKZ(existingCitizens)
+    local chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
+    local usedPKZs = {}
+    if existingCitizens then
+        for _, c in ipairs(existingCitizens) do
+            if c.pkz then usedPKZs[c.pkz] = true end
+        end
+    end
+    local result
+    repeat
+        result = "PKZ-"
+        for _ = 1, 8 do
+            local idx = math.random(1, #chars)
+            result = result .. chars:sub(idx, idx)
+        end
+    until not usedPKZs[result]
+    usedPKZs[result] = true
+    return result
+end
+
 --- Berechnet das Alter aus einem Geburtsdatum-String.
 --- Unterstützte Formate: "TT-MM-JJJJ", "JJJJ-MM-TT", "TT/MM/JJJJ"
 --- @param dob string  Geburtsdatum-String
@@ -326,6 +348,7 @@ local function performSync()
                     if Config.Sync.AutoCreateCitizens then
                         local newCitizen = {
                             id          = generatePortalId(),
+                            pkz         = generatePKZ(portalCitizens),
                             name        = char.name,
                             phone       = char.phone,
                             address     = char.address,
@@ -407,6 +430,7 @@ local function syncSingleCharacter(charData)
         elseif Config.Sync.AutoCreateCitizens then
             local newCitizen = {
                 id          = generatePortalId(),
+                pkz         = generatePKZ(citizens),
                 name        = charData.name,
                 phone       = charData.phone,
                 address     = charData.address,
