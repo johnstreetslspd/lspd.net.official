@@ -56,15 +56,36 @@
 <div class="section-title" style="font-size:1.4em;margin-top:40px">📋 Eingereichte Bewerbungen</div>
 <div class="table-container">
 <table>
-<thead><tr><th>Application Code</th><th>Name</th><th>Status</th><th>Eingereicht</th></tr></thead>
+<thead><tr><th>Bewerbungscode</th><th>Status</th><th>Eingereicht</th></tr></thead>
 <tbody id="applicationsTableBody">
-<tr><td colspan="4" style="text-align:center;padding:40px;">Laden...</td></tr>
+<tr><td colspan="3" style="text-align:center;padding:40px;">Laden...</td></tr>
 </tbody>
 </table>
 </div>
 </div>
 
+<!-- Confirmation overlay shown after submitting an application -->
+<div id="codeConfirmOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;">
+<div style="background:var(--card-bg,#1a1a2e);border:2px solid var(--secondary,#00ff88);border-radius:12px;padding:40px;max-width:480px;width:90%;text-align:center;">
+    <div style="font-size:3em;margin-bottom:16px;">📋</div>
+    <h2 style="color:var(--secondary,#00ff88);margin-bottom:12px;">Bewerbung eingereicht!</h2>
+    <p style="color:var(--text-secondary,#aaa);margin-bottom:20px;">Bitte notieren Sie Ihren Bewerbungscode. Sie benötigen diesen Code, um den Status Ihrer Bewerbung abzufragen.</p>
+    <div style="background:rgba(0,255,136,0.1);border:2px dashed var(--secondary,#00ff88);border-radius:8px;padding:16px;margin-bottom:24px;">
+        <div style="font-size:0.85em;color:var(--text-secondary,#aaa);margin-bottom:6px;">Ihr Bewerbungscode / Aktenzeichen</div>
+        <div id="confirmCodeDisplay" style="font-size:1.5em;font-weight:bold;color:var(--secondary,#00ff88);letter-spacing:2px;"></div>
+    </div>
+    <p style="color:var(--text-secondary,#aaa);font-size:0.9em;margin-bottom:24px;">⚠️ Bitte kopieren Sie diesen Code jetzt. Er wird nicht erneut angezeigt.</p>
+    <label style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px;cursor:pointer;color:var(--text,#fff);">
+        <input type="checkbox" id="codeConfirmCheck" style="width:18px;height:18px;cursor:pointer;">
+        <span>Ich habe meinen Bewerbungscode kopiert</span>
+    </label>
+    <button onclick="closeCodeConfirm()" id="codeConfirmBtn" class="btn btn-success" style="width:100%;opacity:0.4;" disabled>✅ Bestätigen &amp; Schließen</button>
+</div>
+</div>
+
 <script>
+let _pendingForm = null;
+
 function submitApplication(e) {
     e.preventDefault();
     const code = 'APP-' + new Date().toISOString().split('T')[0].replace(/-/g, '') + '-' +
@@ -82,23 +103,53 @@ function submitApplication(e) {
     };
     database.applications.push(app);
     saveDatabase();
-    showToast('✅ Erfolg!', 'Bewerbung eingereicht. Code: ' + code, 'success');
     renderApplicationsTable();
-    e.target.reset();
+    _pendingForm = e.target;
+    showCodeConfirm(code);
 }
+
+function showCodeConfirm(code) {
+    document.getElementById('confirmCodeDisplay').textContent = code;
+    document.getElementById('codeConfirmCheck').checked = false;
+    const btn = document.getElementById('codeConfirmBtn');
+    btn.style.opacity = '0.4';
+        btn.disabled = true;
+    const overlay = document.getElementById('codeConfirmOverlay');
+    overlay.style.display = 'flex';
+}
+
+function closeCodeConfirm() {
+    document.getElementById('codeConfirmOverlay').style.display = 'none';
+    if (_pendingForm) {
+        _pendingForm.reset();
+        _pendingForm = null;
+    }
+}
+
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'codeConfirmCheck') {
+        const btn = document.getElementById('codeConfirmBtn');
+        if (e.target.checked) {
+            btn.style.opacity = '1';
+            btn.disabled = false;
+        } else {
+            btn.style.opacity = '0.4';
+            btn.disabled = true;
+        }
+    }
+});
 
 function renderApplicationsTable() {
     const tbody = document.getElementById('applicationsTableBody');
     if (!tbody) return;
     const apps = database.applications || [];
     if (apps.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-secondary);">Keine Bewerbungen vorhanden</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:40px;color:var(--text-secondary);">Keine Bewerbungen vorhanden</td></tr>';
         return;
     }
     tbody.innerHTML = [...apps].reverse().map(a => '<tr>' +
         '<td>' + escapeHtml(a.code || '') + '</td>' +
-        '<td>' + escapeHtml(a.name || '') + '</td>' +
-        '<td><span class="badge badge-' + (a.status === 'Eingereicht' ? 'warning' : a.status === 'Angenommen' ? 'success' : 'danger') + '">' + escapeHtml(a.status || '') + '</span></td>' +
+        '<td><span class="badge badge-' + (a.status === 'Angenommen' ? 'success' : a.status === 'Abgelehnt' ? 'danger' : 'warning') + '">' + escapeHtml(a.status || '') + '</span></td>' +
         '<td>' + (a.date ? new Date(a.date).toLocaleDateString('de-DE') : '') + '</td>' +
         '</tr>').join('');
 }

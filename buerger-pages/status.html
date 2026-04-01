@@ -48,16 +48,23 @@ function checkStatus(e) {
     const doCheck = () => {
         const app = database.applications.find(a => a.code === code);
         if (app) {
+            const isAngenommen = app.status === 'Angenommen';
+            const isAbgelehnt = app.status === 'Abgelehnt';
+            const borderColor = isAngenommen ? 'var(--secondary,#00ff88)' : isAbgelehnt ? 'var(--danger,#ff3333)' : 'var(--warning,#ffaa00)';
+            const bgColor = isAngenommen ? 'rgba(0,255,136,0.15)' : isAbgelehnt ? 'rgba(255,51,51,0.15)' : 'rgba(255,170,0,0.15)';
+            const textColor = isAngenommen ? 'var(--secondary,#00ff88)' : isAbgelehnt ? 'var(--danger,#ff3333)' : 'var(--warning,#ffaa00)';
+            const icon = isAngenommen ? '✅' : isAbgelehnt ? '❌' : '🕐';
+            const badgeClass = isAngenommen ? 'badge-success' : isAbgelehnt ? 'badge-danger' : 'badge-warning';
             resultDiv.innerHTML =
-                '<div style="background:rgba(0,255,136,0.15);border:2px solid var(--secondary);padding:20px;border-radius:8px;color:var(--secondary);">' +
-                '<h3>✅ Bewerbung gefunden!</h3>' +
-                '<p><strong>Name:</strong> ' + escapeHtml(app.name) + '</p>' +
-                '<p><strong>Status:</strong> <span class="badge badge-success">' + escapeHtml(app.status) + '</span></p>' +
+                '<div style="background:' + bgColor + ';border:2px solid ' + borderColor + ';padding:20px;border-radius:8px;color:' + textColor + ';">' +
+                '<h3>' + icon + ' Bewerbung gefunden!</h3>' +
+                '<p><strong>Aktenzeichen:</strong> ' + escapeHtml(app.code) + '</p>' +
+                '<p><strong>Status:</strong> <span class="badge ' + badgeClass + '">' + escapeHtml(app.status) + '</span></p>' +
                 '<p><strong>Eingereicht:</strong> ' + new Date(app.date).toLocaleDateString('de-DE') + '</p>' +
                 '</div>';
         } else {
             resultDiv.innerHTML =
-                '<div style="background:rgba(255,51,51,0.15);border:2px solid var(--danger);padding:20px;border-radius:8px;color:var(--danger);">' +
+                '<div style="background:rgba(255,51,51,0.15);border:2px solid var(--danger,#ff3333);padding:20px;border-radius:8px;color:var(--danger,#ff3333);">' +
                 '<h3>❌ Bewerbung nicht gefunden</h3>' +
                 '<p>Der eingegebene Code ist ungültig. Überprüfen Sie Ihre Eingabe.</p>' +
                 '</div>';
