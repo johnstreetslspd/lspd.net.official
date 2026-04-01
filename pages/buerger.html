@@ -43,7 +43,7 @@
 </div>
 <div class="table-container">
   <table>
-    <thead><tr><th>Name</th><th>Telefon</th><th>Adresse</th><th>Status</th><th>Akten</th><th>Aktion</th></tr></thead>
+    <thead><tr><th>Name</th><th>Telefon</th><th>Geburtsdatum</th><th>Adresse</th><th>Status</th><th>Akten</th><th>Aktion</th></tr></thead>
     <tbody id="citizensViewTableBody"></tbody>
   </table>
 </div>
@@ -55,8 +55,16 @@
 <form onsubmit="addCitizen(event)">
 <div class="form-group"><label>Name</label><input type="text" id="ctName" required></div>
 <div class="form-group"><label>Telefon</label><input type="tel" id="ctPhone" required></div>
-<div class="form-group"><label>Adresse</label><input type="text" id="ctAddress" required></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="form-group"><label>Geburtsdatum</label><input type="date" id="ctDateOfBirth"></div>
+<div class="form-group"><label>Geschlecht</label><select id="ctGender"><option value="">– wählen –</option><option>Männlich</option><option>Weiblich</option><option>Divers</option></select></div>
+</div>
+<div class="form-group"><label>Adresse</label><input type="text" id="ctAddress"></div>
 <div class="form-group"><label>Status</label><select id="ctStatus"><option>Aktiv</option><option>Inaktiv</option></select></div>
+<div id="ctFivemInfoRow" style="display:none;background:rgba(0,102,204,0.07);border-radius:6px;padding:8px 10px;margin-bottom:8px;font-size:0.82em;color:var(--text-secondary)">
+  <i class="fas fa-gamepad" style="color:var(--secondary)"></i> <strong style="color:var(--text-primary)">FiveM-Sync:</strong>
+  <span id="ctFivemIdDisplay"></span>
+</div>
 <button type="submit" class="btn btn-success" style="width:100%;margin-top:10px">Erstellen</button>
 </form>
 </div>
