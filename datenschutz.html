@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenschutz – LSPD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #0066cc; --primary-bright: #0088ff; --primary-dark: #004a99;
+            --secondary: #00ff88; --dark: #0a0e27; --darkler: #050812;
+            --card-bg: rgba(15, 25, 50, 0.7); --text-primary: #ffffff;
+            --text-secondary: #b0b8d0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { min-height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, var(--dark) 0%, var(--darkler) 100%); color: var(--text-primary); }
+        header { background: linear-gradient(90deg, var(--dark) 0%, var(--primary-dark) 50%, var(--dark) 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid var(--primary); box-shadow: 0 0 30px rgba(0,102,204,0.3); }
+        .logo { font-size: 2.5em; font-weight: 900; letter-spacing: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 14px; }
+        .header-nav { display: flex; gap: 16px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+        .header-nav a { color: var(--text-secondary); text-decoration: none; padding: 6px 14px; border: 1px solid rgba(0,102,204,0.3); border-radius: 6px; transition: all 0.3s; font-size: 0.9em; }
+        .header-nav a:hover { border-color: var(--primary-bright); color: var(--primary-bright); }
+        header h1 { font-size: 2em; margin-bottom: 8px; color: var(--text-secondary); font-weight: 400; margin-top: 16px; }
+        header p { color: var(--text-secondary); font-size: 0.95em; }
+        .container { max-width: 900px; margin: 0 auto; padding: 60px 32px; }
+        .content-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(0,102,204,0.3); border-radius: 12px; padding: 40px; margin-bottom: 32px; }
+        .section-title { font-size: 1.8em; font-weight: 900; margin-bottom: 32px; text-align: center; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; position: relative; padding-bottom: 16px; }
+        .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 3px; background: var(--secondary); }
+        h2 { color: var(--secondary); margin-bottom: 12px; font-size: 1.2em; margin-top: 24px; }
+        h2:first-child { margin-top: 0; }
+        p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px; }
+        ul { list-style: disc; padding-left: 24px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px; }
+        li { margin-bottom: 6px; }
+        .last-updated { font-size: 0.85em; color: rgba(176,184,208,0.6); text-align: right; margin-bottom: 24px; }
+        footer { background: rgba(0,0,0,0.3); border-top: 1px solid rgba(0,102,204,0.2); padding: 24px 32px; text-align: center; color: var(--text-secondary); font-size: 0.85em; }
+        @media (max-width: 768px) { .container { padding: 30px 16px; } .content-card { padding: 24px; } header { padding: 24px 16px; } .logo { font-size: 1.8em; } }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+    <div class="header-nav">
+        <a href="portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+        <a href="impressum.html"><i class="fas fa-file-contract"></i> Impressum</a>
+    </div>
+    <h1>Datenschutzerklärung</h1>
+    <p>Informationen zum Umgang mit Ihren personenbezogenen Daten</p>
+</header>
+
+<div class="container">
+    <div class="section-title">🔒 Datenschutzerklärung</div>
+
+    <div class="content-card">
+        <div class="last-updated">Stand: April 2026</div>
+
+        <h2>1. Verantwortliche Stelle</h2>
+        <p>Verantwortlich für die Verarbeitung personenbezogener Daten auf diesem Portal ist das Los Santos Police Department (LSPD), 1 Police Drive, Los Santos, SA. Kontakt: <a href="mailto:info@lspd.ls" style="color:var(--primary-bright);">info@lspd.ls</a></p>
+
+        <h2>2. Erhobene Daten</h2>
+        <p>Im Rahmen der Nutzung unserer Portale werden folgende Daten erhoben:</p>
+        <ul>
+            <li>Name, E-Mail-Adresse und Telefonnummer (bei Bewerbungen und Anfragen)</li>
+            <li>Inhalt von Anfragen und Beschwerden</li>
+            <li>Technische Daten (Browser-Typ, Zugriffszeit) durch Firebase</li>
+        </ul>
+
+        <h2>3. Zweck der Datenverarbeitung</h2>
+        <p>Ihre Daten werden ausschließlich für folgende Zwecke verwendet:</p>
+        <ul>
+            <li>Bearbeitung Ihrer Bewerbung und Benachrichtigung über den Status</li>
+            <li>Beantwortung von Anfragen und Beschwerden</li>
+            <li>Bereitstellung und Verbesserung unserer Dienste</li>
+        </ul>
+
+        <h2>4. Speicherung</h2>
+        <p>Ihre Daten werden in Google Firebase Firestore gespeichert und gesichert übertragen (HTTPS). Die Speicherung erfolgt auf Servern innerhalb der EU oder in Ländern mit angemessenem Datenschutzniveau.</p>
+
+        <h2>5. Weitergabe an Dritte</h2>
+        <p>Ihre Daten werden nicht an Dritte verkauft oder zu Werbezwecken weitergegeben. Eine Weitergabe erfolgt nur, wenn dies gesetzlich vorgeschrieben ist.</p>
+
+        <h2>6. Ihre Rechte</h2>
+        <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer Daten. Zur Ausübung dieser Rechte wenden Sie sich an: <a href="mailto:info@lspd.ls" style="color:var(--primary-bright);">info@lspd.ls</a></p>
+
+        <h2>7. Cookies</h2>
+        <p>Dieses Portal verwendet technisch notwendige Cookies (z. B. für die Sitzungsverwaltung des Mitarbeiterportals via localStorage). Marketing-Cookies werden nicht eingesetzt.</p>
+
+        <h2>8. Änderungen dieser Erklärung</h2>
+        <p>Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen. Die jeweils aktuelle Version ist stets auf dieser Seite abrufbar.</p>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 Los Santos Police Department. Alle Rechte vorbehalten. |
+        <a href="nutzungsbedingungen.html" style="color:var(--text-secondary);text-decoration:none;">Nutzungsbedingungen</a> |
+        <a href="impressum.html" style="color:var(--text-secondary);text-decoration:none;">Impressum</a>
+    </p>
+</footer>
+</body>
+</html>
