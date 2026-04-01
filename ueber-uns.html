@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Über uns – LSPD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-bright: #0088ff;
+            --primary-dark: #004a99;
+            --secondary: #00ff88;
+            --dark: #0a0e27;
+            --darkler: #050812;
+            --card-bg: rgba(15, 25, 50, 0.7);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b8d0;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff3333;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { min-height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, var(--dark) 0%, var(--darkler) 100%); color: var(--text-primary); }
+        header { background: linear-gradient(90deg, var(--dark) 0%, var(--primary-dark) 50%, var(--dark) 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid var(--primary); box-shadow: 0 0 30px rgba(0,102,204,0.3); }
+        .logo { font-size: 2.5em; font-weight: 900; letter-spacing: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 14px; }
+        .header-nav { display: flex; gap: 16px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+        .header-nav a { color: var(--text-secondary); text-decoration: none; padding: 6px 14px; border: 1px solid rgba(0,102,204,0.3); border-radius: 6px; transition: all 0.3s; font-size: 0.9em; }
+        .header-nav a:hover { border-color: var(--primary-bright); color: var(--primary-bright); }
+        header h1 { font-size: 2em; margin-bottom: 8px; color: var(--text-secondary); font-weight: 400; }
+        header p { color: var(--text-secondary); font-size: 0.95em; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 60px 32px; }
+        .content-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(0,102,204,0.3); border-radius: 12px; padding: 40px; margin-bottom: 32px; }
+        .section-title { font-size: 1.8em; font-weight: 900; margin-bottom: 32px; text-align: center; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; position: relative; padding-bottom: 16px; }
+        .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 3px; background: var(--secondary); }
+        h2 { color: var(--secondary); margin-bottom: 16px; font-size: 1.3em; }
+        p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px; }
+        .values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+        .value-item { background: rgba(0,102,204,0.1); border: 1px solid rgba(0,102,204,0.2); border-radius: 8px; padding: 20px; text-align: center; }
+        .value-item i { font-size: 2em; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; display: block; }
+        .value-item h3 { color: var(--secondary); margin-bottom: 8px; }
+        .value-item p { font-size: 0.9em; margin-bottom: 0; }
+        .rank-list { list-style: none; }
+        .rank-list li { padding: 10px 0; border-bottom: 1px solid rgba(0,102,204,0.15); color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
+        .rank-list li:last-child { border-bottom: none; }
+        .rank-list li i { color: var(--warning); }
+        footer { background: rgba(0,0,0,0.3); border-top: 1px solid rgba(0,102,204,0.2); padding: 24px 32px; text-align: center; color: var(--text-secondary); font-size: 0.85em; }
+        @media (max-width: 768px) { .container { padding: 30px 16px; } .content-card { padding: 24px; } header { padding: 24px 16px; } .logo { font-size: 1.8em; } }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+    <div class="header-nav">
+        <a href="portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+        <a href="bürger-portal.html"><i class="fas fa-users"></i> Bürgerdienste</a>
+    </div>
+    <h1 style="margin-top:16px">Über uns</h1>
+    <p>Los Santos Police Department – Wer wir sind</p>
+</header>
+
+<div class="container">
+    <div class="section-title">🏛️ Das Los Santos Police Department</div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-info-circle"></i> Unsere Mission</h2>
+        <p>Das Los Santos Police Department (LSPD) ist die Strafverfolgungsbehörde der Stadt Los Santos. Wir widmen uns dem Schutz und der Sicherheit aller Bürgerinnen und Bürger, der Aufrechterhaltung von Recht und Ordnung sowie der Verbrechensbekämpfung.</p>
+        <p>Unser Auftrag ist es, eine sichere Gemeinschaft zu schaffen, in der alle Bürger frei und ohne Angst leben können. Dabei setzen wir auf Transparenz, Professionalität und enge Zusammenarbeit mit der Bevölkerung.</p>
+    </div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-star"></i> Unsere Werte</h2>
+        <div class="values-grid">
+            <div class="value-item">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Sicherheit</h3>
+                <p>Der Schutz der Bevölkerung steht an erster Stelle.</p>
+            </div>
+            <div class="value-item">
+                <i class="fas fa-handshake"></i>
+                <h3>Vertrauen</h3>
+                <p>Wir handeln transparent und integer.</p>
+            </div>
+            <div class="value-item">
+                <i class="fas fa-balance-scale"></i>
+                <h3>Gerechtigkeit</h3>
+                <p>Gleichbehandlung aller Bürgerinnen und Bürger.</p>
+            </div>
+            <div class="value-item">
+                <i class="fas fa-heart"></i>
+                <h3>Dienst</h3>
+                <p>Einsatz für das Wohl der Gemeinschaft.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-history"></i> Geschichte</h2>
+        <p>Das LSPD wurde gegründet, um die wachsende Stadt Los Santos mit einem professionellen Sicherheitsapparat zu versorgen. Über die Jahre hat sich die Behörde kontinuierlich modernisiert und professionalisiert.</p>
+        <p>Heute verfügt das LSPD über ein gut ausgebildetes Team von Beamten, modernste Technik und enge Vernetzung mit anderen Behörden, um die Sicherheit in Los Santos zu gewährleisten.</p>
+    </div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-sitemap"></i> Hierarchie & Ränge</h2>
+        <ul class="rank-list">
+            <li><i class="fas fa-star"></i> <strong>Chief of Police</strong> – Polizeichef, höchster Rang der Behörde</li>
+            <li><i class="fas fa-star"></i> <strong>Deputy Chief</strong> – Stellvertretender Polizeichef</li>
+            <li><i class="fas fa-chevron-up"></i> <strong>Commander</strong> – Kommandeur</li>
+            <li><i class="fas fa-chevron-up"></i> <strong>Captain</strong> – Hauptmann</li>
+            <li><i class="fas fa-chevron-up"></i> <strong>Lieutenant</strong> – Leutnant</li>
+            <li><i class="fas fa-chevron-up"></i> <strong>Sergeant</strong> – Sergeant</li>
+            <li><i class="fas fa-user"></i> <strong>Officer</strong> – Beamter</li>
+            <li><i class="fas fa-user"></i> <strong>Cadet</strong> – Anwärter</li>
+        </ul>
+    </div>
+
+    <div class="content-card" style="text-align:center">
+        <h2><i class="fas fa-briefcase"></i> Interesse an einer Karriere?</h2>
+        <p>Werden Sie Teil des LSPD-Teams und helfen Sie uns, Los Santos sicherer zu machen.</p>
+        <a href="karriere.html" style="display:inline-block;padding:12px 28px;background:linear-gradient(90deg,var(--primary),var(--primary-bright));color:white;text-decoration:none;border-radius:8px;font-weight:700;margin-top:8px;transition:all 0.3s;">
+            <i class="fas fa-arrow-right"></i> Zur Karriere-Seite
+        </a>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 Los Santos Police Department. Alle Rechte vorbehalten. |
+        <a href="datenschutz.html" style="color:var(--text-secondary);text-decoration:none;">Datenschutz</a> |
+        <a href="impressum.html" style="color:var(--text-secondary);text-decoration:none;">Impressum</a>
+    </p>
+</footer>
+</body>
+</html>

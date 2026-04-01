@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impressum – LSPD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #0066cc; --primary-bright: #0088ff; --primary-dark: #004a99;
+            --secondary: #00ff88; --dark: #0a0e27; --darkler: #050812;
+            --card-bg: rgba(15, 25, 50, 0.7); --text-primary: #ffffff;
+            --text-secondary: #b0b8d0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { min-height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, var(--dark) 0%, var(--darkler) 100%); color: var(--text-primary); }
+        header { background: linear-gradient(90deg, var(--dark) 0%, var(--primary-dark) 50%, var(--dark) 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid var(--primary); box-shadow: 0 0 30px rgba(0,102,204,0.3); }
+        .logo { font-size: 2.5em; font-weight: 900; letter-spacing: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 14px; }
+        .header-nav { display: flex; gap: 16px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+        .header-nav a { color: var(--text-secondary); text-decoration: none; padding: 6px 14px; border: 1px solid rgba(0,102,204,0.3); border-radius: 6px; transition: all 0.3s; font-size: 0.9em; }
+        .header-nav a:hover { border-color: var(--primary-bright); color: var(--primary-bright); }
+        header h1 { font-size: 2em; margin-bottom: 8px; color: var(--text-secondary); font-weight: 400; margin-top: 16px; }
+        header p { color: var(--text-secondary); font-size: 0.95em; }
+        .container { max-width: 900px; margin: 0 auto; padding: 60px 32px; }
+        .content-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(0,102,204,0.3); border-radius: 12px; padding: 40px; margin-bottom: 32px; }
+        .section-title { font-size: 1.8em; font-weight: 900; margin-bottom: 32px; text-align: center; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; position: relative; padding-bottom: 16px; }
+        .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 3px; background: var(--secondary); }
+        h2 { color: var(--secondary); margin-bottom: 12px; font-size: 1.2em; margin-top: 24px; }
+        h2:first-child { margin-top: 0; }
+        p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px; }
+        footer { background: rgba(0,0,0,0.3); border-top: 1px solid rgba(0,102,204,0.2); padding: 24px 32px; text-align: center; color: var(--text-secondary); font-size: 0.85em; }
+        @media (max-width: 768px) { .container { padding: 30px 16px; } .content-card { padding: 24px; } header { padding: 24px 16px; } .logo { font-size: 1.8em; } }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+    <div class="header-nav">
+        <a href="portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+        <a href="datenschutz.html"><i class="fas fa-lock"></i> Datenschutz</a>
+        <a href="nutzungsbedingungen.html"><i class="fas fa-file-alt"></i> Nutzungsbedingungen</a>
+    </div>
+    <h1>Impressum</h1>
+    <p>Rechtliche Angaben gemäß §5 TMG</p>
+</header>
+
+<div class="container">
+    <div class="section-title">📄 Impressum</div>
+
+    <div class="content-card">
+        <h2>Angaben gemäß §5 TMG</h2>
+        <p>
+            <strong>Los Santos Police Department (LSPD)</strong><br>
+            1 Police Drive<br>
+            Los Santos, SA<br>
+        </p>
+
+        <h2>Kontakt</h2>
+        <p>
+            Telefon: <a href="tel:+11234567890" style="color:var(--primary-bright);">+1 (123) 456-7890</a><br>
+            E-Mail: <a href="mailto:info@lspd.ls" style="color:var(--primary-bright);">info@lspd.ls</a>
+        </p>
+
+        <h2>Verantwortlich für den Inhalt (§55 Abs. 2 RStV)</h2>
+        <p>Chief of Police, Los Santos Police Department<br>1 Police Drive, Los Santos, SA</p>
+
+        <h2>Streitschlichtung</h2>
+        <p>Bei Beschwerden oder Konflikten wenden Sie sich bitte zunächst an unsere <a href="beschwerdestelle.html" style="color:var(--primary-bright);">Beschwerdestelle</a>.</p>
+
+        <h2>Haftung für Inhalte</h2>
+        <p>Die Inhalte unserer Portale wurden mit größtmöglicher Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.</p>
+
+        <h2>Urheberrecht</h2>
+        <p>Die durch das LSPD erstellten Inhalte und Werke auf diesen Seiten unterliegen dem Urheberrecht. Die Vervielfältigung, Bearbeitung, Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der schriftlichen Zustimmung des LSPD.</p>
+
+        <h2>Technologie</h2>
+        <p>Dieses Portal nutzt Firebase (Google LLC) als Backend-Dienst. Weitere Informationen finden Sie in unserer <a href="datenschutz.html" style="color:var(--primary-bright);">Datenschutzerklärung</a>.</p>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 Los Santos Police Department. Alle Rechte vorbehalten. |
+        <a href="datenschutz.html" style="color:var(--text-secondary);text-decoration:none;">Datenschutz</a> |
+        <a href="nutzungsbedingungen.html" style="color:var(--text-secondary);text-decoration:none;">Nutzungsbedingungen</a>
+    </p>
+</footer>
+</body>
+</html>

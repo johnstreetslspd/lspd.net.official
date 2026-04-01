@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karriere – LSPD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #0066cc; --primary-bright: #0088ff; --primary-dark: #004a99;
+            --secondary: #00ff88; --dark: #0a0e27; --darkler: #050812;
+            --card-bg: rgba(15, 25, 50, 0.7); --text-primary: #ffffff;
+            --text-secondary: #b0b8d0; --success: #00ff88; --warning: #ffaa00; --danger: #ff3333;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { min-height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, var(--dark) 0%, var(--darkler) 100%); color: var(--text-primary); }
+        header { background: linear-gradient(90deg, var(--dark) 0%, var(--primary-dark) 50%, var(--dark) 100%); padding: 40px 32px; text-align: center; border-bottom: 2px solid var(--primary); box-shadow: 0 0 30px rgba(0,102,204,0.3); }
+        .logo { font-size: 2.5em; font-weight: 900; letter-spacing: 3px; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 14px; }
+        .header-nav { display: flex; gap: 16px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+        .header-nav a { color: var(--text-secondary); text-decoration: none; padding: 6px 14px; border: 1px solid rgba(0,102,204,0.3); border-radius: 6px; transition: all 0.3s; font-size: 0.9em; }
+        .header-nav a:hover { border-color: var(--primary-bright); color: var(--primary-bright); }
+        header h1 { font-size: 2em; margin-bottom: 8px; color: var(--text-secondary); font-weight: 400; margin-top: 16px; }
+        header p { color: var(--text-secondary); font-size: 0.95em; }
+        .container { max-width: 1000px; margin: 0 auto; padding: 60px 32px; }
+        .content-card { background: var(--card-bg); backdrop-filter: blur(20px); border: 1px solid rgba(0,102,204,0.3); border-radius: 12px; padding: 40px; margin-bottom: 32px; }
+        .section-title { font-size: 1.8em; font-weight: 900; margin-bottom: 32px; text-align: center; background: linear-gradient(90deg, var(--primary), var(--secondary)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; position: relative; padding-bottom: 16px; }
+        .section-title::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 3px; background: var(--secondary); }
+        h2 { color: var(--secondary); margin-bottom: 16px; font-size: 1.3em; }
+        p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px; }
+        ul.req-list { list-style: none; }
+        ul.req-list li { padding: 8px 0; border-bottom: 1px solid rgba(0,102,204,0.15); color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
+        ul.req-list li:last-child { border-bottom: none; }
+        ul.req-list li::before { content: '✓'; color: var(--secondary); font-weight: 900; }
+        .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-top: 16px; }
+        .step-item { background: rgba(0,102,204,0.1); border: 1px solid rgba(0,102,204,0.2); border-radius: 8px; padding: 20px; text-align: center; }
+        .step-num { font-size: 2em; font-weight: 900; color: var(--primary-bright); margin-bottom: 8px; }
+        .step-item p { font-size: 0.9em; margin-bottom: 0; }
+        .btn-apply { display: inline-block; padding: 14px 32px; background: linear-gradient(90deg, var(--primary), var(--primary-bright)); color: white; text-decoration: none; border-radius: 8px; font-weight: 700; transition: all 0.3s; font-size: 1em; }
+        .btn-apply:hover { box-shadow: 0 0 20px rgba(0,102,204,0.5); transform: translateY(-2px); }
+        footer { background: rgba(0,0,0,0.3); border-top: 1px solid rgba(0,102,204,0.2); padding: 24px 32px; text-align: center; color: var(--text-secondary); font-size: 0.85em; }
+        @media (max-width: 768px) { .container { padding: 30px 16px; } .content-card { padding: 24px; } header { padding: 24px 16px; } .logo { font-size: 1.8em; } }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo"><i class="fas fa-shield-alt"></i> LSPD</div>
+    <div class="header-nav">
+        <a href="portal-hub.html"><i class="fas fa-home"></i> Portal Hub</a>
+        <a href="ueber-uns.html"><i class="fas fa-info-circle"></i> Über uns</a>
+        <a href="buerger-pages/bewerbung.html"><i class="fas fa-file-alt"></i> Bewerben</a>
+    </div>
+    <h1>Karriere beim LSPD</h1>
+    <p>Werden Sie Teil des Teams – Los Santos Police Department</p>
+</header>
+
+<div class="container">
+    <div class="section-title">👮 Karriere beim LSPD</div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-briefcase"></i> Warum das LSPD?</h2>
+        <p>Das Los Santos Police Department bietet Ihnen eine sinnvolle Karriere mit echten Aufstiegschancen. Wir suchen engagierte Persönlichkeiten, die Los Santos sicherer machen wollen.</p>
+        <p>Als LSPD-Beamter profitieren Sie von regelmäßigen Schulungen, einem starken Teamgeist und klaren Karrierewegen von Cadet bis hin zum Chief of Police.</p>
+    </div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-check-circle"></i> Anforderungen</h2>
+        <ul class="req-list">
+            <li>Mindestalter: 18 Jahre</li>
+            <li>Gültiger Ausweis / Identitätsdokument</li>
+            <li>Schulabschluss (mind. mittlere Reife)</li>
+            <li>Körperliche Fitness und Belastbarkeit</li>
+            <li>Einwandfreies Führungszeugnis</li>
+            <li>Teamfähigkeit und Kommunikationsstärke</li>
+            <li>Bereitschaft zum Schichtdienst</li>
+        </ul>
+    </div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-road"></i> Bewerbungsprozess</h2>
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <p>Online-Bewerbung einreichen</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <p>Sichtung & Prüfung der Unterlagen</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <p>Vorstellungsgespräch / Test</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">4</div>
+                <p>Zusage & Grundausbildung</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <h2><i class="fas fa-graduation-cap"></i> Ausbildung & Aufstieg</h2>
+        <p>Nach Ihrer Aufnahme durchlaufen Sie unsere Grundausbildung (Cadet-Programm). Danach stehen Ihnen zahlreiche Weiterbildungen und Spezialusbildungen zur Verfügung.</p>
+        <p>Der Aufstieg im LSPD erfolgt leistungsbasiert: Durch Einsatz, Schulungen und Erfahrung können Sie vom Cadet bis zum Commander aufsteigen.</p>
+    </div>
+
+    <div class="content-card" style="text-align:center;">
+        <h2><i class="fas fa-paper-plane"></i> Jetzt bewerben</h2>
+        <p>Bereit für den nächsten Schritt? Reichen Sie Ihre Bewerbung jetzt online ein.</p>
+        <a href="buerger-pages/bewerbung.html" class="btn-apply">
+            <i class="fas fa-file-alt"></i> Online-Bewerbung einreichen
+        </a>
+        <p style="margin-top:16px;font-size:0.85em;">Nach der Einreichung erhalten Sie einen Bewerbungscode, mit dem Sie Ihren Status jederzeit unter <a href="buerger-pages/status.html" style="color:var(--primary-bright);">Status prüfen</a> verfolgen können.</p>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 Los Santos Police Department. Alle Rechte vorbehalten. |
+        <a href="datenschutz.html" style="color:var(--text-secondary);text-decoration:none;">Datenschutz</a> |
+        <a href="impressum.html" style="color:var(--text-secondary);text-decoration:none;">Impressum</a>
+    </p>
+</footer>
+</body>
+</html>
