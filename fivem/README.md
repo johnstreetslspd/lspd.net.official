@@ -181,6 +181,8 @@ Firebase Firestore
 - Firebase API-Key prüfen (muss dem Projekt entsprechen)
 - Sicherstellen, dass Firestore-Lese/-Schreibregeln den API-Key-Zugriff erlauben
 
+> ⚠️ **Sicherheitshinweis:** Der Firebase Web-API-Key ist clientseitig sichtbar und entspricht dem, der bereits in `firebase-config.js` des Portals verwendet wird. Schränke ihn in der [Google Cloud Console](https://console.cloud.google.com/apis/credentials) auf die erlaubten HTTP-Referrer/IPs ein und konfiguriere Firestore Security Rules, um unbefugten Schreibzugriff zu unterbinden.
+
 **Falsches Framework:**
 - `Config.Framework` auf `"qbcore"`, `"esx"` oder `"standalone"` setzen
 - Tabellen-/Spaltennamen in `Config.Database` prüfen

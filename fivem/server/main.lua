@@ -16,6 +16,15 @@ local function debug(msg)
     if Config.Debug then log(msg) end
 end
 
+--- Erstellt eine eindeutige Portal-ID (ms-Timestamp + zufälliger Offset).
+--- Verwendet einen atomaren Zähler, um Kollisionen innerhalb derselben Sekunde
+--- bei Batch-Inserts zu vermeiden.
+local _idCounter = 0
+local function generatePortalId()
+    _idCounter = (_idCounter + 1) % 1000
+    return os.time() * 1000 + _idCounter
+end
+
 --- Berechnet das Alter aus einem Geburtsdatum-String.
 --- Unterstützte Formate: "TT-MM-JJJJ", "JJJJ-MM-TT", "TT/MM/JJJJ"
 --- @param dob string  Geburtsdatum-String
@@ -316,7 +325,7 @@ local function performSync()
                     -- Neuen Bürger anlegen (falls aktiviert)
                     if Config.Sync.AutoCreateCitizens then
                         local newCitizen = {
-                            id          = os.time() * 1000 + math.random(0, 999),
+                            id          = generatePortalId(),
                             name        = char.name,
                             phone       = char.phone,
                             address     = char.address,
@@ -397,7 +406,7 @@ local function syncSingleCharacter(charData)
             end
         elseif Config.Sync.AutoCreateCitizens then
             local newCitizen = {
-                id          = os.time() * 1000 + math.random(0, 999),
+                id          = generatePortalId(),
                 name        = charData.name,
                 phone       = charData.phone,
                 address     = charData.address,
@@ -440,9 +449,15 @@ local function setupFrameworkEvents()
             local dob   = charInfo.birthdate or charInfo.dateofbirth or ""
             local phone = charInfo.phone or metadata.phoneNumber or metadata.phone_number or ""
 
+            local rawLicense = player.PlayerData.license
+            if not rawLicense then
+                local src = player.PlayerData.source and tostring(player.PlayerData.source) or "0"
+                rawLicense = GetPlayerIdentifierByType(src, "steam") or ""
+            end
+
             syncSingleCharacter({
                 fivemId     = tostring(citizenId),
-                steamId     = tostring(player.PlayerData.license or GetPlayerIdentifierByType(player.PlayerData.source and tostring(player.PlayerData.source) or "0", "steam") or ""),
+                steamId     = tostring(rawLicense),
                 name        = fullName,
                 phone       = tostring(phone),
                 dateOfBirth = normalizeDateOfBirth(dob),

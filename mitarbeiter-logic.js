@@ -488,6 +488,16 @@ function deleteEmployee(id) {
 }
 
 // ========== CITIZENS ==========
+function calcAgeFromDateInput(dobVal) {
+    if (!dobVal) return null;
+    const dob = new Date(dobVal);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const hasBirthdayPassed = today >= new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
+    if (!hasBirthdayPassed) age -= 1;
+    return Math.max(0, age);
+}
+
 function addCitizen(e) {
     e.preventDefault();
     const dobVal = document.getElementById('ctDateOfBirth').value;
@@ -498,7 +508,7 @@ function addCitizen(e) {
         address: document.getElementById('ctAddress').value,
         status: document.getElementById('ctStatus').value,
         dateOfBirth: dobVal ? new Date(dobVal).toLocaleDateString('de-DE') : '',
-        age: dobVal ? (new Date().getFullYear() - new Date(dobVal).getFullYear() - (new Date() < new Date(new Date(dobVal).setFullYear(new Date().getFullYear())) ? 1 : 0)) : null,
+        age: calcAgeFromDateInput(dobVal),
         gender: document.getElementById('ctGender').value,
         fivemId: '',
         steamId: '',
@@ -597,11 +607,7 @@ function editCitizen(id) {
         c.gender = document.getElementById('ctGender').value;
         const dobVal = document.getElementById('ctDateOfBirth').value;
         c.dateOfBirth = dobVal ? new Date(dobVal).toLocaleDateString('de-DE') : (c.dateOfBirth || '');
-        if (dobVal) {
-            const d = new Date(dobVal);
-            const today = new Date();
-            c.age = today.getFullYear() - d.getFullYear() - (today < new Date(d.setFullYear(today.getFullYear())) ? 1 : 0);
-        }
+        if (dobVal) c.age = calcAgeFromDateInput(dobVal);
         saveDatabase();
         closeModal('addCitizen');
         form.reset();
