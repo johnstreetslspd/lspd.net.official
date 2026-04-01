@@ -324,7 +324,7 @@ function addUser(e) {
     database.users.push(u);
     saveDatabase();
     closeModal('addUser');
-    document.getElementById('addUserModal').querySelector('form').reset();
+    document.getElementById('addUserModal')?.querySelector('form')?.reset();
     showToast('✅ Nutzer hinzugefügt', u.username, 'success');
     updateCounts();
     renderUsersView();
@@ -332,6 +332,7 @@ function addUser(e) {
 
 function renderUsersView() {
     const b = document.getElementById('usersViewTableBody');
+    if (!b) return;
     b.innerHTML = database.users.map(u => {
         const extra = u.extraPermissions || [];
         const extraBadge = extra.length > 0 ? ` <span style="color:var(--warning);font-size:0.8em">+${extra.length}</span>` : '';
@@ -371,13 +372,14 @@ function addRank(e) {
     database.jobRanks.push(r);
     saveDatabase();
     closeModal('addRank');
-    document.getElementById('addRankModal').querySelector('form').reset();
+    document.getElementById('addRankModal')?.querySelector('form')?.reset();
     showToast('✅ Rang hinzugefügt', r.name, 'success');
     updateCounts();
 }
 
 function renderRanksView() {
     const b = document.getElementById('ranksViewTableBody');
+    if (!b) return;
     const sorted = [...database.jobRanks].sort((a, b) => (b.priority || 0) - (a.priority || 0));
     b.innerHTML = sorted.map(r => {
         const deptBadge = r.department ? `<span class="badge badge-info" style="font-size:0.7em">${escapeHtml(r.department)}</span>` : '<span style="color:var(--text-secondary);font-size:0.8em">–</span>';
@@ -463,13 +465,14 @@ function addEmployee(e) {
     database.employees.push(emp);
     saveDatabase();
     closeModal('addEmployee');
-    document.getElementById('addEmployeeModal').querySelector('form').reset();
+    document.getElementById('addEmployeeModal')?.querySelector('form')?.reset();
     showToast('✅ Mitarbeiter hinzugefügt', emp.name, 'success');
     updateCounts();
 }
 
 function renderEmployeesView() {
     const b = document.getElementById('employeesViewTableBody');
+    if (!b) return;
     b.innerHTML = database.employees.map(e => 
         `<tr><td>${e.name}</td><td>${e.role}</td><td>${e.dept}</td><td>${e.status}</td><td><button class="btn btn-small" onclick="deleteEmployee(${e.id})">×</button></td></tr>`
     ).join('');
@@ -497,7 +500,7 @@ function addCitizen(e) {
     database.citizens.push(c);
     saveDatabase();
     closeModal('addCitizen');
-    document.getElementById('addCitizenModal').querySelector('form').reset();
+    document.getElementById('addCitizenModal')?.querySelector('form')?.reset();
     showToast('✅ Bürger hinzugefügt', c.name, 'success');
     updateCounts();
     renderCitizensView();
@@ -756,7 +759,7 @@ function addEvidence(e) {
     database.evidence.push(ev);
     saveDatabase();
     closeModal('addEvidence');
-    document.getElementById('addEvidenceModal').querySelector('form').reset();
+    document.getElementById('addEvidenceModal')?.querySelector('form')?.reset();
     showToast('✅ Beweismittel hinzugefügt', ev.aktenzeichen, 'success');
     updateCounts();
     renderEvidenceView();
@@ -766,6 +769,7 @@ const EVIDENCE_TYPE_ICON = { Waffe: '🔫', Drogen: '💊', Sonstiges: '📦' };
 
 function renderEvidenceView() {
     const b = document.getElementById('evidenceViewTableBody');
+    if (!b) return;
     b.innerHTML = database.evidence.map(e => {
         const icon = EVIDENCE_TYPE_ICON[e.type] || '📦';
         const az = e.citationAZ ? `<span class="badge badge-info" style="font-size:0.75em">${e.citationAZ}</span>` : '<span style="color:var(--text-secondary)">–</span>';
@@ -1032,7 +1036,7 @@ function addTraining(e) {
     database.training.push(t);
     saveDatabase();
     closeModal('addTraining');
-    document.getElementById('addTrainingModal').querySelector('form').reset();
+    document.getElementById('addTrainingModal')?.querySelector('form')?.reset();
     showToast('✅ Schulung erstellt', t.title, 'success');
     updateCounts();
     renderTrainingView();
@@ -1065,6 +1069,7 @@ function checkUserMeetsRank(minRankName, username) {
 
 function renderTrainingView() {
     const b = document.getElementById('trainingViewTableBody');
+    if (!b) return;
     const isAdmin = canAccess('admin');
     const canManage = canAccess('training');
 
@@ -1217,6 +1222,7 @@ function unenrollTraining(id) {
 // ========== APPLICATIONS ==========
 function renderApplicationsView() {
     const b = document.getElementById('applicationsViewTableBody');
+    if (!b) return;
     const pending = database.applications.filter(a => a.status === 'Eingereicht').length;
     const badge = document.getElementById('pendingAppsBadge');
     if (badge) badge.textContent = pending > 0 ? `${pending} ausstehend` : '';
@@ -1413,7 +1419,7 @@ function addCitation(e) {
     database.citations.push(c);
     saveDatabase();
     closeModal('addCitation');
-    document.getElementById('addCitationModal').querySelector('form').reset();
+    document.getElementById('addCitationModal')?.querySelector('form')?.reset();
     showToast('✅ Strafakte erstellt', c.aktenzeichen, 'success');
     updateCounts();
     renderCitationsView();
@@ -1546,7 +1552,7 @@ function addCharge(e) {
     database.charges.push(c);
     saveDatabase();
     closeModal('addCharge');
-    document.getElementById('addChargeModal').querySelector('form').reset();
+    document.getElementById('addChargeModal')?.querySelector('form')?.reset();
     showToast('✅ Anzeige erstellt', c.chargeNumber, 'success');
     updateCounts();
     renderChargesView();
@@ -1729,7 +1735,7 @@ function addPressArticle(e) {
     database.press.push(p);
     saveDatabase();
     closeModal('addPress');
-    document.getElementById('addPressModal').querySelector('form').reset();
+    document.getElementById('addPressModal')?.querySelector('form')?.reset();
     document.getElementById('pressImagePreview').innerHTML = '';
     showToast('✅ Nachricht veröffentlicht', p.title, 'success');
     updateCounts();
@@ -1738,6 +1744,7 @@ function addPressArticle(e) {
 
 function renderPressArticles() {
     const c = document.getElementById('pressArticlesContainer');
+    if (!c) return;
     if (database.press.length === 0) {
         c.innerHTML = '<p style="color:var(--text-secondary);text-align:center;padding:40px">Keine Nachrichten vorhanden</p>';
         return;
@@ -2508,6 +2515,7 @@ function saveUserPermission(userId, feature, checked) {
 // ========== REQUESTS (Anfragen & Beschwerden) ==========
 function renderRequestsView() {
     const b = document.getElementById('requestsViewTableBody');
+    if (!b) return;
     const requests = database.requests || [];
     const pending = requests.filter(r => r.status === 'Eingereicht').length;
     const badge = document.getElementById('pendingRequestsBadge');
