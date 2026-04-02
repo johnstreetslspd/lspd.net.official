@@ -1,0 +1,86 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: transparent;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ── Tablet-Rahmen ──────────────────────────────────────── */
+#tablet-wrapper {
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tablet-frame {
+    width: 90vw;
+    height: 88vh;
+    max-width: 1400px;
+    background: #0d1117;
+    border-radius: 12px;
+    border: 2px solid #1e90ff;
+    box-shadow: 0 0 40px rgba(30, 144, 255, 0.35);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ── Kopfzeile ──────────────────────────────────────────── */
+.tablet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: #161b22;
+    border-bottom: 1px solid #1e90ff55;
+    flex-shrink: 0;
+}
+
+.tablet-title {
+    color: #1e90ff;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    user-select: none;
+}
+
+.close-btn {
+    background: #c0392b;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.close-btn:hover {
+    background: #e74c3c;
+}
+
+/* ── iFrame ─────────────────────────────────────────────── */
+#portal-frame {
+    flex: 1;
+    border: none;
+    width: 100%;
+    background: #fff;
+}

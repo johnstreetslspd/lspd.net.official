@@ -188,6 +188,11 @@ function getPortalUrl() {
 }
 
 function tryAutoLogin() {
+    // ?newSession=1 → Sitzung verwerfen (z.B. aufgerufen vom FiveM-Tablet-Script)
+    if (new URLSearchParams(window.location.search).get('newSession') === '1') {
+        localStorage.removeItem(SESSION_KEY);
+    }
+
     // Gespeicherte Sitzung wiederherstellen
     const raw = localStorage.getItem(SESSION_KEY);
     if (raw) {
