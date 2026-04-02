@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LSPD Tablet</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="tablet-wrapper" class="hidden">
+        <div class="tablet-frame">
+            <div class="tablet-header">
+                <span class="tablet-title">🚔 LSPD Portal</span>
+                <button class="close-btn" id="close-btn" title="Schließen (ESC)">✕</button>
+            </div>
+            <iframe
+                id="portal-frame"
+                src=""
+                allowfullscreen
+                sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-modals allow-downloads"
+            ></iframe>
+        </div>
+    </div>
+
+    <script>
+        'use strict';
+
+        const wrapper = document.getElementById('tablet-wrapper');
+        const frame   = document.getElementById('portal-frame');
+        let resourceName = 'lspd-tablet'; // Fallback; wird per Nachricht gesetzt
+
+        // ── Nachrichten vom FiveM-Client empfangen ──────────
+        window.addEventListener('message', function (event) {
+            const data = event.data;
+            if (!data || !data.type) return;
+
+            if (data.type === 'openTablet') {
+                if (data.resourceName) resourceName = data.resourceName;
+                // Nur HTTPS-URLs erlauben, um Redirect- und XSS-Angriffe zu verhindern
+                const url = typeof data.url === 'string' && data.url.startsWith('https://') ? data.url : '';
+                frame.src = url;
+                wrapper.classList.remove('hidden');
+            }
+
+            if (data.type === 'closeTablet') {
+                wrapper.classList.add('hidden');
+                frame.src = '';
+            }
+        });
+
+        // ── Schließen-Button ─────────────────────────────────
+        document.getElementById('close-btn').addEventListener('click', function () {
+            closeTablet();
+        });
+
+        // ── ESC-Taste (Fallback, falls Lua-Input nicht greift) ─
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeTablet();
+        });
+
+        function closeTablet() {
+            wrapper.classList.add('hidden');
+            frame.src = '';
+            // Lua-Client über NUI-Callback informieren
+            fetch('https://' + resourceName + '/closeTablet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({}),
+            }).catch(function () {});
+        }
+    </script>
+</body>
+</html>

@@ -133,18 +133,15 @@ function loginSuccess() {
     updateCounts();
 
     if (firebaseEnabled) {
-        // Lade aktuelle Daten und validiere den angemeldeten Nutzer
+        // Lade aktuelle Daten und aktualisiere Rolle/Sitzung
         loadFromFirestore().then(() => {
             const freshUser = database.users.find(x => x.username === currentUser.username);
-            if (!freshUser) {
-                // Nutzer existiert nicht mehr – automatisch abmelden
-                showToast('⚠️ Konto nicht gefunden', 'Bitte erneut anmelden', 'error');
-                handleLogout();
-                return;
+            if (freshUser) {
+                // Rolle aus aktuellen Firestore-Daten übernehmen (könnte sich geändert haben)
+                currentUser.role = freshUser.role;
             }
-            // Rolle aus aktuellen Firestore-Daten übernehmen (könnte sich geändert haben)
-            currentUser.role = freshUser.role;
-            // Sitzung mit aktualisierten Daten und erneuerter TTL speichern
+            // Sitzung immer erneuern – unabhängig davon ob Firestore den Nutzer zurückgab
+            // (Kein Zwangs-Logout bei vorhandener gültiger Sitzung)
             localStorage.setItem(SESSION_KEY, JSON.stringify({
                 username: currentUser.username,
                 role: currentUser.role,
@@ -188,6 +185,11 @@ function getPortalUrl() {
 }
 
 function tryAutoLogin() {
+    // ?newSession=1 → Sitzung verwerfen (z.B. aufgerufen vom FiveM-Tablet-Script)
+    if (new URLSearchParams(window.location.search).get('newSession') === '1') {
+        localStorage.removeItem(SESSION_KEY);
+    }
+
     // Gespeicherte Sitzung wiederherstellen
     const raw = localStorage.getItem(SESSION_KEY);
     if (raw) {
@@ -2872,12 +2874,9 @@ function initSubPage(initCallback) {
         if (firebaseEnabled) {
             loadFromFirestore().then(() => {
                 const freshUser = database.users.find(x => x.username === currentUser.username);
-                if (!freshUser) {
-                    showToast('⚠️ Konto nicht gefunden', 'Bitte erneut anmelden', 'error');
-                    handleLogout();
-                    return;
+                if (freshUser) {
+                    currentUser.role = freshUser.role;
                 }
-                currentUser.role = freshUser.role;
                 if (userEl) userEl.textContent = currentUser.username;
                 if (roleEl) roleEl.textContent = '(' + currentUser.role + ')';
                 if (initCallback) initCallback();
