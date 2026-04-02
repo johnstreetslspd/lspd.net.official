@@ -22,7 +22,7 @@ end
 local function toFirestoreValue(val)
     local t = type(val)
     if val == nil then
-        return { nullValue = nil }
+        return { nullValue = "NULL_VALUE" }
     elseif t == "boolean" then
         return { booleanValue = val }
     elseif t == "number" then
@@ -50,7 +50,7 @@ local function toFirestoreValue(val)
             return { mapValue = { fields = fields } }
         end
     end
-    return { nullValue = nil }
+    return { nullValue = "NULL_VALUE" }
 end
 
 -- ============================================================
