@@ -40,26 +40,28 @@ class DatabaseService: ObservableObject {
         isLoading = true
         // Echtzeit-Listener für automatische Updates
         listener = docRef.addSnapshotListener { [weak self] snapshot, error in
-            guard let self = self else { return }
-            self.isLoading = false
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                self.isLoading = false
 
-            if let error = error {
-                self.lastError = error.localizedDescription
-                self.isConnected = false
-                print("❌ Firestore Fehler: \(error.localizedDescription)")
-                return
-            }
+                if let error = error {
+                    self.lastError = error.localizedDescription
+                    self.isConnected = false
+                    print("❌ Firestore Fehler: \(error.localizedDescription)")
+                    return
+                }
 
-            guard let data = snapshot?.data() else {
-                print("ℹ️ Keine Daten in Firestore")
-                self.loadDefaults()
+                guard let data = snapshot?.data() else {
+                    print("ℹ️ Keine Daten in Firestore")
+                    self.loadDefaults()
+                    self.isConnected = true
+                    return
+                }
+
+                self.parseFirestoreData(data)
                 self.isConnected = true
-                return
+                print("✅ Daten von Firestore geladen")
             }
-
-            self.parseFirestoreData(data)
-            self.isConnected = true
-            print("✅ Daten von Firestore geladen")
         }
     }
 

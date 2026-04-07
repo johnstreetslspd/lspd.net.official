@@ -10,7 +10,7 @@ let package = Package(
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "10.20.0")
     ],
     targets: [
-        .executableTarget(
+        .target(
             name: "LSPDApp",
             dependencies: [
                 .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),

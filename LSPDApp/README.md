@@ -95,6 +95,7 @@ Erstelle die Datei mit diesen Firebase-Daten:
     <string>1:213624245643:ios:DEINE_IOS_APP_ID</string>
     <key>BUNDLE_ID</key>
     <string>com.lspd.portal</string>
+    <!-- BUNDLE_ID muss mit der Bundle ID übereinstimmen, die in Schritt 3 bei Firebase registriert wurde -->
 </dict>
 </plist>
 ```

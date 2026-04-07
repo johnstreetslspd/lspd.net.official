@@ -94,7 +94,7 @@ struct PortalHubView: View {
                 }
             }
             .background(LSPDColors.dark.ignoresSafeArea())
-            .navigationBarHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showLogin) {
                 LoginView()
             }
