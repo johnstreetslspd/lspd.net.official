@@ -34,9 +34,20 @@ local function toFirestoreValue(val)
     elseif t == "string" then
         return { stringValue = val }
     elseif t == "table" then
-        -- Unterscheide Array und Map anhand fortlaufender Integer-Schlüssel
-        local isArray = (#val > 0)
-        if isArray then
+        -- Unterscheide Array und Map:
+        -- Leere Tabellen ohne Schlüssel → leeres Array
+        -- Tabellen mit fortlaufenden Integer-Schlüsseln → Array
+        -- Alles andere → Map
+        local count = 0
+        local isMap = false
+        for k in pairs(val) do
+            count = count + 1
+            if type(k) ~= "number" or k ~= count then
+                isMap = true
+            end
+        end
+        if not isMap then
+            -- Leeres Array oder fortlaufend numerisch indiziert
             local values = {}
             for _, v in ipairs(val) do
                 table.insert(values, toFirestoreValue(v))
@@ -115,7 +126,7 @@ function Firebase.GetDocument(callback)
                 callback(false, nil)
             end
         else
-            print(Config.LogPrefix .. " ❌ GET fehlgeschlagen (HTTP " .. statusCode .. ")")
+            print(Config.LogPrefix .. " ❌ GET fehlgeschlagen (HTTP " .. tostring(statusCode) .. ")")
             if Config.Debug then
                 print(Config.LogPrefix .. " Response: " .. (responseText or "(leer)"))
             end
@@ -133,11 +144,17 @@ function Firebase.UpdateCitizens(citizens, callback)
         .. "?updateMask.fieldPaths=citizens"
         .. "&key=" .. Config.Firebase.ApiKey
 
-    local body = json.encode({
+    local ok, body = pcall(json.encode, {
         fields = {
             citizens = toFirestoreValue(citizens)
         }
     })
+
+    if not ok or not body then
+        print(Config.LogPrefix .. " ❌ JSON-Encoding fehlgeschlagen: " .. tostring(body))
+        if callback then callback(false) end
+        return
+    end
 
     if Config.Debug then
         print(Config.LogPrefix .. " PATCH citizens (" .. #citizens .. " Einträge)")
@@ -150,7 +167,7 @@ function Firebase.UpdateCitizens(citizens, callback)
             end
             if callback then callback(true) end
         else
-            print(Config.LogPrefix .. " ❌ PATCH fehlgeschlagen (HTTP " .. statusCode .. ")")
+            print(Config.LogPrefix .. " ❌ PATCH fehlgeschlagen (HTTP " .. tostring(statusCode) .. ")")
             if Config.Debug then
                 print(Config.LogPrefix .. " Response: " .. (responseText or "(leer)"))
             end

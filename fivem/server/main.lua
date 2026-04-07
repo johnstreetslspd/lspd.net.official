@@ -123,9 +123,26 @@ end
 local function dbFetch(query, params, callback)
     local lib = Config.Database.Library
     if lib == "oxmysql" then
-        exports['oxmysql']:execute(query, params, callback)
+        local ok, err = pcall(function()
+            exports['oxmysql']:execute(query, params, callback)
+        end)
+        if not ok then
+            log("❌ oxmysql-Fehler: " .. tostring(err))
+            callback({})
+        end
     elseif lib == "mysql-async" then
-        MySQL.Async.fetchAll(query, params, callback)
+        if not MySQL or not MySQL.Async then
+            log("❌ mysql-async ist nicht verfügbar")
+            callback({})
+            return
+        end
+        local ok, err = pcall(function()
+            MySQL.Async.fetchAll(query, params, callback)
+        end)
+        if not ok then
+            log("❌ mysql-async-Fehler: " .. tostring(err))
+            callback({})
+        end
     else
         log("❌ Unbekannte Datenbank-Bibliothek: " .. tostring(lib))
         callback({})
@@ -152,10 +169,10 @@ local function fetchCharacters(callback)
                 local metadata = {}
 
                 local ok, decoded = pcall(json.decode, row[cfg.CharInfoColumn] or "{}")
-                if ok and decoded then charInfo = decoded end
+                if ok then charInfo = decoded or {} end
 
                 local ok2, decoded2 = pcall(json.decode, row[cfg.MetadataColumn] or "{}")
-                if ok2 and decoded2 then metadata = decoded2 end
+                if ok2 then metadata = decoded2 or {} end
 
                 local firstName  = charInfo.firstname  or charInfo.first_name  or ""
                 local lastName   = charInfo.lastname   or charInfo.last_name   or ""
@@ -395,7 +412,7 @@ end
 --- Wird z.B. beim Laden eines Charakters im Spiel aufgerufen.
 --- @param charData table  Normiertes Charakter-Objekt (wie aus fetchCharacters)
 local function syncSingleCharacter(charData)
-    if not charData or charData.name == "" then return end
+    if not charData or not charData.name or charData.name == "" then return end
     debug("Einzelsync: " .. charData.name)
 
     Firebase.GetDocument(function(success, portalData)
@@ -425,7 +442,13 @@ local function syncSingleCharacter(charData)
                 if Config.FieldMapping.SyncSteamId     then existing.steamId     = charData.steamId end
                 existing.lastFivemSync = os.date("!%Y-%m-%dT%H:%M:%SZ")
                 existing.syncSource    = "fivem"
-                Firebase.UpdateCitizens(citizens)
+                Firebase.UpdateCitizens(citizens, function(ok)
+                    if ok then
+                        debug("✅ Einzelsync aktualisiert: " .. charData.name)
+                    else
+                        log("❌ Fehler beim Einzelsync (Update): " .. charData.name)
+                    end
+                end)
             end
         elseif Config.Sync.AutoCreateCitizens then
             local newCitizen = {
@@ -445,7 +468,13 @@ local function syncSingleCharacter(charData)
                 notes       = {},
             }
             table.insert(citizens, newCitizen)
-            Firebase.UpdateCitizens(citizens)
+            Firebase.UpdateCitizens(citizens, function(ok)
+                if ok then
+                    debug("✅ Einzelsync angelegt: " .. charData.name)
+                else
+                    log("❌ Fehler beim Einzelsync (Neu): " .. charData.name)
+                end
+            end)
         end
     end)
 end
@@ -461,9 +490,21 @@ local function setupFrameworkEvents()
         -- QBCore: Charakter wird geladen
         AddEventHandler("QBCore:Server:PlayerLoaded", function(player)
             if not Config.Sync.SyncOnCharacterLoad then return end
+            if not player or not player.PlayerData then return end
+
             local citizenId = player.PlayerData.citizenid or ""
             local charInfo  = player.PlayerData.charinfo   or {}
             local metadata  = player.PlayerData.metadata   or {}
+
+            -- charinfo/metadata können als JSON-String vorliegen
+            if type(charInfo) == "string" then
+                local ok, decoded = pcall(json.decode, charInfo)
+                charInfo = (ok and decoded) or {}
+            end
+            if type(metadata) == "string" then
+                local ok, decoded = pcall(json.decode, metadata)
+                metadata = (ok and decoded) or {}
+            end
 
             local firstName = charInfo.firstname or charInfo.first_name or ""
             local lastName  = charInfo.lastname  or charInfo.last_name  or ""
@@ -474,10 +515,10 @@ local function setupFrameworkEvents()
             local phone = charInfo.phone or metadata.phoneNumber or metadata.phone_number or ""
 
             local rawLicense = player.PlayerData.license
-            if not rawLicense then
-                local src = player.PlayerData.source and tostring(player.PlayerData.source) or "0"
-                rawLicense = GetPlayerIdentifierByType(src, "steam") or ""
+            if not rawLicense and player.PlayerData.source then
+                rawLicense = GetPlayerIdentifierByType(player.PlayerData.source, "steam") or ""
             end
+            rawLicense = rawLicense or ""
 
             syncSingleCharacter({
                 fivemId     = tostring(citizenId),
@@ -495,6 +536,8 @@ local function setupFrameworkEvents()
         -- ESX: Charakter wird geladen
         AddEventHandler("esx:playerLoaded", function(source, xPlayer)
             if not Config.Sync.SyncOnCharacterLoad then return end
+            if not xPlayer then return end
+
             local cfg = Config.Database.ESX
             local firstName = xPlayer.get("firstName")  or ""
             local lastName  = xPlayer.get("lastName")   or ""
