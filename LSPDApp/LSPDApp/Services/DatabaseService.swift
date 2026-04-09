@@ -82,7 +82,10 @@ class DatabaseService: ObservableObject {
     private func toInt(_ val: Any?) -> Int? {
         guard let val = val else { return nil }
         if let i = val as? Int { return i }
-        if let i = val as? Int64 { return Int(i) }
+        if let i = val as? Int64 {
+            guard i >= Int64(Int.min), i <= Int64(Int.max) else { return nil }
+            return Int(i)
+        }
         if let d = val as? Double {
             guard d.truncatingRemainder(dividingBy: 1) == 0,
                   d >= Double(Int.min), d <= Double(Int.max) else { return nil }
