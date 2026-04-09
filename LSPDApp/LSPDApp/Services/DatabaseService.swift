@@ -83,7 +83,11 @@ class DatabaseService: ObservableObject {
         guard let val = val else { return nil }
         if let i = val as? Int { return i }
         if let i = val as? Int64 { return Int(i) }
-        if let d = val as? Double { return d.truncatingRemainder(dividingBy: 1) == 0 ? Int(d) : nil }
+        if let d = val as? Double {
+            guard d.truncatingRemainder(dividingBy: 1) == 0,
+                  d >= Double(Int.min), d <= Double(Int.max) else { return nil }
+            return Int(d)
+        }
         if let n = val as? NSNumber { return n.intValue }
         return nil
     }
