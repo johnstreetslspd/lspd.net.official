@@ -10,6 +10,8 @@ class AuthViewModel: ObservableObject {
     @Published var stayLoggedIn = false
 
     private let sessionKey = "lspd_session"
+    /// Benutzername für verzögertes Auto-Login (wartet auf Firestore-Daten). Thread-sicher durch @MainActor.
+    private var pendingAutoLoginUsername: String?
 
     init() {
         tryAutoLogin()
@@ -108,8 +110,6 @@ class AuthViewModel: ObservableObject {
             stayLoggedIn = true
         }
     }
-
-    private var pendingAutoLoginUsername: String?
 
     // MARK: - Berechtigungen prüfen
     func hasPermission(_ permission: String) -> Bool {
