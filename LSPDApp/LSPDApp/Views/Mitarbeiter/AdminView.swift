@@ -61,8 +61,9 @@ struct AdminRolesView: View {
             }
             .onDelete { indexSet in
                 let sorted = dbService.roles.sorted(by: { $0.priority > $1.priority })
-                for idx in indexSet {
-                    Task { await dbService.deleteRole(sorted[idx].id) }
+                let idsToDelete = indexSet.map { sorted[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteRole(id) }
                 }
             }
         }
@@ -110,7 +111,7 @@ struct AddRoleView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {
                         let role = LSPDRole(
-                            id: "role_custom_\(Date().timeIntervalSince1970)",
+                            id: "role_custom_\(UUID().uuidString)",
                             name: name, color: "#888888", icon: "fas fa-user-tag",
                             priority: priority, description: description,
                             isDefault: false, permissions: Array(selectedPermissions)
@@ -205,8 +206,9 @@ struct AdminDepartmentsView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    Task { await dbService.deleteDepartment(dbService.departments[idx].id) }
+                let idsToDelete = indexSet.map { dbService.departments[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteDepartment(id) }
                 }
             }
         }
@@ -241,7 +243,7 @@ struct AddDepartmentView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {
                         let dept = LSPDDepartment(
-                            id: "dept_\(Date().timeIntervalSince1970)",
+                            id: "dept_\(UUID().uuidString)",
                             name: name, color: "#888888",
                             icon: "fas fa-building", description: description
                         )

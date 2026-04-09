@@ -44,8 +44,9 @@ struct PresseView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    Task { await dbService.deletePress(dbService.press[idx].id) }
+                let idsToDelete = indexSet.map { dbService.press[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deletePress(id) }
                 }
             }
         }

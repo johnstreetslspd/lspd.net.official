@@ -82,8 +82,34 @@ class AuthViewModel: ObservableObject {
             currentUser = user
             isLoggedIn = true
             stayLoggedIn = true
+        } else {
+            // Daten sind noch nicht geladen – auf Änderungen warten
+            pendingAutoLoginUsername = username
         }
     }
+
+    /// Wird aufgerufen, wenn Firestore-Daten geladen wurden
+    func retryAutoLoginIfNeeded() {
+        guard let username = pendingAutoLoginUsername else { return }
+        pendingAutoLoginUsername = nil
+
+        // Session nochmals prüfen
+        guard let data = UserDefaults.standard.data(forKey: sessionKey),
+              let session = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let expires = session["expires"] as? Double,
+              Date().timeIntervalSince1970 < expires else {
+            return
+        }
+
+        let db = DatabaseService.shared
+        if let user = db.users.first(where: { $0.username == username }) {
+            currentUser = user
+            isLoggedIn = true
+            stayLoggedIn = true
+        }
+    }
+
+    private var pendingAutoLoginUsername: String?
 
     // MARK: - Berechtigungen prüfen
     func hasPermission(_ permission: String) -> Bool {

@@ -47,8 +47,9 @@ struct SchulungenView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    Task { await dbService.deleteTraining(dbService.training[idx].id) }
+                let idsToDelete = indexSet.map { dbService.training[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteTraining(id) }
                 }
             }
         }
@@ -137,8 +138,12 @@ struct TrainingDetailView: View {
     let training: LSPDTraining
     @State private var toastMessage: String?
 
+    var currentTraining: LSPDTraining {
+        dbService.training.first(where: { $0.id == training.id }) ?? training
+    }
+
     var isEnrolled: Bool {
-        training.enrollments?.contains(authVM.currentUser?.username ?? "") ?? false
+        currentTraining.enrollments?.contains(authVM.currentUser?.username ?? "") ?? false
     }
 
     var body: some View {
@@ -156,14 +161,14 @@ struct TrainingDetailView: View {
                     if let time = training.time { LabeledContent("Uhrzeit", value: time) }
                 }
 
-                if let url = training.googleDocsUrl, !url.isEmpty {
+                if let url = training.googleDocsUrl, !url.isEmpty, let parsedUrl = URL(string: url) {
                     Section("Material") {
-                        Link("Google Docs öffnen", destination: URL(string: url)!)
+                        Link("Google Docs öffnen", destination: parsedUrl)
                     }
                 }
 
-                Section("Teilnehmer (\(training.enrollments?.count ?? 0))") {
-                    if let enrollments = training.enrollments {
+                Section("Teilnehmer (\(currentTraining.enrollments?.count ?? 0))") {
+                    if let enrollments = currentTraining.enrollments {
                         ForEach(enrollments, id: \.self) { name in
                             Label(name, systemImage: "person")
                         }

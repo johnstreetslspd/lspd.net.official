@@ -62,8 +62,9 @@ struct StrafaktenView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    Task { await dbService.deleteCitation(filteredCitations[idx].id) }
+                let idsToDelete = indexSet.map { filteredCitations[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteCitation(id) }
                 }
             }
         }

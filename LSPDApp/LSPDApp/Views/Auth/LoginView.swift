@@ -71,13 +71,10 @@ struct LoginView: View {
 
                     Button {
                         isLoading = true
-                        // Warte kurz auf Firebase
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            authVM.login(username: username, password: password, stayLoggedIn: stayLoggedIn)
-                            isLoading = false
-                            if authVM.isLoggedIn {
-                                dismiss()
-                            }
+                        authVM.login(username: username, password: password, stayLoggedIn: stayLoggedIn)
+                        isLoading = false
+                        if authVM.isLoggedIn {
+                            dismiss()
                         }
                     } label: {
                         HStack {
