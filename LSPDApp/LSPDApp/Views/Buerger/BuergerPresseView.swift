@@ -35,6 +35,12 @@ struct BuergerPresseView: View {
                                     .clipShape(Capsule())
                             }
                         }
+                        if let subtitle = item.subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
                         Text(item.content)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -64,6 +70,12 @@ struct BuergerPresseView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(item.title).font(.title2.bold())
 
+                        if let subtitle = item.subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                        }
+
                         HStack {
                             if let author = item.author {
                                 Label(author, systemImage: "person")
@@ -86,6 +98,25 @@ struct BuergerPresseView: View {
                         }
 
                         Divider()
+
+                        if let imageUrl = item.image, !imageUrl.isEmpty {
+                            AsyncImage(url: URL(string: imageUrl)) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image.resizable().aspectRatio(contentMode: .fit)
+                                case .failure:
+                                    Label("Bild konnte nicht geladen werden", systemImage: "photo")
+                                        .font(.caption).foregroundStyle(.secondary)
+                                case .empty:
+                                    Color.gray.opacity(0.2)
+                                @unknown default:
+                                    Color.gray.opacity(0.2)
+                                }
+                            }
+                            .frame(maxHeight: 200)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+
                         Text(item.content).font(.body)
                     }
                     .padding()

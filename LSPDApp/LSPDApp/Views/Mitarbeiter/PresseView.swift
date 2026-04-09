@@ -25,6 +25,9 @@ struct PresseView: View {
                                     .foregroundStyle(published ? .green : .secondary)
                             }
                         }
+                        if let subtitle = item.subtitle, !subtitle.isEmpty {
+                            Text(subtitle).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+                        }
                         Text(item.content).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
                         HStack {
                             if let author = item.author {
@@ -69,8 +72,10 @@ struct AddPressView: View {
     @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.dismiss) var dismiss
     @State private var title = ""
+    @State private var subtitle = ""
     @State private var content = ""
     @State private var category = ""
+    @State private var imageUrl = ""
     @State private var isPublished = true
 
     var body: some View {
@@ -78,11 +83,13 @@ struct AddPressView: View {
             Form {
                 Section("Nachricht") {
                     TextField("Titel", text: $title)
+                    TextField("Untertitel (optional)", text: $subtitle)
                     TextEditor(text: $content)
                         .frame(minHeight: 120)
                 }
                 Section("Details") {
                     TextField("Kategorie", text: $category)
+                    TextField("Bild-URL (optional)", text: $imageUrl)
                     Toggle("Veröffentlichen", isOn: $isPublished)
                 }
             }
@@ -92,7 +99,10 @@ struct AddPressView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Abbrechen") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Veröffentlichen") {
-                        let item = LSPDPress(id: 0, title: title, content: content,
+                        let item = LSPDPress(id: 0, title: title,
+                                             subtitle: subtitle.isEmpty ? nil : subtitle,
+                                             content: content,
+                                             image: imageUrl.isEmpty ? nil : imageUrl,
                                              author: authVM.currentUser?.username,
                                              date: ISO8601DateFormatter().string(from: Date()),
                                              category: category.isEmpty ? nil : category,
@@ -121,6 +131,12 @@ struct PressDetailView: View {
                     Text(press.title)
                         .font(.title2.bold())
 
+                    if let subtitle = press.subtitle, !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
+
                     HStack {
                         if let author = press.author {
                             Label(author, systemImage: "person").font(.subheadline).foregroundStyle(.secondary)
@@ -131,6 +147,24 @@ struct PressDetailView: View {
                     }
 
                     Divider()
+
+                    if let imageUrl = press.image, !imageUrl.isEmpty {
+                        AsyncImage(url: URL(string: imageUrl)) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().aspectRatio(contentMode: .fit)
+                            case .failure:
+                                Label("Bild konnte nicht geladen werden", systemImage: "photo")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            case .empty:
+                                Color.gray.opacity(0.2)
+                            @unknown default:
+                                Color.gray.opacity(0.2)
+                            }
+                        }
+                        .frame(maxHeight: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
 
                     Text(press.content)
                         .font(.body)

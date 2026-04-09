@@ -169,14 +169,16 @@ struct LSPDCharge: Identifiable, Codable, Hashable {
 struct LSPDPress: Identifiable, Codable, Hashable {
     var id: Int
     var title: String
+    var subtitle: String?
     var content: String
+    var image: String?
     var author: String?
     var date: String?
     var category: String?
     var isPublished: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, content, author, date, category, isPublished
+        case id, title, subtitle, content, image, author, date, category, isPublished
     }
 }
 
