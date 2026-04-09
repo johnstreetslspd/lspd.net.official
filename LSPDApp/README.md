@@ -56,15 +56,18 @@ Die App nutzt **dieselbe Firebase Firestore Datenbank** wie das Web-Portal:
 
 ### 2. Firebase konfigurieren
 
+Die App ist bereits programmatisch mit dem Firebase-Projekt **lspd-roleplay** konfiguriert.
+Falls Firestore nicht verbindet, prüfe folgende Schritte:
+
 1. Gehe zur [Firebase Console](https://console.firebase.google.com/)
 2. Wähle das Projekt **lspd-roleplay**
-3. Füge eine **iOS-App** hinzu:
+3. Falls noch keine iOS-App registriert ist:
+   - Klicke auf **App hinzufügen** → **iOS**
    - Bundle ID: `com.lspd.portal`
    - App-Name: `LSPD App`
-4. Lade die `GoogleService-Info.plist` herunter
-5. Ersetze die Datei `LSPDApp/LSPDApp/GoogleService-Info.plist` mit der heruntergeladenen Version
+4. (Optional) Lade die `GoogleService-Info.plist` herunter und ersetze die Datei in `LSPDApp/LSPDApp/`
 
-> ⚠️ **Wichtig:** Die mitgelieferte `GoogleService-Info.plist` ist ein Platzhalter. Du musst sie mit deiner echten Datei aus der Firebase Console ersetzen, damit die App eine Verbindung herstellen kann!
+> ℹ️ Die App verwendet die Firebase-Konfiguration direkt im Code (LSPDApp.swift). Die GoogleService-Info.plist ist als Backup vorhanden.
 
 ### 3. Bauen & Starten (⌘R)
 
@@ -80,11 +83,10 @@ Die App nutzt **dieselbe Firebase Firestore Datenbank** wie das Web-Portal:
 | Problem | Lösung |
 |---------|--------|
 | "No such module 'FirebaseCore'" | Xcode → File → Packages → Resolve Package Versions |
-| "Missing Package Product FirebaseCore" | 1. Xcode → File → Packages → Reset Package Caches 2. Dann Resolve Package Versions. **Ursache:** FirebaseCore ist erst ab Firebase SDK 11.3+ als eigenständiges Produkt verfügbar. Das Projekt nutzt Firebase 11.3+. |
+| "Missing Package Product FirebaseCore" | 1. Xcode → File → Packages → **Reset Package Caches** 2. Dann **Resolve Package Versions** 3. Falls nötig: `~/Library/Developer/Xcode/DerivedData` und `~/Library/Caches/org.swift.swiftpm` löschen → Xcode neustarten → Projekt öffnen |
 | Signing-Fehler | Xcode → Target → Signing & Capabilities → Team auswählen |
-| "GoogleService-Info.plist not found" | Platzhalter-Datei mit echter Firebase-Datei ersetzen |
 | iPad-Simulator zeigt nichts | Oben in Xcode iPad-Simulator als Ziel auswählen |
-| SPM-Pakete lassen sich nicht auflösen | Xcode schließen → `~/Library/Developer/Xcode/DerivedData` und `~/Library/Caches/org.swift.swiftpm` löschen → Projekt neu öffnen |
+| Firebase verbindet nicht | iOS-App in Firebase Console registrieren (Bundle ID: `com.lspd.portal`) |
 
 ## 📂 Projektstruktur
 

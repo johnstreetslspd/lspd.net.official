@@ -3,15 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>DEIN_API_KEY</string>
+	<string>AIzaSyDAltEFoZPnXFyezoApgGf7FY7bAOFk5oA</string>
 	<key>GCM_SENDER_ID</key>
-	<string>DEINE_SENDER_ID</string>
+	<string>213624245643</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
 	<key>PROJECT_ID</key>
 	<string>lspd-roleplay</string>
 	<key>STORAGE_BUCKET</key>
 	<string>lspd-roleplay.firebasestorage.app</string>
 	<key>GOOGLE_APP_ID</key>
-	<string>DEINE_GOOGLE_APP_ID</string>
+	<string>1:213624245643:ios:a1b2c3d4e5f60001</string>
 	<key>BUNDLE_ID</key>
 	<string>com.lspd.portal</string>
 	<key>IS_ANALYTICS_ENABLED</key>
