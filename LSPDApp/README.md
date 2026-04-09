@@ -80,6 +80,7 @@ Die App nutzt **dieselbe Firebase Firestore Datenbank** wie das Web-Portal:
 | Problem | Lösung |
 |---------|--------|
 | "No such module 'FirebaseCore'" | Xcode → File → Packages → Resolve Package Versions |
+| "Missing Package Product FirebaseCore" | Xcode → File → Packages → Reset Package Caches, dann Resolve Package Versions |
 | Signing-Fehler | Xcode → Target → Signing & Capabilities → Team auswählen |
 | "GoogleService-Info.plist not found" | Platzhalter-Datei mit echter Firebase-Datei ersetzen |
 | iPad-Simulator zeigt nichts | Oben in Xcode iPad-Simulator als Ziel auswählen |
@@ -92,7 +93,6 @@ LSPDApp/
 │   ├── project.pbxproj              # Xcode-Projektdatei
 │   ├── project.xcworkspace/         # Workspace
 │   └── xcshareddata/xcschemes/      # Build-Scheme
-├── Package.swift                    # SPM-Referenz (nicht zum Bauen verwenden)
 └── LSPDApp/
     ├── LSPDApp.swift                # App-Einstiegspunkt (@main)
     ├── ContentView.swift            # Haupt-View (Login/Portal)
