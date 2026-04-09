@@ -50,9 +50,9 @@ struct BeweiseView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    let item = filteredEvidence[idx]
-                    Task { await dbService.deleteEvidence(item.id) }
+                let idsToDelete = indexSet.map { filteredEvidence[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteEvidence(id) }
                 }
             }
         }

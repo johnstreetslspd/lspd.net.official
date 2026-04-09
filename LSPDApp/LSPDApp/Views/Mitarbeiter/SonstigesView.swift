@@ -49,8 +49,9 @@ struct SonstigesView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    Task { await dbService.deleteRequest(filteredRequests[idx].id) }
+                let idsToDelete = indexSet.map { filteredRequests[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteRequest(id) }
                 }
             }
         }

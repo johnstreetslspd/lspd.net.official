@@ -12,10 +12,12 @@ struct BuergerKontaktView: View {
                         .foregroundStyle(.red)
                     Text("Notruf")
                         .font(.title2.bold())
-                    Link(destination: URL(string: "tel:911")!) {
-                        Text("911")
-                            .font(.system(size: 48, weight: .black))
-                            .foregroundStyle(.red)
+                    if let telUrl = URL(string: "tel:911") {
+                        Link(destination: telUrl) {
+                            Text("911")
+                                .font(.system(size: 48, weight: .black))
+                                .foregroundStyle(.red)
+                        }
                     }
                     Text("Für lebensbedrohliche Notfälle")
                         .font(.caption)
@@ -36,10 +38,12 @@ struct BuergerKontaktView: View {
                         .foregroundStyle(LSPDColors.primary)
                     Text("Nicht-Notfall")
                         .font(.title3.bold())
-                    Link(destination: URL(string: "tel:311")!) {
-                        Text("311")
-                            .font(.system(size: 36, weight: .bold))
-                            .foregroundStyle(LSPDColors.primary)
+                    if let telUrl = URL(string: "tel:311") {
+                        Link(destination: telUrl) {
+                            Text("311")
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundStyle(LSPDColors.primary)
+                        }
                     }
                     Text("Für allgemeine Anfragen und Meldungen")
                         .font(.caption)

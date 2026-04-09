@@ -10,6 +10,8 @@ class AuthViewModel: ObservableObject {
     @Published var stayLoggedIn = false
 
     private let sessionKey = "lspd_session"
+    /// Benutzername für verzögertes Auto-Login (wartet auf Firestore-Daten). Thread-sicher durch @MainActor.
+    private var pendingAutoLoginUsername: String?
 
     init() {
         tryAutoLogin()
@@ -72,6 +74,30 @@ class AuthViewModel: ObservableObject {
         guard let data = UserDefaults.standard.data(forKey: sessionKey),
               let session = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let username = session["username"] as? String,
+              let expires = session["expires"] as? Double,
+              Date().timeIntervalSince1970 < expires else {
+            return
+        }
+
+        let db = DatabaseService.shared
+        if let user = db.users.first(where: { $0.username == username }) {
+            currentUser = user
+            isLoggedIn = true
+            stayLoggedIn = true
+        } else {
+            // Daten sind noch nicht geladen – auf Änderungen warten
+            pendingAutoLoginUsername = username
+        }
+    }
+
+    /// Wird aufgerufen, wenn Firestore-Daten geladen wurden
+    func retryAutoLoginIfNeeded() {
+        guard let username = pendingAutoLoginUsername else { return }
+        pendingAutoLoginUsername = nil
+
+        // Session nochmals prüfen
+        guard let data = UserDefaults.standard.data(forKey: sessionKey),
+              let session = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let expires = session["expires"] as? Double,
               Date().timeIntervalSince1970 < expires else {
             return

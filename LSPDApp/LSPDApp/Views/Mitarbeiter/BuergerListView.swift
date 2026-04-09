@@ -55,9 +55,9 @@ struct BuergerListView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    let citizen = filteredCitizens[idx]
-                    Task { await dbService.deleteCitizen(citizen.id) }
+                let idsToDelete = indexSet.map { filteredCitizens[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteCitizen(id) }
                 }
             }
         }

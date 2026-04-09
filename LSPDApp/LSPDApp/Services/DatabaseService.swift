@@ -37,6 +37,10 @@ class DatabaseService: ObservableObject {
 
     // MARK: - Verbindung starten
     func startListening() {
+        // Vorherigen Listener entfernen, um Ressourcen-Leak zu vermeiden
+        listener?.remove()
+        listener = nil
+
         isLoading = true
         // Echtzeit-Listener für automatische Updates
         listener = docRef.addSnapshotListener { [weak self] snapshot, error in

@@ -8,7 +8,6 @@ struct LoginView: View {
     @State private var username = ""
     @State private var password = ""
     @State private var stayLoggedIn = false
-    @State private var isLoading = false
 
     var body: some View {
         NavigationStack {
@@ -70,21 +69,12 @@ struct LoginView: View {
                         .tint(LSPDColors.primary)
 
                     Button {
-                        isLoading = true
-                        // Warte kurz auf Firebase
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            authVM.login(username: username, password: password, stayLoggedIn: stayLoggedIn)
-                            isLoading = false
-                            if authVM.isLoggedIn {
-                                dismiss()
-                            }
+                        authVM.login(username: username, password: password, stayLoggedIn: stayLoggedIn)
+                        if authVM.isLoggedIn {
+                            dismiss()
                         }
                     } label: {
                         HStack {
-                            if isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                            }
                             Text("Anmelden")
                                 .font(.headline)
                         }
@@ -94,7 +84,7 @@ struct LoginView: View {
                         .foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .disabled(username.isEmpty || password.isEmpty || isLoading)
+                    .disabled(username.isEmpty || password.isEmpty)
                 }
                 .padding()
 

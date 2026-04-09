@@ -46,9 +46,9 @@ struct NutzerView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    let user = filteredUsers[idx]
-                    Task { await dbService.deleteUser(user.id) }
+                let idsToDelete = indexSet.map { filteredUsers[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteUser(id) }
                 }
             }
         }

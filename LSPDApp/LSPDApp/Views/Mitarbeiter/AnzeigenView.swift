@@ -58,8 +58,9 @@ struct AnzeigenView: View {
                 .listRowBackground(Color(.systemGray6).opacity(0.1))
             }
             .onDelete { indexSet in
-                for idx in indexSet {
-                    Task { await dbService.deleteCharge(filteredCharges[idx].id) }
+                let idsToDelete = indexSet.map { filteredCharges[$0].id }
+                for id in idsToDelete {
+                    Task { await dbService.deleteCharge(id) }
                 }
             }
         }
