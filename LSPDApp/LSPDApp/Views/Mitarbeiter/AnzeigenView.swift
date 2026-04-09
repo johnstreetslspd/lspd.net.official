@@ -10,8 +10,9 @@ struct AnzeigenView: View {
     var filteredCharges: [LSPDCharge] {
         if searchText.isEmpty { return dbService.charges }
         return dbService.charges.filter {
-            $0.charge.localizedCaseInsensitiveContains(searchText) ||
-            ($0.citizenName ?? "").localizedCaseInsensitiveContains(searchText)
+            $0.type.localizedCaseInsensitiveContains(searchText) ||
+            ($0.name ?? "").localizedCaseInsensitiveContains(searchText) ||
+            ($0.chargeNumber ?? "").localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -30,22 +31,22 @@ struct AnzeigenView: View {
                 Button { selectedCharge = charge } label: {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(charge.charge).font(.headline)
+                            Text(charge.type).font(.headline)
                             Spacer()
                             if let status = charge.status { StatusBadge(status: status) }
                         }
                         HStack {
-                            if let name = charge.citizenName {
+                            if let name = charge.name {
                                 Label(name, systemImage: "person").font(.caption).foregroundStyle(.secondary)
                             }
-                            if let severity = charge.severity {
-                                Text(severity).font(.caption.bold())
-                                    .foregroundStyle(severity == "Schwer" ? .red : severity == "Mittel" ? .orange : .yellow)
+                            Spacer()
+                            if let az = charge.chargeNumber {
+                                Text(az).font(.caption.monospaced()).foregroundStyle(LSPDColors.info)
                             }
                         }
                         HStack {
-                            if let filedBy = charge.filedBy {
-                                Text("Von: \(filedBy)").font(.caption2).foregroundStyle(.secondary)
+                            if let officer = charge.officer {
+                                Text("Beamter: \(officer)").font(.caption2).foregroundStyle(.secondary)
                             }
                             Spacer()
                             if let date = charge.date {
@@ -82,13 +83,10 @@ struct AddChargeView: View {
     @EnvironmentObject var dbService: DatabaseService
     @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.dismiss) var dismiss
-    @State private var charge = ""
+    @State private var type = ""
     @State private var description = ""
-    @State private var severity = "Leicht"
     @State private var citizenSearch = ""
     @State private var selectedCitizen: LSPDCitizen?
-
-    let severityOptions = ["Leicht", "Mittel", "Schwer"]
 
     var citizenSuggestions: [LSPDCitizen] {
         if citizenSearch.isEmpty { return [] }
@@ -122,12 +120,9 @@ struct AddChargeView: View {
                     }
                 }
                 Section("Anzeige") {
-                    TextField("Anklage", text: $charge)
+                    TextField("Anklage / Typ", text: $type)
                     TextEditor(text: $description)
                         .frame(minHeight: 60)
-                    Picker("Schwere", selection: $severity) {
-                        ForEach(severityOptions, id: \.self) { Text($0) }
-                    }
                 }
             }
             .navigationTitle("Neue Anzeige")
@@ -138,21 +133,24 @@ struct AddChargeView: View {
                     Button("Speichern") {
                         let item = LSPDCharge(
                             id: 0,
+                            chargeNumber: nil,
+                            aktenzeichen: nil,
+                            name: selectedCitizen?.name,
                             citizenId: selectedCitizen?.id,
-                            citizenName: selectedCitizen?.name,
-                            charge: charge,
+                            type: type,
+                            vergehen: nil,
                             description: description.isEmpty ? nil : description,
-                            severity: severity,
-                            date: ISO8601DateFormatter().string(from: Date()),
-                            filedBy: authVM.currentUser?.username,
-                            status: "Offen"
+                            officer: authVM.currentUser?.username,
+                            source: "police",
+                            status: "Aktiv",
+                            date: ISO8601DateFormatter().string(from: Date())
                         )
                         Task {
                             await dbService.addCharge(item)
                             dismiss()
                         }
                     }
-                    .disabled(charge.isEmpty)
+                    .disabled(type.isEmpty)
                 }
             }
         }
@@ -170,24 +168,25 @@ struct ChargeDetailView: View {
         NavigationStack {
             List {
                 Section("Anklage") {
-                    LabeledContent("Anklage", value: charge.charge)
+                    LabeledContent("Anklage", value: charge.type)
                     if let desc = charge.description { Text(desc) }
-                    if let severity = charge.severity { LabeledContent("Schwere", value: severity) }
+                    if let az = charge.chargeNumber { LabeledContent("Anzeigen-Nr.", value: az) }
+                    if let linked = charge.aktenzeichen { LabeledContent("Aktenzeichen", value: linked) }
                 }
                 Section("Zuordnung") {
-                    if let name = charge.citizenName { LabeledContent("Bürger", value: name) }
-                    if let filedBy = charge.filedBy { LabeledContent("Erstattet von", value: filedBy) }
+                    if let name = charge.name { LabeledContent("Bürger", value: name) }
+                    if let officer = charge.officer { LabeledContent("Beamter", value: officer) }
                     if let date = charge.date { LabeledContent("Datum", value: formatISODate(date)) }
                 }
                 Section("Status") {
                     Picker("Status", selection: $status) {
-                        Text("Offen").tag("Offen")
+                        Text("Aktiv").tag("Aktiv")
                         Text("In Bearbeitung").tag("In Bearbeitung")
                         Text("Geschlossen").tag("Geschlossen")
                     }
                 }
             }
-            .onAppear { status = charge.status ?? "Offen" }
+            .onAppear { status = charge.status ?? "Aktiv" }
             .navigationTitle("Anzeige")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
