@@ -66,6 +66,12 @@ struct BuergerDashboardView: View {
                             DashboardCard(title: "Strafanzeige", icon: "exclamationmark.shield.fill",
                                           subtitle: "Anzeige erstatten", color: LSPDColors.danger)
                         }
+
+                        NavigationLink { BuergerPresseView() } label: {
+                            DashboardCard(title: "Presse", icon: "megaphone.fill",
+                                          count: dbService.press.filter { $0.isPublished == true }.count,
+                                          subtitle: "Pressemitteilungen", color: .purple)
+                        }
                     }
                     .padding(.horizontal)
 
@@ -79,6 +85,8 @@ struct BuergerDashboardView: View {
                             StatCard(label: "Beamte", value: "\(dbService.users.count)", color: LSPDColors.primary)
                             StatCard(label: "News", value: "\(dbService.news.count)", color: .mint)
                             StatCard(label: "Bewerbungen", value: "\(dbService.applications.count)", color: .green)
+                            StatCard(label: "Presse", value: "\(dbService.press.filter { $0.isPublished == true }.count)", color: .purple)
+                            StatCard(label: "Anfragen", value: "\(dbService.requests.count)", color: .orange)
                         }
                         .padding(.horizontal)
                     }

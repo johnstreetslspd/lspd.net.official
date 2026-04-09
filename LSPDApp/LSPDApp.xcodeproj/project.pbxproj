@@ -37,6 +37,7 @@
 		AA0000000000000000000038 /* BuergerFAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000037 /* BuergerFAQView.swift */; };
 		AA000000000000000000003A /* BuergerKontaktView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000039 /* BuergerKontaktView.swift */; };
 		AA000000000000000000003C /* BuergerStrafanzeigeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000003B /* BuergerStrafanzeigeView.swift */; };
+		AA0000000000000000000063 /* BuergerPresseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000064 /* BuergerPresseView.swift */; };
 		AA000000000000000000003E /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000003D /* SharedComponents.swift */; };
 		AA0000000000000000000040 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000003F /* Assets.xcassets */; };
 		AA0000000000000000000042 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000041 /* GoogleService-Info.plist */; };
@@ -75,6 +76,7 @@
 		AA0000000000000000000037 /* BuergerFAQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuergerFAQView.swift; sourceTree = "<group>"; };
 		AA0000000000000000000039 /* BuergerKontaktView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuergerKontaktView.swift; sourceTree = "<group>"; };
 		AA000000000000000000003B /* BuergerStrafanzeigeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuergerStrafanzeigeView.swift; sourceTree = "<group>"; };
+		AA0000000000000000000064 /* BuergerPresseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuergerPresseView.swift; sourceTree = "<group>"; };
 		AA000000000000000000003D /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedComponents.swift; sourceTree = "<group>"; };
 		AA000000000000000000003F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0000000000000000000041 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				AA0000000000000000000037 /* BuergerFAQView.swift */,
 				AA0000000000000000000039 /* BuergerKontaktView.swift */,
 				AA000000000000000000003B /* BuergerStrafanzeigeView.swift */,
+				AA0000000000000000000064 /* BuergerPresseView.swift */,
 			);
 			path = Buerger;
 			sourceTree = "<group>";
@@ -337,6 +340,7 @@
 				AA0000000000000000000038 /* BuergerFAQView.swift in Sources */,
 				AA000000000000000000003A /* BuergerKontaktView.swift in Sources */,
 				AA000000000000000000003C /* BuergerStrafanzeigeView.swift in Sources */,
+				AA0000000000000000000063 /* BuergerPresseView.swift in Sources */,
 				AA000000000000000000003E /* SharedComponents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

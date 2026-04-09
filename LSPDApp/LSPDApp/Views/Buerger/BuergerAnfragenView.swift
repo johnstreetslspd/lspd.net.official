@@ -2,6 +2,30 @@ import SwiftUI
 
 // MARK: - Bürger Anfragen & Beschwerden
 struct BuergerAnfragenView: View {
+    @State private var selectedTab = 0
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Picker("", selection: $selectedTab) {
+                Text("Neue Anfrage").tag(0)
+                Text("Alle Anfragen").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .padding()
+
+            if selectedTab == 0 {
+                AnfragenFormView()
+            } else {
+                AnfragenListeView()
+            }
+        }
+        .navigationTitle("Anfragen")
+        .background(LSPDColors.dark.ignoresSafeArea())
+    }
+}
+
+// MARK: - Anfragen-Formular
+private struct AnfragenFormView: View {
     @EnvironmentObject var dbService: DatabaseService
     @State private var name = ""
     @State private var email = ""
@@ -26,9 +50,7 @@ struct BuergerAnfragenView: View {
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
 
-                    Button {
-                        resetForm()
-                    } label: {
+                    Button { resetForm() } label: {
                         Text("Neue Anfrage stellen")
                             .font(.headline)
                             .padding()
@@ -74,9 +96,7 @@ struct BuergerAnfragenView: View {
                         }
                     }
 
-                    Button {
-                        submitRequest()
-                    } label: {
+                    Button { submitRequest() } label: {
                         Text("Anfrage absenden")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
@@ -90,7 +110,6 @@ struct BuergerAnfragenView: View {
                 .padding()
             }
         }
-        .navigationTitle("Anfragen")
         .background(LSPDColors.dark.ignoresSafeArea())
     }
 
@@ -115,5 +134,91 @@ struct BuergerAnfragenView: View {
         message = ""
         type = "Anfrage"
         submitted = false
+    }
+}
+
+// MARK: - Anfragen-Liste
+private struct AnfragenListeView: View {
+    @EnvironmentObject var dbService: DatabaseService
+    @State private var selectedRequest: LSPDRequest?
+
+    var sortedRequests: [LSPDRequest] {
+        dbService.requests.sorted { ($0.date ?? "") > ($1.date ?? "") }
+    }
+
+    var body: some View {
+        List {
+            if sortedRequests.isEmpty {
+                EmptyStateView(icon: "envelope", title: "Keine Anfragen",
+                               subtitle: "Noch keine Anfragen eingegangen")
+                    .listRowBackground(Color.clear)
+            }
+
+            ForEach(sortedRequests) { req in
+                Button { selectedRequest = req } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(req.subject).font(.headline).lineLimit(1)
+                            Spacer()
+                            StatusBadge(status: req.status ?? "Offen")
+                        }
+                        HStack(spacing: 6) {
+                            Label(req.name, systemImage: "person")
+                                .font(.caption).foregroundStyle(.secondary)
+                            if let type = req.type {
+                                Text("• \(type)").font(.caption).foregroundStyle(LSPDColors.info)
+                            }
+                        }
+                        if let date = req.date {
+                            Text(formatISODate(date, dateStyle: .short, timeStyle: .short))
+                                .font(.caption2).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .listRowBackground(Color(.systemGray6).opacity(0.1))
+            }
+        }
+        .listStyle(.plain)
+        .background(LSPDColors.dark.ignoresSafeArea())
+        .sheet(item: $selectedRequest) { req in BuergerAnfrageDetailView(request: req) }
+    }
+}
+
+// MARK: - Anfrage-Detailansicht (Bürger – nur lesend)
+struct BuergerAnfrageDetailView: View {
+    @Environment(\.dismiss) var dismiss
+    let request: LSPDRequest
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Anfrage") {
+                    LabeledContent("Name", value: request.name)
+                    if let email = request.email { LabeledContent("E-Mail", value: email) }
+                    LabeledContent("Betreff", value: request.subject)
+                    if let type = request.type { LabeledContent("Typ", value: type) }
+                    if let date = request.date {
+                        LabeledContent("Datum", value: formatISODate(date))
+                    }
+                    LabeledContent("Status", value: request.status ?? "Offen")
+                }
+
+                Section("Nachricht") {
+                    Text(request.message)
+                }
+
+                if let response = request.response, !response.isEmpty {
+                    Section("Antwort der LSPD") {
+                        Text(response)
+                    }
+                }
+            }
+            .navigationTitle("Anfrage")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Fertig") { dismiss() } }
+            }
+            .background(LSPDColors.dark.ignoresSafeArea())
+        }
     }
 }
