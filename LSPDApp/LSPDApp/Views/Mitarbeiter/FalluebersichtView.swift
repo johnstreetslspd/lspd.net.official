@@ -10,10 +10,10 @@ struct FalluebersichtView: View {
         var cases: [(type: String, title: String, citizen: String?, date: String?, status: String?)] = []
 
         for cit in dbService.citations {
-            cases.append(("Strafakte", cit.offense, cit.citizenName, cit.date, cit.status))
+            cases.append(("Strafakte", cit.type, cit.name, cit.date, cit.status))
         }
         for charge in dbService.charges {
-            cases.append(("Anzeige", charge.charge, charge.citizenName, charge.date, charge.status))
+            cases.append(("Anzeige", charge.type, charge.name, charge.date, charge.status))
         }
 
         if !searchText.isEmpty {

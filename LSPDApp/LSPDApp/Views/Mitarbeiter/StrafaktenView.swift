@@ -10,9 +10,10 @@ struct StrafaktenView: View {
     var filteredCitations: [LSPDCitation] {
         if searchText.isEmpty { return dbService.citations }
         return dbService.citations.filter {
-            $0.offense.localizedCaseInsensitiveContains(searchText) ||
-            ($0.citizenName ?? "").localizedCaseInsensitiveContains(searchText) ||
-            ($0.officer ?? "").localizedCaseInsensitiveContains(searchText)
+            $0.type.localizedCaseInsensitiveContains(searchText) ||
+            ($0.name ?? "").localizedCaseInsensitiveContains(searchText) ||
+            ($0.officer ?? "").localizedCaseInsensitiveContains(searchText) ||
+            ($0.aktenzeichen ?? "").localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -31,20 +32,19 @@ struct StrafaktenView: View {
                 Button { selectedCitation = cit } label: {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(cit.offense).font(.headline)
+                            Text(cit.type).font(.headline)
                             Spacer()
                             if let status = cit.status {
                                 StatusBadge(status: status)
                             }
                         }
                         HStack {
-                            if let name = cit.citizenName {
+                            if let name = cit.name {
                                 Label(name, systemImage: "person").font(.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
-                            if let fine = cit.fine {
-                                Text("$\(fine, specifier: "%.0f")")
-                                    .font(.caption.bold()).foregroundStyle(.orange)
+                            if let az = cit.aktenzeichen {
+                                Text(az).font(.caption.monospaced()).foregroundStyle(LSPDColors.info)
                             }
                         }
                         HStack {
@@ -86,9 +86,8 @@ struct AddCitationView: View {
     @EnvironmentObject var dbService: DatabaseService
     @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.dismiss) var dismiss
-    @State private var offense = ""
-    @State private var details = ""
-    @State private var fine = ""
+    @State private var type = ""
+    @State private var description = ""
     @State private var selectedCitizen: LSPDCitizen?
     @State private var citizenSearch = ""
 
@@ -125,11 +124,9 @@ struct AddCitationView: View {
                     }
                 }
                 Section("Straftat") {
-                    TextField("Vergehen", text: $offense)
-                    TextEditor(text: $details)
+                    TextField("Vergehen / Typ", text: $type)
+                    TextEditor(text: $description)
                         .frame(minHeight: 60)
-                    TextField("Geldstrafe ($)", text: $fine)
-                        .keyboardType(.decimalPad)
                 }
             }
             .navigationTitle("Neue Strafakte")
@@ -140,21 +137,21 @@ struct AddCitationView: View {
                     Button("Speichern") {
                         let item = LSPDCitation(
                             id: 0,
+                            aktenzeichen: nil,
+                            name: selectedCitizen?.name,
                             citizenId: selectedCitizen?.id,
-                            citizenName: selectedCitizen?.name,
-                            offense: offense,
-                            details: details.isEmpty ? nil : details,
-                            fine: Double(fine),
-                            date: ISO8601DateFormatter().string(from: Date()),
+                            type: type,
+                            status: "Offen",
+                            description: description.isEmpty ? nil : description,
                             officer: authVM.currentUser?.username,
-                            status: "Offen"
+                            date: ISO8601DateFormatter().string(from: Date())
                         )
                         Task {
                             await dbService.addCitation(item)
                             dismiss()
                         }
                     }
-                    .disabled(offense.isEmpty)
+                    .disabled(type.isEmpty)
                 }
             }
         }
@@ -172,13 +169,15 @@ struct CitationDetailView: View {
         NavigationStack {
             List {
                 Section("Vergehen") {
-                    LabeledContent("Vergehen", value: citation.offense)
-                    if let details = citation.details { Text(details) }
+                    LabeledContent("Vergehen", value: citation.type)
+                    if let desc = citation.description { Text(desc) }
+                    if let az = citation.aktenzeichen {
+                        LabeledContent("Aktenzeichen", value: az)
+                    }
                 }
                 Section("Zuordnung") {
-                    if let name = citation.citizenName { LabeledContent("Bürger", value: name) }
+                    if let name = citation.name { LabeledContent("Bürger", value: name) }
                     if let officer = citation.officer { LabeledContent("Beamter", value: officer) }
-                    if let fine = citation.fine { LabeledContent("Geldstrafe", value: "$\(fine, specifier: "%.0f")") }
                     if let date = citation.date { LabeledContent("Datum", value: formatISODate(date)) }
                 }
                 Section("Status") {

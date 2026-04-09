@@ -10,9 +10,9 @@ struct BeweiseView: View {
     var filteredEvidence: [LSPDEvidence] {
         if searchText.isEmpty { return dbService.evidence }
         return dbService.evidence.filter {
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText) ||
-            ($0.caseNumber ?? "").localizedCaseInsensitiveContains(searchText)
+            $0.name.localizedCaseInsensitiveContains(searchText) ||
+            ($0.description ?? "").localizedCaseInsensitiveContains(searchText) ||
+            ($0.aktenzeichen ?? "").localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -30,14 +30,16 @@ struct BeweiseView: View {
             ForEach(filteredEvidence) { item in
                 Button { selectedEvidence = item } label: {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(item.title).font(.headline)
-                        Text(item.description).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
+                        Text(item.name).font(.headline)
+                        if let desc = item.description {
+                            Text(desc).font(.subheadline).foregroundStyle(.secondary).lineLimit(2)
+                        }
                         HStack {
                             if let type = item.type {
                                 Text(type).font(.caption).foregroundStyle(LSPDColors.info)
                             }
-                            if let caseNum = item.caseNumber {
-                                Text("Fall: \(caseNum)").font(.caption).foregroundStyle(.secondary)
+                            if let az = item.aktenzeichen {
+                                Text(az).font(.caption.monospaced()).foregroundStyle(.secondary)
                             }
                             Spacer()
                             if let date = item.date {
@@ -74,22 +76,24 @@ struct AddEvidenceView: View {
     @EnvironmentObject var dbService: DatabaseService
     @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.dismiss) var dismiss
-    @State private var title = ""
+    @State private var name = ""
     @State private var description = ""
     @State private var type = ""
-    @State private var caseNumber = ""
+    @State private var location = ""
+    @State private var citationAZ = ""
 
     var body: some View {
         NavigationStack {
             Form {
                 Section("Beweis-Daten") {
-                    TextField("Titel", text: $title)
+                    TextField("Bezeichnung", text: $name)
                     TextEditor(text: $description)
                         .frame(minHeight: 80)
                 }
                 Section("Zuordnung") {
                     TextField("Typ (z.B. Foto, Dokument)", text: $type)
-                    TextField("Fallnummer", text: $caseNumber)
+                    TextField("Fundort", text: $location)
+                    TextField("Aktenzeichen Strafakte (CA-...)", text: $citationAZ)
                 }
             }
             .navigationTitle("Neuer Beweis")
@@ -98,17 +102,23 @@ struct AddEvidenceView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Abbrechen") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Speichern") {
-                        let item = LSPDEvidence(id: 0, title: title, description: description,
-                                                type: type.isEmpty ? nil : type,
-                                                caseNumber: caseNumber.isEmpty ? nil : caseNumber,
-                                                addedBy: authVM.currentUser?.username,
-                                                date: ISO8601DateFormatter().string(from: Date()))
+                        let item = LSPDEvidence(
+                            id: 0,
+                            aktenzeichen: nil,
+                            name: name,
+                            description: description.isEmpty ? nil : description,
+                            type: type.isEmpty ? nil : type,
+                            location: location.isEmpty ? nil : location,
+                            citationAZ: citationAZ.isEmpty ? nil : citationAZ,
+                            addedBy: authVM.currentUser?.username,
+                            date: ISO8601DateFormatter().string(from: Date())
+                        )
                         Task {
                             await dbService.addEvidence(item)
                             dismiss()
                         }
                     }
-                    .disabled(title.isEmpty)
+                    .disabled(name.isEmpty)
                 }
             }
         }
@@ -124,14 +134,16 @@ struct EvidenceDetailView: View {
         NavigationStack {
             List {
                 Section("Details") {
-                    LabeledContent("Titel", value: evidence.title)
-                    if !evidence.description.isEmpty {
-                        Text(evidence.description)
+                    LabeledContent("Bezeichnung", value: evidence.name)
+                    if let desc = evidence.description, !desc.isEmpty {
+                        Text(desc)
                     }
                 }
                 Section("Metadaten") {
                     if let type = evidence.type { LabeledContent("Typ", value: type) }
-                    if let caseNum = evidence.caseNumber { LabeledContent("Fallnummer", value: caseNum) }
+                    if let az = evidence.aktenzeichen { LabeledContent("Beweismittel-Nr.", value: az) }
+                    if let loc = evidence.location { LabeledContent("Fundort", value: loc) }
+                    if let citAZ = evidence.citationAZ { LabeledContent("Aktenzeichen", value: citAZ) }
                     if let addedBy = evidence.addedBy { LabeledContent("Erfasst von", value: addedBy) }
                     if let date = evidence.date { LabeledContent("Datum", value: formatISODate(date)) }
                 }

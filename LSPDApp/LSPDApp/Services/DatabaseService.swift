@@ -191,12 +191,15 @@ class DatabaseService: ObservableObject {
         if let evidenceData = data["evidence"] as? [[String: Any]] {
             evidence = evidenceData.compactMap { dict in
                 guard let id = toInt(dict["id"]),
-                      let title = dict["title"] as? String else { return nil }
+                      let name = dict["name"] as? String else { return nil }
                 return LSPDEvidence(
-                    id: id, title: title,
-                    description: dict["description"] as? String ?? "",
+                    id: id,
+                    aktenzeichen: dict["aktenzeichen"] as? String,
+                    name: name,
+                    description: dict["description"] as? String,
                     type: dict["type"] as? String,
-                    caseNumber: dict["caseNumber"] as? String,
+                    location: dict["location"] as? String,
+                    citationAZ: dict["citationAZ"] as? String,
                     addedBy: dict["addedBy"] as? String,
                     date: dict["date"] as? String,
                     imageUrl: dict["imageUrl"] as? String
@@ -247,17 +250,17 @@ class DatabaseService: ObservableObject {
         if let citData = data["citations"] as? [[String: Any]] {
             citations = citData.compactMap { dict in
                 guard let id = toInt(dict["id"]),
-                      let offense = dict["offense"] as? String else { return nil }
+                      let type = dict["type"] as? String else { return nil }
                 return LSPDCitation(
                     id: id,
+                    aktenzeichen: dict["aktenzeichen"] as? String,
+                    name: dict["name"] as? String,
                     citizenId: toInt(dict["citizenId"]),
-                    citizenName: dict["citizenName"] as? String,
-                    offense: offense,
-                    details: dict["details"] as? String,
-                    fine: toDouble(dict["fine"]),
-                    date: dict["date"] as? String,
+                    type: type,
+                    status: dict["status"] as? String,
+                    description: dict["description"] as? String,
                     officer: dict["officer"] as? String,
-                    status: dict["status"] as? String
+                    date: dict["date"] as? String
                 )
             }
         }
@@ -266,17 +269,20 @@ class DatabaseService: ObservableObject {
         if let chargeData = data["charges"] as? [[String: Any]] {
             charges = chargeData.compactMap { dict in
                 guard let id = toInt(dict["id"]),
-                      let charge = dict["charge"] as? String else { return nil }
+                      let type = dict["type"] as? String else { return nil }
                 return LSPDCharge(
                     id: id,
+                    chargeNumber: dict["chargeNumber"] as? String,
+                    aktenzeichen: dict["aktenzeichen"] as? String,
+                    name: dict["name"] as? String,
                     citizenId: toInt(dict["citizenId"]),
-                    citizenName: dict["citizenName"] as? String,
-                    charge: charge,
+                    type: type,
+                    vergehen: dict["vergehen"] as? [String],
                     description: dict["description"] as? String,
-                    severity: dict["severity"] as? String,
-                    date: dict["date"] as? String,
-                    filedBy: dict["filedBy"] as? String,
-                    status: dict["status"] as? String
+                    officer: dict["officer"] as? String,
+                    source: dict["source"] as? String,
+                    status: dict["status"] as? String,
+                    date: dict["date"] as? String
                 )
             }
         }
@@ -441,6 +447,10 @@ class DatabaseService: ObservableObject {
     func addEvidence(_ item: LSPDEvidence) async {
         var newItem = item
         newItem.id = nextId(evidence)
+        if newItem.aktenzeichen == nil || newItem.aktenzeichen!.isEmpty {
+            let ts = Int(Date().timeIntervalSince1970 * 1000)
+            newItem.aktenzeichen = "BM-\(String(ts).suffix(6))"
+        }
         evidence.append(newItem)
         await saveToFirestore()
     }
@@ -505,6 +515,10 @@ class DatabaseService: ObservableObject {
     func addCitation(_ item: LSPDCitation) async {
         var newItem = item
         newItem.id = nextId(citations)
+        if newItem.aktenzeichen == nil || newItem.aktenzeichen!.isEmpty {
+            let ts = Int(Date().timeIntervalSince1970 * 1000)
+            newItem.aktenzeichen = "CA-\(String(ts).suffix(6))"
+        }
         citations.append(newItem)
         await saveToFirestore()
     }
@@ -525,6 +539,10 @@ class DatabaseService: ObservableObject {
     func addCharge(_ item: LSPDCharge) async {
         var newItem = item
         newItem.id = nextId(charges)
+        if newItem.chargeNumber == nil || newItem.chargeNumber!.isEmpty {
+            let ts = Int(Date().timeIntervalSince1970 * 1000)
+            newItem.chargeNumber = "AZ-\(String(ts).suffix(6))"
+        }
         charges.append(newItem)
         await saveToFirestore()
     }

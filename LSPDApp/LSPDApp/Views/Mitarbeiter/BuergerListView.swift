@@ -136,11 +136,11 @@ struct CitizenDetailView: View {
     @State private var wantedLevel: Int = 0
 
     var citizenCitations: [LSPDCitation] {
-        dbService.citations.filter { $0.citizenId == citizen.id }
+        dbService.citations.filter { $0.citizenId == citizen.id || ($0.citizenId == nil && $0.name == citizen.name) }
     }
 
     var citizenCharges: [LSPDCharge] {
-        dbService.charges.filter { $0.citizenId == citizen.id }
+        dbService.charges.filter { $0.citizenId == citizen.id || ($0.citizenId == nil && $0.name == citizen.name) }
     }
 
     var body: some View {
@@ -164,9 +164,9 @@ struct CitizenDetailView: View {
                     Section("Strafakten (\(citizenCitations.count))") {
                         ForEach(citizenCitations) { cit in
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(cit.offense).font(.subheadline.bold())
+                                Text(cit.type).font(.subheadline.bold())
                                 HStack {
-                                    if let fine = cit.fine { Text("$\(fine, specifier: "%.0f")").font(.caption).foregroundStyle(.orange) }
+                                    if let az = cit.aktenzeichen { Text(az).font(.caption.monospaced()).foregroundStyle(LSPDColors.info) }
                                     if let date = cit.date { Text(formatISODate(date)).font(.caption).foregroundStyle(.secondary) }
                                 }
                             }
@@ -178,9 +178,9 @@ struct CitizenDetailView: View {
                     Section("Anzeigen (\(citizenCharges.count))") {
                         ForEach(citizenCharges) { charge in
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(charge.charge).font(.subheadline.bold())
-                                if let severity = charge.severity {
-                                    StatusBadge(status: severity)
+                                Text(charge.type).font(.subheadline.bold())
+                                if let az = charge.chargeNumber {
+                                    Text(az).font(.caption.monospaced()).foregroundStyle(LSPDColors.info)
                                 }
                             }
                         }

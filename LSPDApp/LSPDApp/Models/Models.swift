@@ -80,16 +80,18 @@ struct LSPDCitizen: Identifiable, Codable, Hashable {
 // MARK: - Beweis (Evidence)
 struct LSPDEvidence: Identifiable, Codable, Hashable {
     var id: Int
-    var title: String
-    var description: String
+    var aktenzeichen: String?   // BM-XXXXXX (eindeutige Beweismittel-Nummer)
+    var name: String            // Bezeichnung des Beweismittels
+    var description: String?
     var type: String?
-    var caseNumber: String?
+    var location: String?       // Fundort
+    var citationAZ: String?     // verknüpfte Strafakte (CA-XXXXXX)
     var addedBy: String?
     var date: String?
     var imageUrl: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, title, description, type, caseNumber, addedBy, date, imageUrl
+        case id, aktenzeichen, name, description, type, location, citationAZ, addedBy, date, imageUrl
     }
 }
 
@@ -134,34 +136,37 @@ struct LSPDApplication: Identifiable, Codable, Hashable {
 // MARK: - Strafakte (Citation / Criminal Record)
 struct LSPDCitation: Identifiable, Codable, Hashable {
     var id: Int
+    var aktenzeichen: String?   // CA-XXXXXX (eindeutige Strafakten-Nummer)
+    var name: String?           // Bürger-Name
     var citizenId: Int?
-    var citizenName: String?
-    var offense: String
-    var details: String?
-    var fine: Double?
-    var date: String?
-    var officer: String?
+    var type: String            // Vergehen / Typ
     var status: String?
+    var description: String?    // Details / Beschreibung
+    var officer: String?
+    var date: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, citizenId, citizenName, offense, details, fine, date, officer, status
+        case id, aktenzeichen, name, citizenId, type, status, description, officer, date
     }
 }
 
 // MARK: - Anzeige (Charge)
 struct LSPDCharge: Identifiable, Codable, Hashable {
     var id: Int
+    var chargeNumber: String?   // AZ-XXXXXX (eindeutige Anzeigen-Nummer)
+    var aktenzeichen: String?   // verknüpfte Strafakte (CA-XXXXXX)
+    var name: String?           // Bürger-Name
     var citizenId: Int?
-    var citizenName: String?
-    var charge: String
+    var type: String            // Anklage-Typ
+    var vergehen: [String]?     // Liste der Vergehen
     var description: String?
-    var severity: String?
-    var date: String?
-    var filedBy: String?
+    var officer: String?
+    var source: String?
     var status: String?
+    var date: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, citizenId, citizenName, charge, description, severity, date, filedBy, status
+        case id, chargeNumber, aktenzeichen, name, citizenId, type, vergehen, description, officer, source, status, date
     }
 }
 
