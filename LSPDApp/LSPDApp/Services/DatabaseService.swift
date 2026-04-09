@@ -77,12 +77,32 @@ class DatabaseService: ObservableObject {
         autoSyncTimer = nil
     }
 
+    // MARK: - Hilfsfunktionen für robuste Typumwandlung
+    // Firestore (via JS SDK) kann Ganzzahlen als Int, Int64, Double oder NSNumber liefern
+    private func toInt(_ val: Any?) -> Int? {
+        guard let val = val else { return nil }
+        if let i = val as? Int { return i }
+        if let i = val as? Int64 { return Int(i) }
+        if let d = val as? Double { return d.truncatingRemainder(dividingBy: 1) == 0 ? Int(d) : nil }
+        if let n = val as? NSNumber { return n.intValue }
+        return nil
+    }
+
+    private func toDouble(_ val: Any?) -> Double? {
+        guard let val = val else { return nil }
+        if let d = val as? Double { return d }
+        if let i = val as? Int { return Double(i) }
+        if let i = val as? Int64 { return Double(i) }
+        if let n = val as? NSNumber { return n.doubleValue }
+        return nil
+    }
+
     // MARK: - Daten parsen
     private func parseFirestoreData(_ data: [String: Any]) {
         // Users
         if let usersData = data["users"] as? [[String: Any]] {
             users = usersData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let username = dict["username"] as? String,
                       let password = dict["password"] as? String else { return nil }
                 return LSPDUser(
@@ -98,13 +118,13 @@ class DatabaseService: ObservableObject {
         // Ranks
         if let ranksData = data["jobRanks"] as? [[String: Any]] {
             jobRanks = ranksData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let name = dict["name"] as? String else { return nil }
                 return LSPDRank(
                     id: id, name: name,
                     color: dict["color"] as? String ?? "#ffffff",
                     icon: dict["icon"] as? String ?? "fas fa-award",
-                    priority: dict["priority"] as? Int ?? 0,
+                    priority: toInt(dict["priority"]) ?? 0,
                     department: dict["department"] as? String ?? "",
                     abbreviation: dict["abbreviation"] as? String ?? "",
                     description: dict["description"] as? String ?? ""
@@ -121,7 +141,7 @@ class DatabaseService: ObservableObject {
                     id: id, name: name,
                     color: dict["color"] as? String ?? "#888888",
                     icon: dict["icon"] as? String ?? "fas fa-user",
-                    priority: dict["priority"] as? Int ?? 0,
+                    priority: toInt(dict["priority"]) ?? 0,
                     description: dict["description"] as? String ?? "",
                     isDefault: dict["isDefault"] as? Bool ?? false,
                     permissions: dict["permissions"] as? [String] ?? []
@@ -148,7 +168,7 @@ class DatabaseService: ObservableObject {
         // Citizens
         if let citizenData = data["citizens"] as? [[String: Any]] {
             citizens = citizenData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let name = dict["name"] as? String else { return nil }
                 return LSPDCitizen(
                     id: id, name: name,
@@ -157,7 +177,7 @@ class DatabaseService: ObservableObject {
                     address: dict["address"] as? String,
                     phone: dict["phone"] as? String,
                     notes: dict["notes"] as? String,
-                    wantedLevel: dict["wantedLevel"] as? Int,
+                    wantedLevel: toInt(dict["wantedLevel"]),
                     created: dict["created"] as? String
                 )
             }
@@ -166,7 +186,7 @@ class DatabaseService: ObservableObject {
         // Evidence
         if let evidenceData = data["evidence"] as? [[String: Any]] {
             evidence = evidenceData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let title = dict["title"] as? String else { return nil }
                 return LSPDEvidence(
                     id: id, title: title,
@@ -183,7 +203,7 @@ class DatabaseService: ObservableObject {
         // Training
         if let trainingData = data["training"] as? [[String: Any]] {
             training = trainingData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let title = dict["title"] as? String else { return nil }
                 return LSPDTraining(
                     id: id, title: title,
@@ -201,7 +221,7 @@ class DatabaseService: ObservableObject {
         // Applications
         if let appData = data["applications"] as? [[String: Any]] {
             applications = appData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let name = dict["applicantName"] as? String else { return nil }
                 return LSPDApplication(
                     id: id, applicantName: name,
@@ -222,15 +242,15 @@ class DatabaseService: ObservableObject {
         // Citations
         if let citData = data["citations"] as? [[String: Any]] {
             citations = citData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let offense = dict["offense"] as? String else { return nil }
                 return LSPDCitation(
                     id: id,
-                    citizenId: dict["citizenId"] as? Int,
+                    citizenId: toInt(dict["citizenId"]),
                     citizenName: dict["citizenName"] as? String,
                     offense: offense,
                     details: dict["details"] as? String,
-                    fine: dict["fine"] as? Double,
+                    fine: toDouble(dict["fine"]),
                     date: dict["date"] as? String,
                     officer: dict["officer"] as? String,
                     status: dict["status"] as? String
@@ -241,11 +261,11 @@ class DatabaseService: ObservableObject {
         // Charges
         if let chargeData = data["charges"] as? [[String: Any]] {
             charges = chargeData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let charge = dict["charge"] as? String else { return nil }
                 return LSPDCharge(
                     id: id,
-                    citizenId: dict["citizenId"] as? Int,
+                    citizenId: toInt(dict["citizenId"]),
                     citizenName: dict["citizenName"] as? String,
                     charge: charge,
                     description: dict["description"] as? String,
@@ -260,7 +280,7 @@ class DatabaseService: ObservableObject {
         // Press
         if let pressData = data["press"] as? [[String: Any]] {
             press = pressData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let title = dict["title"] as? String else { return nil }
                 return LSPDPress(
                     id: id, title: title,
@@ -276,7 +296,7 @@ class DatabaseService: ObservableObject {
         // Requests
         if let reqData = data["requests"] as? [[String: Any]] {
             requests = reqData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let name = dict["name"] as? String,
                       let subject = dict["subject"] as? String,
                       let message = dict["message"] as? String else { return nil }
@@ -296,12 +316,28 @@ class DatabaseService: ObservableObject {
         // News
         if let newsData = data["news"] as? [[String: Any]] {
             news = newsData.compactMap { dict in
-                guard let id = dict["id"] as? Int,
+                guard let id = toInt(dict["id"]),
                       let title = dict["title"] as? String else { return nil }
                 return LSPDNews(
                     id: id, title: title,
                     content: dict["content"] as? String ?? "",
                     date: dict["date"] as? String
+                )
+            }
+        }
+
+        // Audit-Log
+        if let auditData = data["auditLog"] as? [[String: Any]] {
+            auditLog = auditData.compactMap { dict in
+                guard let action = dict["action"] as? String,
+                      let user = dict["user"] as? String,
+                      let timestamp = dict["timestamp"] as? String else { return nil }
+                return LSPDAuditEntry(
+                    id: dict["id"] as? String ?? UUID().uuidString,
+                    action: action,
+                    user: user,
+                    timestamp: timestamp,
+                    details: dict["details"] as? String
                 )
             }
         }
