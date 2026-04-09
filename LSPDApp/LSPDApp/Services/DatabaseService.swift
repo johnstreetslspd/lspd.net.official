@@ -448,6 +448,7 @@ class DatabaseService: ObservableObject {
         var newItem = item
         newItem.id = nextId(evidence)
         if newItem.aktenzeichen == nil || newItem.aktenzeichen!.isEmpty {
+            // Format matches website pattern: BM-XXXXXX using last 6 digits of ms timestamp
             let ts = Int(Date().timeIntervalSince1970 * 1000)
             newItem.aktenzeichen = "BM-\(String(ts).suffix(6))"
         }
@@ -516,6 +517,7 @@ class DatabaseService: ObservableObject {
         var newItem = item
         newItem.id = nextId(citations)
         if newItem.aktenzeichen == nil || newItem.aktenzeichen!.isEmpty {
+            // Format matches website pattern: CA-XXXXXX using last 6 digits of ms timestamp
             let ts = Int(Date().timeIntervalSince1970 * 1000)
             newItem.aktenzeichen = "CA-\(String(ts).suffix(6))"
         }
@@ -540,6 +542,7 @@ class DatabaseService: ObservableObject {
         var newItem = item
         newItem.id = nextId(charges)
         if newItem.chargeNumber == nil || newItem.chargeNumber!.isEmpty {
+            // Format matches website pattern: AZ-XXXXXX using last 6 digits of ms timestamp
             let ts = Int(Date().timeIntervalSince1970 * 1000)
             newItem.chargeNumber = "AZ-\(String(ts).suffix(6))"
         }

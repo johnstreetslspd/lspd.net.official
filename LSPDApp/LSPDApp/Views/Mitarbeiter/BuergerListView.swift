@@ -136,10 +136,13 @@ struct CitizenDetailView: View {
     @State private var wantedLevel: Int = 0
 
     var citizenCitations: [LSPDCitation] {
+        // Matching by name when citizenId is nil is intentional: the website uses the same fallback
+        // (see mitarbeiter-logic.js: ci.citizenId === c.id || ci.name === c.name)
         dbService.citations.filter { $0.citizenId == citizen.id || ($0.citizenId == nil && $0.name == citizen.name) }
     }
 
     var citizenCharges: [LSPDCharge] {
+        // Matching by name when citizenId is nil is intentional: the website uses the same fallback
         dbService.charges.filter { $0.citizenId == citizen.id || ($0.citizenId == nil && $0.name == citizen.name) }
     }
 
