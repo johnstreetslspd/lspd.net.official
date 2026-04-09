@@ -1,6 +1,7 @@
-# LSPD App – SwiftUI iPhone App
+# LSPD App – SwiftUI iPhone & iPad App
 
 Native iOS App für das LSPD Portal, gebaut mit SwiftUI und Firebase Firestore.
+Läuft auf **iPhone** und **iPad**.
 
 ## 📱 Features
 
@@ -47,76 +48,57 @@ Die App nutzt **dieselbe Firebase Firestore Datenbank** wie das Web-Portal:
 - **iOS 17+** Zielplattform
 - Apple Developer Account (für Gerät-Tests)
 
-### 1. Firebase konfigurieren
+### 1. Projekt in Xcode öffnen
+
+1. Doppelklicke auf `LSPDApp/LSPDApp.xcodeproj` – das Projekt öffnet sich in Xcode
+2. Xcode lädt automatisch die Firebase-Abhängigkeiten herunter (dauert beim ersten Mal einige Minuten)
+3. Warte bis die Paket-Auflösung abgeschlossen ist (Fortschritt in der Xcode-Statusleiste)
+
+### 2. Firebase konfigurieren
 
 1. Gehe zur [Firebase Console](https://console.firebase.google.com/)
 2. Wähle das Projekt **lspd-roleplay**
 3. Füge eine **iOS-App** hinzu:
-   - Bundle ID: `com.lspd.portal` (oder eigene)
+   - Bundle ID: `com.lspd.portal`
    - App-Name: `LSPD App`
 4. Lade die `GoogleService-Info.plist` herunter
-5. Lege die Datei in `LSPDApp/LSPDApp/` ab
+5. Ersetze die Datei `LSPDApp/LSPDApp/GoogleService-Info.plist` mit der heruntergeladenen Version
 
-### 2. Projekt in Xcode öffnen
+> ⚠️ **Wichtig:** Die mitgelieferte `GoogleService-Info.plist` ist ein Platzhalter. Du musst sie mit deiner echten Datei aus der Firebase Console ersetzen, damit die App eine Verbindung herstellen kann!
 
-**Option A: Swift Package Manager (empfohlen)**
-1. Öffne Xcode → **File → Open** → Wähle den `LSPDApp/` Ordner
-2. Xcode erkennt `Package.swift` automatisch
-3. Firebase SDK wird automatisch heruntergeladen
+### 3. Bauen & Starten (⌘R)
 
-**Option B: Xcode-Projekt erstellen**
-1. Xcode → **File → New → Project → iOS → App**
-2. Name: `LSPDApp`, Interface: SwiftUI, Language: Swift
-3. Kopiere alle Dateien aus `LSPDApp/LSPDApp/` in das Projekt
-4. Füge Firebase SDK via SPM hinzu:
-   - **File → Add Package Dependencies**
-   - URL: `https://github.com/firebase/firebase-ios-sdk.git`
-   - Wähle: `FirebaseFirestore`
-
-### 3. GoogleService-Info.plist
-
-⚠️ **Wichtig:** Die `GoogleService-Info.plist` muss dem Xcode-Projekt hinzugefügt werden.
-
-Erstelle die Datei mit diesen Firebase-Daten:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>API_KEY</key>
-    <string>AIzaSyDAltEFoZPnXFyezoApgGf7FY7bAOFk5oA</string>
-    <key>GCM_SENDER_ID</key>
-    <string>213624245643</string>
-    <key>PROJECT_ID</key>
-    <string>lspd-roleplay</string>
-    <key>STORAGE_BUCKET</key>
-    <string>lspd-roleplay.firebasestorage.app</string>
-    <key>GOOGLE_APP_ID</key>
-    <string>1:213624245643:ios:DEINE_IOS_APP_ID</string>
-    <key>BUNDLE_ID</key>
-    <string>com.lspd.portal</string>
-    <!-- BUNDLE_ID muss mit der Bundle ID übereinstimmen, die in Schritt 3 bei Firebase registriert wurde -->
-</dict>
-</plist>
-```
-
-> Ersetze `DEINE_IOS_APP_ID` mit der tatsächlichen iOS App-ID aus der Firebase Console.
-
-### 4. Bauen & Starten
-
-1. Wähle ein iOS-Simulator oder verbundenes iPhone
-2. Drücke **⌘R** zum Bauen und Starten
+1. Wähle oben in Xcode ein Zielgerät:
+   - **iPhone Simulator** (z.B. iPhone 15 Pro)
+   - **iPad Simulator** (z.B. iPad Pro 13")
+   - Oder ein verbundenes Gerät
+2. Drücke **⌘R** (Cmd+R) zum Bauen und Starten
 3. Die App verbindet sich automatisch mit Firebase
+
+### ⚙️ Häufige Build-Probleme
+
+| Problem | Lösung |
+|---------|--------|
+| "No such module 'FirebaseCore'" | Xcode → File → Packages → Resolve Package Versions |
+| Signing-Fehler | Xcode → Target → Signing & Capabilities → Team auswählen |
+| "GoogleService-Info.plist not found" | Platzhalter-Datei mit echter Firebase-Datei ersetzen |
+| iPad-Simulator zeigt nichts | Oben in Xcode iPad-Simulator als Ziel auswählen |
 
 ## 📂 Projektstruktur
 
 ```
 LSPDApp/
-├── Package.swift                    # Swift Package Manager Config
+├── LSPDApp.xcodeproj/               # ← In Xcode öffnen!
+│   ├── project.pbxproj              # Xcode-Projektdatei
+│   ├── project.xcworkspace/         # Workspace
+│   └── xcshareddata/xcschemes/      # Build-Scheme
+├── Package.swift                    # SPM-Referenz (nicht zum Bauen verwenden)
 └── LSPDApp/
-    ├── LSPDApp.swift                # App-Einstiegspunkt
+    ├── LSPDApp.swift                # App-Einstiegspunkt (@main)
     ├── ContentView.swift            # Haupt-View (Login/Portal)
     ├── MainTabView.swift            # Tab-Navigation (Dashboard/Bürger/Profil)
+    ├── Info.plist                   # App-Konfiguration (iPhone + iPad)
+    ├── GoogleService-Info.plist     # Firebase-Konfiguration (Platzhalter!)
     ├── Models/
     │   ├── Models.swift             # Alle Datenmodelle (User, Citizen, etc.)
     │   └── Defaults.swift           # Standard-Rollen, Abteilungen, Helfer
@@ -162,6 +144,13 @@ LSPDApp/
         └── AppIcon.appiconset/
 ```
 
+## 📱 Unterstützte Geräte
+
+| Gerät | Unterstützt | Orientierung |
+|-------|:-----------:|:------------:|
+| iPhone | ✅ | Portrait + Landscape |
+| iPad | ✅ | Alle Orientierungen |
+
 ## 🔐 Login
 
 Verwende dieselben Zugangsdaten wie im Web-Portal:
@@ -177,3 +166,4 @@ Die App verwendet einen Firestore **Snapshot Listener** – alle Änderungen im 
 - Dark Mode ist standardmäßig aktiviert
 - Das Farbschema entspricht dem Web-Portal (LSPD Blau/Grün)
 - Berechtigungen werden wie im Web-Portal über Rollen gesteuert
+- Die App läuft nativ auf iPhone und iPad mit adaptivem Layout

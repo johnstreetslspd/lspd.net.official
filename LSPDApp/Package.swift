@@ -1,6 +1,8 @@
 // swift-tools-version: 5.9
 import PackageDescription
 
+// HINWEIS: Dieses Package.swift dient nur als Referenz für die Firebase-Abhängigkeiten.
+// Zum Bauen und Starten der App bitte LSPDApp.xcodeproj in Xcode öffnen!
 let package = Package(
     name: "LSPDApp",
     platforms: [
@@ -14,6 +16,7 @@ let package = Package(
             name: "LSPDApp",
             dependencies: [
                 .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseCore", package: "firebase-ios-sdk"),
             ],
             path: "LSPDApp"
         )
