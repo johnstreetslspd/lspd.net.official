@@ -80,10 +80,11 @@ Die App nutzt **dieselbe Firebase Firestore Datenbank** wie das Web-Portal:
 | Problem | Lösung |
 |---------|--------|
 | "No such module 'FirebaseCore'" | Xcode → File → Packages → Resolve Package Versions |
-| "Missing Package Product FirebaseCore" | Xcode → File → Packages → Reset Package Caches, dann Resolve Package Versions |
+| "Missing Package Product FirebaseCore" | 1. Xcode → File → Packages → Reset Package Caches 2. Dann Resolve Package Versions. **Ursache:** FirebaseCore ist erst ab Firebase SDK 11.3+ als eigenständiges Produkt verfügbar. Das Projekt nutzt Firebase 11.3+. |
 | Signing-Fehler | Xcode → Target → Signing & Capabilities → Team auswählen |
 | "GoogleService-Info.plist not found" | Platzhalter-Datei mit echter Firebase-Datei ersetzen |
 | iPad-Simulator zeigt nichts | Oben in Xcode iPad-Simulator als Ziel auswählen |
+| SPM-Pakete lassen sich nicht auflösen | Xcode schließen → `~/Library/Developer/Xcode/DerivedData` und `~/Library/Caches/org.swift.swiftpm` löschen → Projekt neu öffnen |
 
 ## 📂 Projektstruktur
 
