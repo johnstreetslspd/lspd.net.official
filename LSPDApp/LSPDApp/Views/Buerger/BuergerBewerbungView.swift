@@ -1,9 +1,32 @@
 import SwiftUI
 
-// MARK: - Bürger Bewerbungsformular
+// MARK: - Bürger Bewerbungen (Tabs: Bewerben / Alle Bewerbungen)
 struct BuergerBewerbungView: View {
+    @State private var selectedTab = 0
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Picker("", selection: $selectedTab) {
+                Text("Bewerben").tag(0)
+                Text("Alle Bewerbungen").tag(1)
+            }
+            .pickerStyle(.segmented)
+            .padding()
+
+            if selectedTab == 0 {
+                BewerbungFormView()
+            } else {
+                BewerbungenListeView()
+            }
+        }
+        .navigationTitle("Bewerbungen")
+        .background(LSPDColors.dark.ignoresSafeArea())
+    }
+}
+
+// MARK: - Bewerbungsformular
+private struct BewerbungFormView: View {
     @EnvironmentObject var dbService: DatabaseService
-    @Environment(\.dismiss) var dismiss
     @State private var name = ""
     @State private var email = ""
     @State private var phone = ""
@@ -16,7 +39,6 @@ struct BuergerBewerbungView: View {
     var body: some View {
         ScrollView {
             if submitted {
-                // Bestätigung
                 VStack(spacing: 20) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 60))
@@ -46,7 +68,6 @@ struct BuergerBewerbungView: View {
                 .padding(30)
             } else {
                 VStack(spacing: 20) {
-                    // Info
                     VStack(alignment: .leading, spacing: 8) {
                         Text("📝 Online Bewerbung")
                             .font(.title3.bold())
@@ -56,7 +77,6 @@ struct BuergerBewerbungView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // Formular
                     VStack(spacing: 16) {
                         FormField(label: "Vollständiger Name *", text: $name, placeholder: "Max Mustermann")
                         FormField(label: "E-Mail *", text: $email, placeholder: "max@example.com", keyboard: .emailAddress)
@@ -82,9 +102,7 @@ struct BuergerBewerbungView: View {
                         }
                     }
 
-                    Button {
-                        submitApplication()
-                    } label: {
+                    Button { submitApplication() } label: {
                         Text("Bewerbung absenden")
                             .font(.headline)
                             .frame(maxWidth: .infinity)
@@ -98,7 +116,6 @@ struct BuergerBewerbungView: View {
                 .padding()
             }
         }
-        .navigationTitle("Bewerbung")
         .background(LSPDColors.dark.ignoresSafeArea())
     }
 
@@ -122,6 +139,91 @@ struct BuergerBewerbungView: View {
         Task {
             await dbService.addApplication(app)
             withAnimation { submitted = true }
+        }
+    }
+}
+
+// MARK: - Bewerbungen-Liste (Bürger)
+private struct BewerbungenListeView: View {
+    @EnvironmentObject var dbService: DatabaseService
+    @State private var selectedApp: LSPDApplication?
+
+    var sortedApps: [LSPDApplication] {
+        dbService.applications.sorted { ($0.date ?? "") > ($1.date ?? "") }
+    }
+
+    var body: some View {
+        List {
+            if sortedApps.isEmpty {
+                EmptyStateView(icon: "doc.text", title: "Keine Bewerbungen",
+                               subtitle: "Noch keine Bewerbungen eingegangen")
+                    .listRowBackground(Color.clear)
+            }
+
+            ForEach(sortedApps) { app in
+                Button { selectedApp = app } label: {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(app.applicantName).font(.headline)
+                            Spacer()
+                            StatusBadge(status: app.status)
+                        }
+                        if let date = app.date {
+                            Text(formatISODate(date, dateStyle: .medium, timeStyle: .none))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        if let code = app.trackingCode {
+                            Text("Code: \(code)")
+                                .font(.caption.monospaced())
+                                .foregroundStyle(LSPDColors.info)
+                        }
+                    }
+                }
+                .listRowBackground(Color(.systemGray6).opacity(0.1))
+            }
+        }
+        .listStyle(.plain)
+        .background(LSPDColors.dark.ignoresSafeArea())
+        .sheet(item: $selectedApp) { app in BuergerBewerbungDetailView(application: app) }
+    }
+}
+
+// MARK: - Bewerbung-Detailansicht (Bürger – nur lesend)
+struct BuergerBewerbungDetailView: View {
+    @Environment(\.dismiss) var dismiss
+    let application: LSPDApplication
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Bewerber") {
+                    LabeledContent("Name", value: application.applicantName)
+                    if let email = application.email { LabeledContent("E-Mail", value: email) }
+                    if let phone = application.phone { LabeledContent("Telefon", value: phone) }
+                    if let age = application.age { LabeledContent("Alter", value: age) }
+                    if let code = application.trackingCode {
+                        LabeledContent("Tracking-Code", value: code)
+                    }
+                    LabeledContent("Status", value: application.status)
+                    if let date = application.date {
+                        LabeledContent("Eingereicht", value: formatISODate(date))
+                    }
+                }
+
+                if let motivation = application.motivation, !motivation.isEmpty {
+                    Section("Motivation") { Text(motivation) }
+                }
+
+                if let notes = application.reviewNotes, !notes.isEmpty {
+                    Section("Anmerkungen der LSPD") { Text(notes) }
+                }
+            }
+            .navigationTitle("Bewerbung")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Fertig") { dismiss() } }
+            }
+            .background(LSPDColors.dark.ignoresSafeArea())
         }
     }
 }
