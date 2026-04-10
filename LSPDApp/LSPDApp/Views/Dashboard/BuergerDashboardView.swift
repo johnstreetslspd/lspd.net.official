@@ -4,7 +4,7 @@ struct BuergerDashboardView: View {
     @EnvironmentObject var dbService: DatabaseService
 
     private var publishedPressCount: Int {
-        dbService.press.filter { $0.isPublished == true }.count
+        dbService.press.filter { $0.isPublished != false }.count
     }
 
     var body: some View {

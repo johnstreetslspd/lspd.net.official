@@ -7,7 +7,7 @@ struct BuergerPresseView: View {
 
     var publishedPress: [LSPDPress] {
         dbService.press
-            .filter { $0.isPublished == true }
+            .filter { $0.isPublished != false }  // nil (Web-Portal) oder true anzeigen
             .sorted { ($0.date ?? "") > ($1.date ?? "") }
     }
 
@@ -34,6 +34,12 @@ struct BuergerPresseView: View {
                                     .foregroundStyle(LSPDColors.info)
                                     .clipShape(Capsule())
                             }
+                        }
+                        if let subtitle = item.subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
                         }
                         Text(item.content)
                             .font(.subheadline)
@@ -63,6 +69,12 @@ struct BuergerPresseView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         Text(item.title).font(.title2.bold())
+
+                        if let subtitle = item.subtitle, !subtitle.isEmpty {
+                            Text(subtitle)
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                        }
 
                         HStack {
                             if let author = item.author {

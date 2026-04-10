@@ -69,6 +69,7 @@ struct AddPressView: View {
     @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.dismiss) var dismiss
     @State private var title = ""
+    @State private var subtitle = ""
     @State private var content = ""
     @State private var category = ""
     @State private var isPublished = true
@@ -78,6 +79,7 @@ struct AddPressView: View {
             Form {
                 Section("Nachricht") {
                     TextField("Titel", text: $title)
+                    TextField("Untertitel (optional)", text: $subtitle)
                     TextEditor(text: $content)
                         .frame(minHeight: 120)
                 }
@@ -92,11 +94,14 @@ struct AddPressView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Abbrechen") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Veröffentlichen") {
-                        let item = LSPDPress(id: 0, title: title, content: content,
-                                             author: authVM.currentUser?.username,
-                                             date: ISO8601DateFormatter().string(from: Date()),
-                                             category: category.isEmpty ? nil : category,
-                                             isPublished: isPublished)
+                        let item = LSPDPress(
+                            id: 0, title: title,
+                            subtitle: subtitle.isEmpty ? nil : subtitle,
+                            content: content,
+                            author: authVM.currentUser?.username,
+                            date: ISO8601DateFormatter().string(from: Date()),
+                            category: category.isEmpty ? nil : category,
+                            isPublished: isPublished)
                         Task {
                             await dbService.addPress(item)
                             dismiss()
@@ -120,6 +125,12 @@ struct PressDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(press.title)
                         .font(.title2.bold())
+
+                    if let subtitle = press.subtitle, !subtitle.isEmpty {
+                        Text(subtitle)
+                            .font(.title3)
+                            .foregroundStyle(.secondary)
+                    }
 
                     HStack {
                         if let author = press.author {

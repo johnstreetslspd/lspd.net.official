@@ -103,13 +103,17 @@ struct BuergerStrafanzeigeView: View {
     private func submitCharge() {
         let item = LSPDCharge(
             id: 0,
-            citizenName: accusedName,
-            charge: charge,
+            chargeNumber: nil,
+            aktenzeichen: nil,
+            name: accusedName,
+            citizenId: nil,
+            type: charge,
+            vergehen: nil,
             description: description,
-            severity: "Ausstehend",
-            date: ISO8601DateFormatter().string(from: Date()),
-            filedBy: name,
-            status: "Offen"
+            officer: nil,
+            source: name,
+            status: "Offen",
+            date: ISO8601DateFormatter().string(from: Date())
         )
         Task {
             await dbService.addCharge(item)
