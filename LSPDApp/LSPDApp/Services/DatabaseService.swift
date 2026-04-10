@@ -294,7 +294,9 @@ class DatabaseService: ObservableObject {
                       let title = dict["title"] as? String else { return nil }
                 return LSPDPress(
                     id: id, title: title,
+                    subtitle: dict["subtitle"] as? String,
                     content: dict["content"] as? String ?? "",
+                    image: dict["image"] as? String,
                     author: dict["author"] as? String,
                     date: dict["date"] as? String,
                     category: dict["category"] as? String,
